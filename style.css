@@ -1,0 +1,23 @@
+body {
+    font-family: sans-serif;
+}
+
+
+#container {
+    display: flex;
+    height: 100%;
+}
+
+
+#controls {
+    flex: 0 0 200px;
+}
+
+
+#main {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
