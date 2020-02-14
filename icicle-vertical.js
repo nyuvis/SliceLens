@@ -1,12 +1,12 @@
-function icicleVertical({featureData, data, div}) {
+function icicleVertical({metadata, data, div}) {
   const config = getConfiguration(div);
   const hierarchy = prepareData(data, config);
-  const scales = getScales(featureData, hierarchy, config);
+  const scales = getScales(metadata, hierarchy, config);
 
-  console.log('featureData', featureData);
+  console.log('metadata', metadata);
   console.log('hierarchy', hierarchy);
 
-  addChart(featureData, hierarchy, config, scales);
+  addChart(metadata, hierarchy, config, scales);
 
   
   function getConfiguration(div) {
@@ -45,7 +45,7 @@ function icicleVertical({featureData, data, div}) {
   }
 
  
-  function getScales(featureData, hierarchy, config) {
+  function getScales(metadata, hierarchy, config) {
     const {svg, width, height, margin} = config;
 
     const yScale = d3.scaleLinear()
@@ -53,14 +53,14 @@ function icicleVertical({featureData, data, div}) {
         .range([0, hierarchy.y1 - hierarchy.y0]);
 
     const color = d3.scaleOrdinal()
-        .domain(featureData.labelValues)
+        .domain(metadata.labelValues)
         .range(d3.schemeCategory10);
  
     return {yScale, color};
   }
 
 
-  function addChart(featureData, hierarchy, config, scales) {
+  function addChart(metadata, hierarchy, config, scales) {
     const {color, yScale} = scales;
     const {svg, width, height, margin} = config;
 
@@ -73,7 +73,7 @@ function icicleVertical({featureData, data, div}) {
     partitions.selectAll('.segment')
       .data(d => {
         const stack = d3.stack()
-            .keys(featureData.labelValues)
+            .keys(metadata.labelValues)
             .value((d, key) => d.get(key));
         const stacked = stack([d.data.counts]);
         const mapped = stacked.map(b => ({
@@ -92,7 +92,7 @@ function icicleVertical({featureData, data, div}) {
         .attr('fill', d => color(d.label));
 
     const rowHeight = partitions.datum().y1 - partitions.datum().y0;
-    const rowLabels = ['Root'].concat(featureData.selected);
+    const rowLabels = ['Root'].concat(metadata.selected);
 
     svg.selectAll('.rowLabel')
       .data(rowLabels)

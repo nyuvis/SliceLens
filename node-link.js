@@ -1,12 +1,12 @@
-function nodeLink({featureData, data, div}) {
+function nodeLink({metadata, data, div}) {
   const config = getConfiguration(div);
   const hierarchy = prepareData(data, config);
-  const scales = getScales(featureData, hierarchy, config);
+  const scales = getScales(metadata, hierarchy, config);
 
-  console.log('featureData', featureData);
+  console.log('metadata', metadata);
   console.log('hierarchy', hierarchy);
 
-  addChart(featureData, hierarchy, config, scales);
+  addChart(metadata, hierarchy, config, scales);
 
   
   function getConfiguration(div) {
@@ -47,7 +47,7 @@ function nodeLink({featureData, data, div}) {
   }
 
  
-  function getScales(featureData, hierarchy, config) {
+  function getScales(metadata, hierarchy, config) {
     const {nodeHeight, maxNodeWidth} = config;
 
     const xScale = d3.scaleLinear()
@@ -59,14 +59,14 @@ function nodeLink({featureData, data, div}) {
         .range([0, nodeHeight]);
 
     const color = d3.scaleOrdinal()
-        .domain(featureData.labelValues)
+        .domain(metadata.labelValues)
         .range(d3.schemeCategory10);
  
     return {xScale, yScale, color};
   }
 
 
-  function addChart(featureData, hierarchy, config, scales) {
+  function addChart(metadata, hierarchy, config, scales) {
     // https://observablehq.com/@d3/tidy-tree
     const {color, xScale, yScale} = scales;
     const {svg, width, height, margin, nodeHeight, maxNodeWidth} = config;
@@ -95,7 +95,7 @@ function nodeLink({featureData, data, div}) {
     nodes.selectAll('.segment')
       .data(d => {
         const stack = d3.stack()
-            .keys(featureData.labelValues)
+            .keys(metadata.labelValues)
             .value((d, key) => d.get(key));
         const stacked = stack([d.data.counts]);
         const mapped = stacked.map(b => ({
