@@ -1,4 +1,6 @@
 function manager(dataset) {
+  const main = d3.select('#main');
+
   const features = dataset.columns;
   const label = features.pop();
   const labelValues = Array.from(new Set(dataset.map(d => d[label])));
@@ -25,11 +27,11 @@ function manager(dataset) {
     'selected': []
   }
  
-  let visType = 'icicle';
+  let selectedVis = 'icicle';
 
   setUpFeatureSelection();
   setUpVisSelector();
-  createVis();
+  updateVis();
 
 
   function thresholds(extent) {
@@ -77,7 +79,7 @@ function manager(dataset) {
       metadata.selected = selectedFeatures;
 
       updateSelectedFeaturesList();
-      createVis();
+      updateVis();
 
       function updateSelectedFeaturesList() {
         d3.select('#selected')
@@ -94,8 +96,9 @@ function manager(dataset) {
   function setUpVisSelector() {
     d3.select('#vis-select')
         .on('change', function() {
-          visType = this.value;
-          createVis();
+          selectedVis = this.value;
+          main.node().innerHTML = '';
+          updateVis();
         });
   }
 
@@ -125,20 +128,27 @@ function manager(dataset) {
   }
 
 
-  function createVis(visData) {
-    const main = d3.select('#main');
-    main.node().innerHTML = '';
-   
-    const config = {
+  function updateVis() {
+    const data = {
       metadata: metadata,
       data: getSplitData(dataset),
-      div: main
     };
+    
 
-    if (visType === 'icicle') {
-      icicleVertical(config);
+    let iciclePlot = icicle()
+      .width(main.node().clientWidth)
+      .height(main.node().clientHeight);
+
+    let nodelinkPlot = nodelink()
+      .width(main.node().clientWidth)
+      .height(main.node().clientHeight);
+    
+    if (selectedVis === 'icicle') {
+      main.datum(data)
+          .call(iciclePlot);
     } else {
-      nodeLink(config);
+      main.datum(data)
+          .call(nodelinkPlot);
     }
   }
 }
