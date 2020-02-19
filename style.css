@@ -11,6 +11,7 @@ body {
 
 #controls {
     flex: 0 0 200px;
+    background-color: #F5F5F5;
 }
 
 
@@ -21,3 +22,7 @@ body {
     flex-direction: column;
 }
 
+
+#tooltip {
+  font-size: 14px;
+}

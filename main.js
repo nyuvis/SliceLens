@@ -1,3 +1,8 @@
+d3.csv('census.csv', d3.autoType).then(data => {
+  manager(data);
+});
+
+
 function manager(dataset) {
   const main = d3.select('#main');
 
@@ -24,7 +29,9 @@ function manager(dataset) {
     'labelValues': labelValues,
     'bins': bins,
     'numBins': numBins,
-    'selected': []
+    'selected': [],
+    'verb': ['low', 'medium', 'high'],
+    'verbAbbr': ['L', 'M', 'H']
   }
  
   let selectedVis = 'icicle';
@@ -94,12 +101,14 @@ function manager(dataset) {
 
 
   function setUpVisSelector() {
-    d3.select('#vis-select')
+    const select = d3.select('#vis-select')
         .on('change', function() {
           selectedVis = this.value;
           main.node().innerHTML = '';
           updateVis();
         });
+
+    select.node().value = selectedVis;
   }
 
 
@@ -133,7 +142,6 @@ function manager(dataset) {
       metadata: metadata,
       data: getSplitData(dataset),
     };
-    
 
     let iciclePlot = icicle()
       .width(main.node().clientWidth)
@@ -142,7 +150,7 @@ function manager(dataset) {
     let nodelinkPlot = nodelink()
       .width(main.node().clientWidth)
       .height(main.node().clientHeight);
-    
+
     if (selectedVis === 'icicle') {
       main.datum(data)
           .call(iciclePlot);
@@ -152,9 +160,3 @@ function manager(dataset) {
     }
   }
 }
-
-
-d3.csv('census.csv', d3.autoType).then(data => {
-  manager(data);
-});
-
