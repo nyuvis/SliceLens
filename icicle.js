@@ -30,7 +30,7 @@ function icicle() {
         .join(enter => enter.append('svg')
               .call(svg => svg.append('g').attr('id', 'vis-group')
                   .call(g => g.append('g').attr('id', 'tree'))
-                  .call(g => g.append('g').attr('id', 'labels'))
+                  .call(g => g.append('g').attr('id', 'row-labels'))
                   .call(g => g.append(() => getCategoryColorLegend(color))
                       .attr('transform', `translate(0,${-margin.top})`))
                   .call(g => g.append('g')
@@ -76,7 +76,10 @@ function icicle() {
           .selectAll('.partition')
           .data(root.descendants())
           .join(enter => enter.append('g')
-              .call(g => g.append('rect').attr('class', 'border-rect')))
+              .call(g => g.append('rect')
+                    .attr('class', 'border-rect')
+                    .attr('fill', 'none')
+                    .attr('stroke', 'none')))
             .attr('class', 'partition')
             .attr('transform', d => `translate(${d.x0},${d.y0})`)
             .each(function(d) {
@@ -87,9 +90,7 @@ function icicle() {
 
         partitions.selectAll('.border-rect')
             .attr('width', d => d.x1 - d.x0)
-            .attr('height', d => d.y1 - d.y0)
-            .attr('fill', 'none')
-            .attr('stroke', 'none')
+            .attr('height', d => d.y1 - d.y0);
 
         partitions.selectAll('.segment')
           .data(d => {
@@ -115,11 +116,11 @@ function icicle() {
         const rowHeight = partitions.datum().y1 - partitions.datum().y0;
         const rowLabels = ['Root'].concat(metadata.selected);
 
-        g.select('#labels')
-          .selectAll('.rowLabel')
+        g.select('#row-labels')
+          .selectAll('.row-label')
           .data(rowLabels)
           .join('text')
-            .attr('class', 'rowLabel')
+            .attr('class', 'row-label')
             .attr('transform', (d, i) => `translate(-10,${i * (rowHeight + 4)}) rotate(-90)`)
             .attr('text-anchor', 'end')
             .text(d => d);

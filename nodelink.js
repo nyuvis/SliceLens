@@ -20,6 +20,8 @@ function nodelink() {
   let height = 600 - margin.top - margin.bottom;
   
   function chart(selection) {
+    const lightgray = '#d3d3d3';
+
     selection.each(function({metadata, data}) {
       const maxNodeSize = 50;
       const root = prepareData();
@@ -33,7 +35,7 @@ function nodelink() {
                   .call(g => g.append('g').attr('id', 'tree')
                     .call(tree => tree.append('g').attr('id', 'links'))
                     .call(tree => tree.append('g').attr('id', 'nodes')))
-                  .call(g => g.append('g').attr('id', 'labels'))
+                  .call(g => g.append('g').attr('id', 'row-labels'))
                   .call(g => g.append(() => getCategoryColorLegend(color))
                       .attr('transform', `translate(0,${-margin.top})`))
                   .call(g => g.append('g')
@@ -81,33 +83,28 @@ function nodelink() {
         const links = g.select('#links')
             .attr('class', 'link')
             .attr('fill', 'none')
-            .attr('stroke', '#d3d3d3')
+            .attr('stroke', lightgray)
             .attr('stroke-width', 1)
           .selectAll('path')
           .data(root.links())
           .join('path')
             .attr('d', link)
-            .each(function(d) { d.target.edgeToParent = this; });
+            .each(function(d) {
+              d.target.edgeToParent = this;
+            });
 
         const nodes = g.select('#nodes')
           .selectAll('g')
           .data(root.descendants())
-          .join('g')
-            .attr('transform', d => `translate(${d.x},${d.y})`)
-            .on('mouseover', function() {
-              const node = d3.select(this).datum();
-              const ancestorLinks = node.ancestors().map(d => d.edgeToParent);
-              d3.selectAll(ancestorLinks)
-                  .attr('stroke', 'black')
-                  .attr('stroke-width', 2);
-            })
-            .on('mouseout', function() {
-              const node = d3.select(this).datum();
-              const ancestorLinks = node.ancestors().map(d => d.edgeToParent);
-              d3.selectAll(ancestorLinks)
-                  .attr('stroke', '#d3d3d3')
-                  .attr('stroke-width', 1);
-            });
+          .join(enter => enter.append('g')
+              .call(g => g.append('text')
+                  .attr('font-size', 10)
+                  .attr('text-anchor', 'end')
+                  .attr('fill', 'black')
+                  .attr('x', d => -size(d.value) / 2)
+                  .attr('y', -1)
+                  .text(d => d.depth === 0 ? '' : metadata.verbAbbr[d.data.bin])))
+            .attr('transform', d => `translate(${d.x},${d.y})`);
 
         nodes.selectAll('.segment')
           .data(d => {
@@ -146,11 +143,11 @@ function nodelink() {
         const labels = root.path(root.leaves()[0])
           .map((d, i) => ({y: d.y, text: rowLabels[i]}));
 
-        g.select('#labels')
-          .selectAll('text')
+        g.select('#row-labels')
+          .selectAll('.row-label')
           .data(labels)
           .join('text')
-            .attr('class', 'rowLabel')
+            .attr('class', 'row-label')
             .attr('transform', d => `translate(-10,${d.y}) rotate(-90)`)
             .attr('text-anchor', 'end')
             .text(d => d.text);
@@ -203,6 +200,20 @@ function nodelink() {
         })
         .on('mouseleave', function() {
           tooltip.style('display', 'none');
+        })
+        .on('mouseover', function() {
+          const node = d3.select(this).datum();
+          const ancestorLinks = node.ancestors().map(d => d.edgeToParent);
+          d3.selectAll(ancestorLinks)
+              .attr('stroke', 'black')
+              .attr('stroke-width', 2);
+        })
+        .on('mouseout', function() {
+          const node = d3.select(this).datum();
+          const ancestorLinks = node.ancestors().map(d => d.edgeToParent);
+          d3.selectAll(ancestorLinks)
+              .attr('stroke', '#d3d3d3')
+              .attr('stroke-width', 1);
         });
       }
     });
