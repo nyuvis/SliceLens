@@ -146,7 +146,7 @@ function icicle() {
           const lines = node.depth === 0 ? ["Root node"] : node.ancestors()
               .reverse()
               .slice(1)
-              .map(d => `${d.data.splitFeature} is ${metadata.verb[d.data.bin]}`);
+              .map(d => `${d.data.splitFeature} is ${d.data.splitLabel}`);
 
           lines.push(`${node.value} data points`);
 

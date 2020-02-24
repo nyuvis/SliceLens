@@ -103,7 +103,7 @@ function nodelink() {
                   .attr('fill', 'black')
                   .attr('x', d => -size(d.value) / 2)
                   .attr('y', -1)
-                  .text(d => d.depth === 0 ? '' : metadata.verbAbbr[d.data.bin])))
+                  .text(d => d.depth === 0 ? '' : d.data.splitLabel)))
             .attr('transform', d => `translate(${d.x},${d.y})`);
 
         nodes.selectAll('.segment')

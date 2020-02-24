@@ -6,19 +6,38 @@ d3.csv('census.csv', d3.autoType).then(data => {
 function manager(dataset) {
   const main = d3.select('#main');
 
-  const features = dataset.columns;
-  const label = features.pop();
+  const featureNames = dataset.columns;
+  const label = featureNames.pop();
   const labelValues = Array.from(new Set(dataset.map(d => d[label])));
 
   const numBins = 3;
+  const verbs = ['low', 'medium', 'high'];
 
-  const bins = features.reduce((acc, val) => {
-    const extent = d3.extent(dataset.map(d => d[val]));
+  const features = featureNames.reduce((acc, val) => {
+    const values = dataset.map(d => d[val]);
+    const feature = {
+      name: val
+    };
 
-    acc[val] = d3.bin()
-        .value(d => d[val])
-        .domain(extent)
-        .thresholds(thresholds(extent))
+    if (!isNaN(values[0])) {
+      feature.type = 'Q';
+      feature.values = verbs;
+      const extent = d3.extent(values);
+      feature.split = d3.bin()
+          .value(d => d[val])
+          .domain(extent)
+          .thresholds(thresholds(extent));
+    } else if (values[0] instanceof Date) {
+      feature.type = 'T';
+    } else {
+      feature.values = Array.from(new Set(values));
+      feature.type = 'C';
+      feature.split = data => {
+        return d3.groups(data, d => d[val]).map(d => d[1]);
+      }
+    }
+
+    acc[val] = feature;
 
     return acc;
   }, {});
@@ -27,11 +46,7 @@ function manager(dataset) {
     'features': features,
     'label': label,
     'labelValues': labelValues,
-    'bins': bins,
-    'numBins': numBins,
     'selected': [],
-    'verb': ['low', 'medium', 'high'],
-    'verbAbbr': ['L', 'M', 'H']
   }
  
   let selectedVis = 'icicle';
@@ -53,7 +68,7 @@ function manager(dataset) {
   function setUpFeatureSelection() {
     d3.select('#all')
       .selectAll('.feature')
-      .data(metadata.features)
+      .data(Object.keys(metadata.features))
       .join('div')
         .attr('class', 'feature')
         .call(div => div.append('input')
@@ -113,21 +128,24 @@ function manager(dataset) {
 
 
   function getSplitData() {
-    return splitData(dataset, 0, "", 0);
+    return splitData(dataset, 0, '', '');
       
-    function splitData(data, index, splitFeature, bin) {
+    function splitData(data, index, splitFeature, splitLabel) {
       const counts = d3.rollup(data, v => v.length, d => d.label);
 
-      const extent = [data.x0, data.x1];
+      // const extent = [data.x0, data.x1];
 
-      const node = {counts, extent, splitFeature, bin};
+      const node = {counts, splitFeature, splitLabel};
 
       if (index < metadata.selected.length) {
-        const nextFeature = metadata.selected[index];
-        const bins = metadata.bins[nextFeature](data);
+        const nextFeatureName = metadata.selected[index];
+        const nextFeature = metadata.features[nextFeatureName];
+        const splits = nextFeature.split(data);
 
-        node.children = bins.map((d, i) => splitData(d, index + 1, nextFeature, i))
-          .filter(d => d !== undefined);
+        node.children = splits.map((d, i) => {
+          return splitData(d, index + 1, nextFeatureName, nextFeature.values[i]);
+        })
+            .filter(d => d !== undefined);
       } else {
         node.value = data.length;
       }
