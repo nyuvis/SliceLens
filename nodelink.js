@@ -173,18 +173,18 @@ function nodelink() {
           const lines = node.depth === 0 ? ['Root node'] : node.ancestors()
               .reverse()
               .slice(1)
-              .map(d => `${d.data.splitFeature} is ${metadata.verb[d.data.bin]}`);
+              .map(d => `${d.data.splitFeature} is ${d.data.splitLabel}`);
 
           lines.push(`${node.value} data points`);
 
           const text = tooltip.selectAll('text')
             .data([null])
-            .join('text')
-              .attr('dominant-baseline', 'hanging');
+            .join('text');
 
           text.selectAll('tspan')
             .data(lines)
             .join('tspan')
+              .attr('dominant-baseline', 'hanging')
               .attr('x', 0)
               .attr('y', (d, i) => `${i * 1.1}em`)
               .text(d => d);

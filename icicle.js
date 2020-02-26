@@ -152,12 +152,12 @@ function icicle() {
 
           const text = tooltip.selectAll('text')
             .data([null])
-            .join('text')
-            .attr('dominant-baseline', 'hanging');
+            .join('text');
           
           text.selectAll('tspan')
             .data(lines)
             .join('tspan')
+              .attr('dominant-baseline', 'hanging')
               .attr('x', 0)
               .attr('y', (d, i) => `${i * 1.1}em`)
               .text(d => d);
