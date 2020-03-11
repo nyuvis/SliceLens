@@ -161,20 +161,32 @@ function manager(dataset) {
       data: getSplitData(dataset),
     };
 
+    const divWidth = main.node().clientWidth;
+    const divHeight = main.node().clientHeight;
+
     let iciclePlot = icicle()
-      .width(main.node().clientWidth)
-      .height(main.node().clientHeight);
+      .width(divWidth)
+      .height(divHeight);
 
     let nodelinkPlot = nodelink()
-      .width(main.node().clientWidth)
-      .height(main.node().clientHeight);
+      .width(divWidth)
+      .height(divHeight);
+    
+    let matrixPlot = matrix()
+      .width(Math.min(divWidth, divHeight))
+      .height(Math.min(divWidth, divHeight))
+      /*.width(divWidth)
+      .height(divHeight);*/
 
     if (selectedVis === 'icicle') {
       main.datum(data)
           .call(iciclePlot);
-    } else {
+    } else if (selectedVis === 'nodelink') {
       main.datum(data)
           .call(nodelinkPlot);
+    } else {
+      main.datum(data)
+          .call(matrixPlot);
     }
   }
 }
