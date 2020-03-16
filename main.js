@@ -22,11 +22,28 @@ function manager(dataset) {
     if (!isNaN(values[0])) {
       feature.type = 'Q';
       feature.values = verbs;
+      
       const extent = d3.extent(values);
-      feature.split = d3.bin()
+      
+      const equalInterval = d3.bin()
           .value(d => d[val])
           .domain(extent)
-          .thresholds(thresholds(extent));
+          .thresholds(equalIntervalThresholds(extent));
+      
+      const quantiles = d3.bin()
+          .value(d => d[val])
+          .domain(extent)
+          .thresholds(quantileThresholds(values));
+
+      console.log(val, quantileThresholds(values));
+      
+      feature.split = data => {
+        if (selectedSplit === 'interval') {
+          return equalInterval(data);
+        } else {
+          return quantiles(data);
+        }
+      }
     } else if (values[0] instanceof Date) {
       feature.type = 'T';
     } else {
@@ -50,18 +67,25 @@ function manager(dataset) {
   }
  
   let selectedVis = 'icicle';
+  let selectedSplit = 'interval';
 
   setUpFeatureSelection();
   setUpVisSelector();
+  setUpSplitSelector();
   updateVis();
 
 
-  function thresholds(extent) {
-    const [min, max] = extent;
+  function equalIntervalThresholds([min, max]) {
     const binSize = (max - min) / numBins;
     const thresholds = d3.range(1, numBins)
         .map(d => min + d * binSize);
     return thresholds;
+  }
+
+
+  function quantileThresholds(values) {
+    return d3.range(1, numBins)
+        .map(d => d3.quantile(values, d / numBins));
   }
 
 
@@ -127,13 +151,21 @@ function manager(dataset) {
   }
 
 
+  function setUpSplitSelector() {
+    const select = d3.select('#split-select')
+        .on('change', function() {
+          selectedSplit = this.value;
+          updateVis();
+        });
+
+    select.node().value = selectedSplit;
+  }
+
   function getSplitData() {
     return splitData(dataset, 0, '', '');
       
     function splitData(data, index, splitFeature, splitLabel) {
       const counts = d3.rollup(data, v => v.length, d => d.label);
-
-      // const extent = [data.x0, data.x1];
 
       const node = {counts, splitFeature, splitLabel};
 
@@ -142,9 +174,8 @@ function manager(dataset) {
         const nextFeature = metadata.features[nextFeatureName];
         const splits = nextFeature.split(data);
 
-        node.children = splits.map((d, i) => {
-          return splitData(d, index + 1, nextFeatureName, nextFeature.values[i]);
-        })
+        node.children = splits
+            .map((d, i) => splitData(d, index + 1, nextFeatureName, nextFeature.values[i]))
             .filter(d => d !== undefined);
       } else {
         node.value = data.length;

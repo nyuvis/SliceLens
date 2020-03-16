@@ -10,12 +10,23 @@
     <body>
         <div id="container">
             <div id="controls">
+              
               <div id="all">
                 <h2>Features</h2>
               </div>
+
               <div id="selected">
                 <h2>Selected</h2>
               </div>
+
+              <div id="splits">
+                <h2>Splits</h2>
+                  <select id="split-select">
+                    <option value="interval" selected>Equal Intervals</option>
+                    <option value="quantiles">Quantiles</option>
+                  </select>
+              </div>
+
               <div>
                   <h2>Visualization</h2>
                   <select id="vis-select">
@@ -24,13 +35,18 @@
                     <option value="matrix">Matrix</option>
                   </select>
               </div>
+
             </div>
+
             <div id="main"></div>
+
         </div>
+
         <script type="text/javascript" src="util.js"></script>
         <script type="text/javascript" src="icicle.js"></script>
         <script type="text/javascript" src="matrix.js"></script>
         <script type="text/javascript" src="nodelink.js"></script>
         <script type="text/javascript" src="main.js"></script>
+
     </body>
 </html>
