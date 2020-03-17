@@ -191,22 +191,9 @@ function icicle() {
     });
   }
 
-  chart.margin = function(m) {
-    if (!arguments.length) return margin;
-    margin = m;
+  chart.size = function([w, h]) {
+    if (!arguments.length) return [width, height];
     width = w - margin.left - margin.right;
-    height = h - margin.top - margin.bottom;
-    return chart;
-  }
- 
-  chart.width = function(w) {
-    if (!arguments.length) return width;
-    width = w - margin.left - margin.right;
-    return chart;
-  }
-
-  chart.height = function(h) {
-    if (!arguments.length) return height;
     height = h - margin.top - margin.bottom;
     return chart;
   }

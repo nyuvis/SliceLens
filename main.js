@@ -6,12 +6,22 @@ d3.csv('census.csv', d3.autoType).then(data => {
 function manager(dataset) {
   const main = d3.select('#main');
 
+  const visualizations = {
+    icicle: icicle(),
+    nodelink: nodelink(),
+    matrix: matrix()
+  };
+  
+  let selectedVis = visualizations.icicle;
+  let selectedSplit = 'interval';
+
   const featureNames = dataset.columns;
   const label = featureNames.pop();
   const labelValues = Array.from(new Set(dataset.map(d => d[label])));
 
   const numBins = 3;
   const verbs = ['low', 'medium', 'high'];
+  
 
   const features = featureNames.reduce((acc, val) => {
     const values = dataset.map(d => d[val]);
@@ -35,8 +45,6 @@ function manager(dataset) {
           .domain(extent)
           .thresholds(quantileThresholds(values));
 
-      console.log(val, quantileThresholds(values));
-      
       feature.split = data => {
         if (selectedSplit === 'interval') {
           return equalInterval(data);
@@ -66,13 +74,12 @@ function manager(dataset) {
     'selected': [],
   }
  
-  let selectedVis = 'icicle';
-  let selectedSplit = 'interval';
 
   setUpFeatureSelection();
   setUpVisSelector();
   setUpSplitSelector();
-  updateVis();
+  setUpResizeListener();
+  updateDataAndVis();
 
 
   function equalIntervalThresholds([min, max]) {
@@ -103,7 +110,8 @@ function manager(dataset) {
         .call(div => div.append('label')
               .attr('for', d => `${d}-all`)
               .text(d => d));
-    
+
+
     function onFeatureSelectionChange() {
       const isChecked = this.checked;
       const feature = d3.select(this).datum();
@@ -125,7 +133,7 @@ function manager(dataset) {
       metadata.selected = selectedFeatures;
 
       updateSelectedFeaturesList();
-      updateVis();
+      updateDataAndVis();
 
       function updateSelectedFeaturesList() {
         d3.select('#selected')
@@ -142,12 +150,12 @@ function manager(dataset) {
   function setUpVisSelector() {
     const select = d3.select('#vis-select')
         .on('change', function() {
-          selectedVis = this.value;
+          selectedVis = visualizations[this.value];
           main.node().innerHTML = '';
-          updateVis();
+          updateVisOnly();
         });
 
-    select.node().value = selectedVis;
+    select.node().value = 'icicle';
   }
 
 
@@ -155,11 +163,17 @@ function manager(dataset) {
     const select = d3.select('#split-select')
         .on('change', function() {
           selectedSplit = this.value;
-          updateVis();
+          updateDataAndVis();
         });
 
     select.node().value = selectedSplit;
   }
+
+
+  function setUpResizeListener() {
+    window.addEventListener('resize', updateVisOnly);
+  }
+
 
   function getSplitData() {
     return splitData(dataset, 0, '', '');
@@ -186,7 +200,7 @@ function manager(dataset) {
   }
 
 
-  function updateVis() {
+  function updateDataAndVis() {
     const data = {
       metadata: metadata,
       data: getSplitData(dataset),
@@ -195,29 +209,18 @@ function manager(dataset) {
     const divWidth = main.node().clientWidth;
     const divHeight = main.node().clientHeight;
 
-    let iciclePlot = icicle()
-      .width(divWidth)
-      .height(divHeight);
+    selectedVis.size([divWidth, divHeight]);
+ 
+    main.datum(data).call(selectedVis);
+  }
 
-    let nodelinkPlot = nodelink()
-      .width(divWidth)
-      .height(divHeight);
-    
-    let matrixPlot = matrix()
-      .width(Math.min(divWidth, divHeight))
-      .height(Math.min(divWidth, divHeight))
-      /*.width(divWidth)
-      .height(divHeight);*/
 
-    if (selectedVis === 'icicle') {
-      main.datum(data)
-          .call(iciclePlot);
-    } else if (selectedVis === 'nodelink') {
-      main.datum(data)
-          .call(nodelinkPlot);
-    } else {
-      main.datum(data)
-          .call(matrixPlot);
-    }
+  function updateVisOnly() {
+    const divWidth = main.node().clientWidth;
+    const divHeight = main.node().clientHeight;
+
+    selectedVis.size([divWidth, divHeight]);
+
+    main.call(selectedVis);
   }
 }

@@ -204,25 +204,15 @@ function matrix() {
     });
   }
 
-  chart.margin = function(m) {
-    if (!arguments.length) return margin;
-    margin = m;
-    width = w - margin.left - margin.right;
-    height = h - margin.top - margin.bottom;
-    return chart;
-  }
- 
-  chart.width = function(w) {
-    if (!arguments.length) return width;
-    width = w - margin.left - margin.right;
+
+  chart.size = function([w, h]) {
+    if (!arguments.length) return [width, height];
+    const minDim = Math.min(w, h);
+    width = minDim - margin.left - margin.right;
+    height = minDim - margin.top - margin.bottom;
     return chart;
   }
 
-  chart.height = function(h) {
-    if (!arguments.length) return height;
-    height = h - margin.top - margin.bottom;
-    return chart;
-  }
 
   return chart;
 }
