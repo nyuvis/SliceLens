@@ -1,10 +1,31 @@
-d3.csv('census.csv', d3.autoType).then(data => {
-  manager(data);
-});
-
-
-function manager(dataset) {
+(function() {
   const main = d3.select('#main');
+  
+  const select = d3.select('#dataset-select')
+      .on('change', function() {
+        load(this.value);
+      });
+
+  select.node().value = 'census';
+  load('census');
+
+  function load(dataset) {
+    d3.csv(`datasets/${dataset}.csv`, d3.autoType).then(data => {
+
+      main.node().innerHTML = '';
+
+      d3.select('#selected')
+        .selectAll('.feature')
+        .remove();
+
+      manager(data, main);
+    });
+  }
+
+})();
+
+
+function manager(dataset, main) {
 
   const visualizations = {
     icicle: icicle(),
@@ -12,8 +33,8 @@ function manager(dataset) {
     matrix: matrix()
   };
   
-  let selectedVis = visualizations.icicle;
-  let selectedSplit = 'interval';
+  let selectedVis;
+  let selectedSplit;
 
   const featureNames = dataset.columns;
   const label = featureNames.pop();
@@ -100,17 +121,20 @@ function manager(dataset) {
     d3.select('#all')
       .selectAll('.feature')
       .data(Object.keys(metadata.features))
-      .join('div')
+      .join(
+        enter => enter.append('div')
+              .call(div => div.append('input')
+                .attr('type', 'checkbox'))
+              .call(div => div.append('label'))
+      )
         .attr('class', 'feature')
-        .call(div => div.append('input')
-              .datum(d => d)
-              .attr('type', 'checkbox')
-              .attr('id', d => `${d}-all`)
-              .on('change', onFeatureSelectionChange))
-        .call(div => div.append('label')
+        .call(div => div.select('input')
+              .property('checked', false)
+              .on('change', onFeatureSelectionChange)
+              .attr('id', d => `${d}-all`))
+        .call(div => div.select('label')
               .attr('for', d => `${d}-all`)
               .text(d => d));
-
 
     function onFeatureSelectionChange() {
       const isChecked = this.checked;
@@ -155,7 +179,7 @@ function manager(dataset) {
           updateVisOnly();
         });
 
-    select.node().value = 'icicle';
+    selectedVis = visualizations[select.node().value];
   }
 
 
@@ -166,7 +190,7 @@ function manager(dataset) {
           updateDataAndVis();
         });
 
-    select.node().value = selectedSplit;
+    selectedSplit = select.node().value;
   }
 
 

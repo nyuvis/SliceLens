@@ -10,6 +10,13 @@
     <body>
         <div id="container">
             <div id="controls">
+              <div id="datasets">
+                <h2>Dataset</h2>
+                <select id="dataset-select">
+                  <option value="census" selected>Census</option>
+                  <option value="heart-disease">Heart Disease</option>
+                </select>
+              </div>
               
               <div id="all">
                 <h2>Features</h2>
@@ -21,10 +28,10 @@
 
               <div id="splits">
                 <h2>Splits</h2>
-                  <select id="split-select">
-                    <option value="interval" selected>Equal Intervals</option>
-                    <option value="quantiles">Quantiles</option>
-                  </select>
+                <select id="split-select">
+                  <option value="interval" selected>Equal Intervals</option>
+                  <option value="quantiles">Quantiles</option>
+                </select>
               </div>
 
               <div>
