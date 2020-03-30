@@ -12,7 +12,7 @@ function matrix() {
     right: 50
   };
   
-  let width = 800 - margin.left - margin.right;
+  let width = 600 - margin.left - margin.right;
   let height = 600 - margin.top - margin.bottom;
 
   function chart(selection) {
@@ -44,8 +44,9 @@ function matrix() {
       // TODO: stop clearing before drawing
       g.selectAll('.cell').remove();
       g.selectAll('.node').remove();
+      g.selectAll('.axis').remove();
 
-      draw(g.select('#vis'), width, height);
+      draw(g.select('#vis'), width, height, 0);
 
       setupTooltips();
 
@@ -72,13 +73,12 @@ function matrix() {
       }
 
 
-      function draw(cell, horizontalSpace, verticalSpace) {
+      function draw(cell, xSpace, ySpace, index) {
         const node = cell.datum();
-
-        const isEvenLevel = node.depth % 2 === 0;
         
+        // if leaf node
         if (node.depth === root.height) {
-          const maxCellSize = Math.min(verticalSpace, horizontalSpace);
+          const maxCellSize = Math.min(xSpace, ySpace);
           size.range([0, maxCellSize]);
 
           const stacked = stack([node.data.counts]);
@@ -101,6 +101,7 @@ function matrix() {
 
           cell.append('g')
               .attr('class', 'node')
+              .attr('transform', `translate(${(xSpace - sideLength) / 2},${(ySpace - sideLength) / 2})`)
             .selectAll('.segment')
             .data(mapped)
             .join('rect')
@@ -114,37 +115,44 @@ function matrix() {
           return;
         }
 
+        const isXSplit = node.depth % 2 === 0;
+
         const splitLabels = node.children.map(d => d.data.splitLabel);
         const scale = d3.scaleBand()
             .domain(splitLabels)
-            .range([0, isEvenLevel ? horizontalSpace : verticalSpace])
-            .padding(0.05);
+            .range([0, isXSplit ? xSpace : ySpace])
+            .padding(0.1);
 
-        let nextHorizontalSpace, nextVerticalSpace;
-
-        if (isEvenLevel) {
-          nextHorizontalSpace = scale.bandwidth();
-          nextVerticalSpace = verticalSpace;
-        } else {
-          nextHorizontalSpace = horizontalSpace;
-          nextVerticalSpace = scale.bandwidth();
-        }
+        const nextXSpace = isXSplit ? scale.bandwidth() : xSpace;
+        const nextYSpace = isXSplit ? ySpace : scale.bandwidth();
 
         cell.selectAll('.cell')
           .data(node.children)
           .join('g')
             .attr('class', 'cell')
             .attr('transform', d => {
-              const offset = scale(d.data.splitLabel);
-              if (isEvenLevel) {
-                return `translate(${offset},0)`;
-              } else {
-                return `translate(0,${offset})`;
-              }
+              const xOffset = isXSplit ? scale(d.data.splitLabel) : 0;
+              const yOffset = isXSplit ? 0 : scale(d.data.splitLabel);
+              return `translate(${xOffset},${yOffset})`;
             })
             .each(function(d, i, nodes) {
-              draw(d3.select(this), nextHorizontalSpace, nextVerticalSpace);
+              draw(d3.select(this), nextXSpace, nextYSpace, i);
             });
+
+        if (index === 0) {
+          const axis = isXSplit ? d3.axisTop(scale) : d3.axisLeft(scale);
+ 
+          const axisGroup = cell.append('g')
+              .attr('class', 'axis')
+              .call(axis)
+              .call(g => g.selectAll('.domain').remove())
+
+          if (!isXSplit) {
+            axisGroup.selectAll('text')
+                .attr('transform', 'rotate(-90,-9,0) translate(0,-5)')
+                .attr('text-anchor', 'middle')
+          }
+        }
       }
 
 
@@ -185,8 +193,6 @@ function matrix() {
               .attr('x', 0)
               .attr('y', (d, i) => `${i * 1.1}em`)
               .text(d => d);
-
-          console.log(tooltip);
 
           const {width: boxWidth, height: boxHeight} = text.node().getBBox();
           rect.attr('x', (-boxWidth / 2) - padding)
