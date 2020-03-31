@@ -8,6 +8,15 @@
  * https://observablehq.com/@d3/hierarchical-edge-bundling
  */
 
+import * as d3_array from "d3-array";
+import * as d3_all from "d3";
+
+const d3 = {...d3_array, ...d3_all};
+
+import { getCategoryColorLegend } from './util.js';
+
+export {nodelink as default };
+
 function nodelink() {
   let margin = {
     top: 50,
@@ -22,7 +31,7 @@ function nodelink() {
   function chart(selection) {
     const lightgray = '#d3d3d3';
 
-    selection.each(function({metadata, data}) {
+    selection.each(function({metadata, data, selectedFeatures}) {
       const maxNodeSize = 50;
       const root = prepareData();
       const {size, y, color} = getScales();
@@ -139,7 +148,7 @@ function nodelink() {
             .attr('height', d => d.height)
             .attr('fill', d => d.color);
 
-        const rowLabels = ['Root'].concat(metadata.selected);
+        const rowLabels = ['Root'].concat(selectedFeatures);
         const labels = root.path(root.leaves()[0])
           .map((d, i) => ({y: d.y, text: rowLabels[i]}));
 
@@ -227,6 +236,7 @@ function nodelink() {
     return chart;
   }
 
+  chart.kind = 'nodelink';
 
   return chart;
 }

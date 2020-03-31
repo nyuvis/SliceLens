@@ -8,6 +8,15 @@
  * https://observablehq.com/@d3/line-chart-with-tooltip
  */
 
+import * as d3_array from "d3-array";
+import * as d3_all from "d3";
+
+const d3 = {...d3_array, ...d3_all};
+
+import { getCategoryColorLegend } from './util.js';
+
+export { icicle as default };
+
 function icicle() {
   let margin = {
     top: 50,
@@ -20,7 +29,7 @@ function icicle() {
   let height = 600 - margin.top - margin.bottom;
 
   function chart(selection) {
-    selection.each(function({metadata, data}) {
+    selection.each(function({metadata, data, selectedFeatures}) {
       const root = prepareData();
       const {yScale, color} = getScales();
 
@@ -114,7 +123,7 @@ function icicle() {
             .attr('fill', d => color(d.label));
 
         const rowHeight = partitions.datum().y1 - partitions.datum().y0;
-        const rowLabels = ['Root'].concat(metadata.selected);
+        const rowLabels = ['Root'].concat(selectedFeatures);
 
         g.select('#row-labels')
           .selectAll('.row-label')
@@ -197,6 +206,8 @@ function icicle() {
     height = h - margin.top - margin.bottom;
     return chart;
   }
+
+  chart.kind = 'icicle';
 
   return chart;
 }

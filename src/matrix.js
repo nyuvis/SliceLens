@@ -4,6 +4,15 @@
  * References:
  */
 
+import * as d3_array from "d3-array";
+import * as d3_all from "d3";
+
+const d3 = {...d3_array, ...d3_all};
+
+import { getCategoryColorLegend } from './util.js';
+
+export {matrix as default };
+
 function matrix() {
   let margin = {
     top: 50,
@@ -219,6 +228,7 @@ function matrix() {
     return chart;
   }
 
+  chart.kind = 'matrix';
 
   return chart;
 }

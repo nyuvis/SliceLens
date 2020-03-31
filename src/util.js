@@ -1,3 +1,7 @@
+import * as d3 from "d3";
+
+export { getCategoryColorLegend };
+
 function getCategoryColorLegend(colorScale) {
   const size = 10;
  
