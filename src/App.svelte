@@ -53,5 +53,6 @@
   #controls {
     flex: 0 0 200px;
     background-color: #F5F5F5;
+    padding: 0 5px;
   }
 </style>
