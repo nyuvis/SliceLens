@@ -41,7 +41,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 </script>
 
 <div>
-  <h2>Features</h2>
+  <p class="control-label">Features</p>
   <div>
     {#each features as feature, i  (feature)}
       <div class="feature"
@@ -56,7 +56,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     {/each}
   </div>
 
-  <h2>Selected</h2>
+  <p class="control-label">Selected</p>
   <div id="selected-features" class:dragInProgress>
     {#each selected as feature, i (feature)}
       <div class="feature selected"
@@ -122,7 +122,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     justify-content: space-between;
   }
 
-  p {
+  .feature p {
     margin: 0;
     padding: 0;
   }

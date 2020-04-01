@@ -27,7 +27,7 @@
 </script>
 
 <div>
-  <h2>Dataset</h2>
+  <p class="control-label">Dataset</p>
   <select bind:value={selected} on:change={onchange}>
     {#each datasets as {value, display}}
       <option {value}>{display}</option>

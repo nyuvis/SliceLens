@@ -14,7 +14,7 @@
 </script>
 
 <div>
-  <h2>Splits</h2>
+  <p class="control-label">Splits</p>
   <select bind:value={split}>
     {#each splits as {value, display}}
       <option {value}>{display}</option>
