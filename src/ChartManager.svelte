@@ -34,7 +34,7 @@
   });
 
   $: if (selection !== undefined) {
-    chart.size([1000, 600]);
+    chart.size([width, height]);
     selection.datum({metadata, data, selectedFeatures})
         .call(chart);
   }
@@ -46,6 +46,7 @@
 <style>
     #chart {
         flex: 1;
-        height: 100%;
+        width: 100%;
+        height: 100vh;
     }
 </style>

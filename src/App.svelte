@@ -21,19 +21,11 @@
   function onDatasetChange(e) {
     dataset = e.detail;
     selectedFeatures = [];
-
-    if (chartManagerComponent !== undefined) {
-      chartManagerComponent.clear();
-    }
-  }
-
-  function ontest() {
-    alert('test');
   }
 
 </script>
 
-<main>
+<div id="container">
   <div id="controls">
     <DatasetSelector on:update={onDatasetChange}/>
     <FeatureSelector {features} bind:selected={selectedFeatures}/>
@@ -50,16 +42,16 @@
     {label}
     bind:this={chartManagerComponent}
   />
-</main>
+</div>
 
 <style>
+  #container {
+		display: flex;
+		height: 100%;
+  }
+  
   #controls {
     flex: 0 0 200px;
     background-color: #F5F5F5;
   }
-
-  main {
-		display: flex;
-		height: 100%;
-	}
 </style>

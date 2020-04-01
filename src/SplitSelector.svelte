@@ -4,7 +4,7 @@
   const dispatch = createEventDispatcher();
 
   const splits = [
-    { value: 'interval', display: 'Equal Interval' },
+    { value: 'interval', display: 'Equal Intervals' },
     { value: 'quantile', display: 'Quantiles' }
   ];
 
