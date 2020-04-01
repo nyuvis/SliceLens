@@ -28,9 +28,13 @@
 <div id="container">
   <div id="controls">
     <DatasetSelector on:update={onDatasetChange}/>
-    <FeatureSelector {features} bind:selected={selectedFeatures}/>
     <SplitSelector on:update={e => splitType = e.detail}/>
     <ChartSelector on:update={e => chart = e.detail}/>
+    <FeatureSelector {features}
+      {dataset}
+      {splitType}
+      {label}
+      bind:selected={selectedFeatures}/>
   </div>
 
   <ChartManager

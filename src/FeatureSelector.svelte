@@ -5,8 +5,21 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 -->
 
 <script>
+  import { getSuggestedFeature } from './FeatureSuggester.js';
+
   export let features = [];
   export let selected = [];
+
+  export let dataset = [];
+  export let splitType = '';
+  export let label = '';
+  
+  let criterion = 'purity';
+  let criteria = [
+    { value: 'purity', display: 'Purity' },
+  ];
+  let suggestion = '';
+  $: suggestion = getSuggestedFeature(features, selected, dataset, label, splitType, criterion);
 
   let dragInProgress = false;
   let draggingOver = null;
@@ -41,10 +54,19 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 </script>
 
 <div>
+  <p class="control-label">Suggestion Criteria</p>
+  <div>
+    <select bind:value={criterion}>
+      {#each criteria as {value, display}}
+        <option {value}>{display}</option>
+      {/each}
+    </select>
+  </div>
+
   <p class="control-label">Features</p>
   <div>
     {#each features as feature, i  (feature)}
-      <div class="feature"
+      <div class="feature all"
         id={feature}
         draggable=true
         on:dragstart={startHandler}
@@ -52,6 +74,14 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         on:click={() => featureClickHandler(feature)}
       >
         <p>{feature}</p>
+        {#if feature === suggestion}
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z"/>
+            <path d="M3 12h1M12 3v1M20 12h1M5.6 5.6l.7 .7M18.4 5.6l-.7 .7" />
+            <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+            <line x1="9.7" y1="17" x2="14.3" y2="17" />
+          </svg>
+        {/if}
       </div>
     {/each}
   </div>
@@ -128,8 +158,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   }
 
   .icon-tabler-trash {
-    width: 1em;
-    height: 1em;
     visibility: hidden;
   }
 
@@ -140,5 +168,15 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   .selected:hover .icon-tabler-trash:hover {
     color: red;
+  }
+
+  .all {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .icon-tabler {
+    width: 1em;
+    height: 1em;
   }
 </style>
