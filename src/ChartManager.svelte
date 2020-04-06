@@ -11,21 +11,24 @@
   export let data;
   export let selectedFeatures;
 
-  let width;
-  let height;
+  let width = 800;
+  let height = 600;
 
-  let div;
+  $: console.log(width);
+  $: console.log(height);
+
+  let svg;
   let selection;
 
   // this feels like a hack
   // the intention is to clear the visualization when the dataset
   // or visualization type changes
-  $: if ((dataset.length > 0 || chart) && selection !== undefined) {
-    selection.select('svg').remove();
+  $: if ((dataset.length > 0 || chart) && svg !== undefined) {
+    svg.innerHTML = '';
   }
 
   onMount(() => {
-    selection = d3.select(div);
+    selection = d3.select(svg);
   });
 
   $: if (selection !== undefined) {
@@ -35,14 +38,18 @@
   }
 </script>
 
-<div bind:this={div} id="chart" bind:clientWidth={width} bind:clientHeight={height}>
+<div id="chart" bind:clientWidth={width} bind:clientHeight={height}>
+  <svg bind:this={svg}></svg>
 </div>
 
 <style>
     #chart {
         flex: 1;
-        width: 100%;
         height: 100vh;
-        margin: 0px;
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
     }
 </style>

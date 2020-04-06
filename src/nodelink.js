@@ -36,25 +36,22 @@ function nodelink() {
       const root = prepareData();
       const {size, y, color} = getScales();
 
-      const svg = d3.select(this)
-        .selectAll('svg')
+      const g = d3.select(this)
+        .selectAll('#vis-group')
         .data([root])
-        .join(enter => enter.append('svg')
-              .call(svg => svg.append('g').attr('id', 'vis-group')
-                  .call(g => g.append('g').attr('id', 'tree')
-                    .call(tree => tree.append('g').attr('id', 'links'))
-                    .call(tree => tree.append('g').attr('id', 'nodes')))
-                  .call(g => g.append('g').attr('id', 'row-labels'))
-                  .call(g => g.append(() => getCategoryColorLegend(color))
-                      .attr('transform', `translate(0,${-margin.top + 10})`))
-                  .call(g => g.append('g')
-                      .attr('id', 'tooltip')
-                      .attr('pointer-events', 'none'))))
-          .attr('width', width + margin.left + margin.right)
-          .attr('height', height + margin.top + margin.bottom);
-
-      const g = svg.select('#vis-group')
-          .attr('transform', `translate(${margin.left},${margin.top})`);
+        .join(enter => enter.append('g')
+            .attr('id', 'vis-group')
+            .attr('transform', `translate(${margin.left},${margin.top})`)
+            .call(g => g.append('g').attr('id', 'tree')
+              .call(tree => tree.append('g').attr('id', 'links'))
+              .call(tree => tree.append('g').attr('id', 'nodes')))
+            .call(g => g.append('g').attr('id', 'row-labels'))
+            .call(g => g.append(() => getCategoryColorLegend(color))
+                .attr('transform', `translate(0,${-margin.top + 10})`))
+            .call(g => g.append('g')
+                .attr('id', 'tooltip')
+                .attr('font-size', '12px')
+                .attr('pointer-events', 'none')));
       
       draw();
       
@@ -161,7 +158,7 @@ function nodelink() {
             .attr('text-anchor', 'end')
             .text(d => d.text);
 
-        const tooltip = svg.select('#tooltip');
+        const tooltip = g.select('#tooltip');
 
         nodes.on('mousemove', function() {
           const [x, y] = d3.mouse(g.node());
