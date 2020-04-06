@@ -7,14 +7,12 @@ const d3 = {...d3_array, ...d3_all};
 
 export { getSuggestedFeature };
 
-function getSuggestedFeature(featureNames, selected, dataset, label, splitType, criterion) {
-  const available = featureNames.filter(d => !selected.includes(d));
-
-  if (available.length === 0) {
+function getSuggestedFeature(featureNames, selected, criterion, metadata, dataset) {
+  if (criterion === 'none') {
     return '';
   }
 
-  const metadata = getMetadata(featureNames, dataset, label, splitType);
+  const available = featureNames.filter(d => !selected.includes(d));
 
   let suggestion = '';
   let maxPurity = 0;

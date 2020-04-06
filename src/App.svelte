@@ -5,18 +5,22 @@
   import SplitSelector from './SplitSelector.svelte';
   import ChartSelector from './ChartSelector.svelte';
   import ChartManager from './ChartManager.svelte';
+  import {getMetadata, getData} from './DataTransformer.js';
 
   import matrix from './matrix.js';
 
   let chartManagerComponent;
 
-  let dataset;
-  let selectedFeatures;
-  let splitType;
-  let chart;
+  let dataset = [];
+  let selectedFeatures = [];
+  let splitType = '';
+  let chart = matrix();
   
-  $: features = dataset && dataset.columns ? dataset.columns.slice(0, -1) : [];
-  $: label = dataset && dataset.columns ? dataset.columns[dataset.columns.length - 1] : '';
+  $: features = dataset.columns ? dataset.columns.slice(0, -1) : [];
+  $: label = dataset.columns ? dataset.columns[dataset.columns.length - 1] : '';
+
+  $: metadata = getMetadata(features, dataset, label, splitType);
+  $: data = getData(metadata.features, selectedFeatures, dataset);
 
   function onDatasetChange(e) {
     dataset = e.detail;
@@ -31,19 +35,17 @@
     <SplitSelector on:update={e => splitType = e.detail}/>
     <ChartSelector on:update={e => chart = e.detail}/>
     <FeatureSelector {features}
+      {metadata}
       {dataset}
-      {splitType}
-      {label}
       bind:selected={selectedFeatures}/>
   </div>
 
   <ChartManager
     {dataset}
-    {splitType}
     {chart}
+    {metadata}
+    {data}
     {selectedFeatures}
-    featureNames={features}
-    {label}
     bind:this={chartManagerComponent}
   />
 </div>
@@ -56,7 +58,7 @@
   
   #controls {
     flex: 0 0 200px;
-    background-color: #F5F5F5;
-    padding: 0 5px;
+    background-color: #E5E5E5;
+    padding: 5px 15px;
   }
 </style>

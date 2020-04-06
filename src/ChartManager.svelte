@@ -3,18 +3,13 @@
   import matrix from './matrix.js';
   import icicle from './icicle.js';
   import nodelink from './nodelink.js';
-  import {getMetadata, getData} from './DataTransformer.js';
-  import * as d3 from "d3";
+  import * as d3 from 'd3';
 
-  export let dataset = [];
-  export let featureNames = [];
-  export let selectedFeatures = [];
-  export let splitType = 'interval';
-  export let chart = nodelink();
-  export let label = '';
-
-  $: metadata = getMetadata(featureNames, dataset, label, splitType);
-  $: data = getData(metadata.features, selectedFeatures, dataset);
+  export let dataset;
+  export let chart;
+  export let metadata;
+  export let data;
+  export let selectedFeatures;
 
   let width;
   let height;
@@ -48,5 +43,6 @@
         flex: 1;
         width: 100%;
         height: 100vh;
+        margin: 0px;
     }
 </style>

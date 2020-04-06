@@ -10,19 +10,23 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   export let features = [];
   export let selected = [];
 
-  export let dataset = [];
-  export let splitType = '';
-  export let label = '';
+  export let metadata;
+  export let dataset;
   
   let criterion = 'purity';
+  
   let criteria = [
     { value: 'purity', display: 'Purity' },
+    { value: 'none', display: 'None'},
   ];
+
   let suggestion = '';
-  $: suggestion = getSuggestedFeature(features, selected, dataset, label, splitType, criterion);
+  $: suggestion = getSuggestedFeature(features, selected, criterion, metadata, dataset);
 
   let dragInProgress = false;
-  let draggingOver = null;
+  let draggingOverFeature = null;
+
+  $: console.log(draggingOverFeature);
 
   function dropHandler(event, i) {
     const item = JSON.parse(event.dataTransfer.getData("text"));
@@ -39,10 +43,10 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   function endHandler() {
     dragInProgress = false;
-    draggingOver = null;
+    draggingOverFeature = null;
   }
 
-  function featureClickHandler(feature) {
+  function plusClickHandler(feature) {
     if (!selected.includes(feature)) {
       selected = [...selected, feature];
     }
@@ -64,30 +68,49 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   </div>
 
   <p class="control-label">Features</p>
-  <div>
+  <div class="feature-box">
     {#each features as feature, i  (feature)}
       <div class="feature all"
         id={feature}
         draggable=true
         on:dragstart={startHandler}
         on:dragend={endHandler}
-        on:click={() => featureClickHandler(feature)}
       >
-        <p>{feature}</p>
-        {#if feature === suggestion}
-          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-            <path stroke="none" d="M0 0h24v24H0z"/>
-            <path d="M3 12h1M12 3v1M20 12h1M5.6 5.6l.7 .7M18.4 5.6l-.7 .7" />
-            <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
-            <line x1="9.7" y1="17" x2="14.3" y2="17" />
-          </svg>
-        {/if}
+        <p>
+          {feature}
+          {#if feature === suggestion}
+            <!-- light bulb icon -->
+            <svg xmlns="http://www.w3.org/2000/svg"
+              class="icon icon-tabler icon-tabler-bulb"
+              width="24" height="24" viewBox="0 0 24 24"
+              stroke-width="2" stroke="currentColor" fill="none"
+              stroke-linecap="round" stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z"/>
+              <path d="M3 12h1M12 3v1M20 12h1M5.6 5.6l.7 .7M18.4 5.6l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+          {/if}
+        </p>
+        <!-- plus icon -->
+        <svg xmlns="http://www.w3.org/2000/svg"
+          class="icon icon-tabler icon-tabler-plus"
+          width="24" height="24" viewBox="0 0 24 24"
+          stroke-width="2" stroke="currentColor" fill="none"
+          stroke-linecap="round" stroke-linejoin="round"
+          on:click={() => plusClickHandler(feature)}
+        >
+          <path stroke="none" d="M0 0h24v24H0z"/>
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
       </div>
     {/each}
   </div>
 
   <p class="control-label">Selected</p>
-  <div id="selected-features" class:dragInProgress>
+  <div id="selected-features" class="feature-box" class:dragInProgress>
     {#each selected as feature, i (feature)}
       <div class="feature selected"
         id={feature}
@@ -96,11 +119,12 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         on:drop|preventDefault={e => dropHandler(e, i)}
         on:dragstart={startHandler}
         on:dragend={endHandler}
-        on:dragenter={() => draggingOver = feature}
-        on:dragleave={() => draggingOver = null}
-        class:draggingOver={draggingOver === feature}
+        on:dragenter={() => draggingOverFeature = feature}
+        on:dragleave={() => draggingOverFeature = null}
+        class:draggingOverFeature={draggingOverFeature === feature}
       >
         <p>{feature}</p>
+        <!-- trash can icon -->
         <svg xmlns="http://www.w3.org/2000/svg"
           class="icon icon-tabler icon-tabler-trash"
           width="24" height="24" viewBox="0 0 24 24"
@@ -126,30 +150,23 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 </div>
 
 <style>
-  .draggingOver {
-    font-weight: bold;
+  .feature-box {
+    background-color: white;
+    font-size: 14px;
+    border-radius: 5px;
+    padding: 5px;
   }
 
-  .draggingOver * {
-    pointer-events: none;
+  .feature {
+    display: flex;
+    justify-content: space-between;
+    /* if features are right next to eachother then
+    highlighting drop placement doesn't work */
+    margin-bottom: 3px;
   }
 
   .feature:hover {
     font-weight: bold;
-  }
-
-  .placeHolder {
-    height: 1.5em;
-  }
-
-  .dragInProgress {
-    background-color: white;
-  }
-
-  .selected {
-    margin-top: 5px;
-    display: flex;
-    justify-content: space-between;
   }
 
   .feature p {
@@ -157,11 +174,41 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     padding: 0;
   }
 
-  .icon-tabler-trash {
+  .selected p {
+    pointer-events: none;
+  }
+
+  .placeHolder {
+    height: 1.5em;
+  }
+
+  /* dragging */
+
+  .draggingOverFeature {
+    font-weight: bold;
+  }
+
+  .draggingOverFeature * {
+    pointer-events: none;
+  }
+
+  .dragInProgress {
+    border: 1px solid black;
+  }
+
+  /* icons */
+
+  .icon-tabler {
+    width: 1em;
+    height: 1em;
+    vertical-align: top;
+  }
+
+  .icon-tabler-trash, .icon-tabler-plus {
     visibility: hidden;
   }
 
-  .selected:hover .icon-tabler-trash {
+  .selected:hover .icon-tabler-trash, .all:hover .icon-tabler-plus {
     visibility: visible;
     color: black;
   }
@@ -170,13 +217,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     color: red;
   }
 
-  .all {
-    display: flex;
-    justify-content: space-between;
-  }
-
-  .icon-tabler {
-    width: 1em;
-    height: 1em;
+  .all:hover .icon-tabler-plus:hover {
+    color: green;
   }
 </style>

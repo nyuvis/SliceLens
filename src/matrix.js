@@ -36,7 +36,7 @@ function matrix() {
               .call(svg => svg.append('g').attr('id', 'vis-group')
                   .call(g => g.append('g').attr('id', 'vis'))
                   .call(g => g.append(() => getCategoryColorLegend(color))
-                      .attr('transform', `translate(0,${-margin.top})`))
+                      .attr('transform', `translate(0,${-margin.top + 10})`))
                   .call(g => g.append('g')
                       .attr('id', 'tooltip')
                       .attr('pointer-events', 'none'))))

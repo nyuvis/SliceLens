@@ -41,7 +41,7 @@ function icicle() {
                   .call(g => g.append('g').attr('id', 'tree'))
                   .call(g => g.append('g').attr('id', 'row-labels'))
                   .call(g => g.append(() => getCategoryColorLegend(color))
-                      .attr('transform', `translate(0,${-margin.top})`))
+                      .attr('transform', `translate(0,${-margin.top + 10})`))
                   .call(g => g.append('g')
                       .attr('id', 'tooltip')
                       .attr('pointer-events', 'none'))))
