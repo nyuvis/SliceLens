@@ -8,6 +8,15 @@
  * https://observablehq.com/@d3/line-chart-with-tooltip
  */
 
+import * as d3_array from "d3-array";
+import * as d3_all from "d3";
+
+const d3 = {...d3_array, ...d3_all};
+
+import { getCategoryColorLegend } from './util.js';
+
+export { icicle as default };
+
 function icicle() {
   let margin = {
     top: 50,
@@ -20,27 +29,24 @@ function icicle() {
   let height = 600 - margin.top - margin.bottom;
 
   function chart(selection) {
-    selection.each(function({metadata, data}) {
+    selection.each(function({metadata, data, selectedFeatures}) {
       const root = prepareData();
       const {yScale, color} = getScales();
 
-      const svg = d3.select(this)
-        .selectAll('svg')
+      const g = d3.select(this)
+        .selectAll('#vis-group')
         .data([root])
-        .join(enter => enter.append('svg')
-              .call(svg => svg.append('g').attr('id', 'vis-group')
-                  .call(g => g.append('g').attr('id', 'tree'))
-                  .call(g => g.append('g').attr('id', 'row-labels'))
-                  .call(g => g.append(() => getCategoryColorLegend(color))
-                      .attr('transform', `translate(0,${-margin.top})`))
-                  .call(g => g.append('g')
-                      .attr('id', 'tooltip')
-                      .attr('pointer-events', 'none'))))
-          .attr('width', width + margin.left + margin.right)
-          .attr('height', height + margin.top + margin.bottom);
-
-      const g = svg.select('#vis-group')
-          .attr('transform', `translate(${margin.left},${margin.top})`);
+        .join(enter => enter.append('g')
+            .attr('id', 'vis-group')
+            .attr('transform', `translate(${margin.left},${margin.top})`)
+            .call(g => g.append('g').attr('id', 'tree'))
+            .call(g => g.append('g').attr('id', 'row-labels'))
+            .call(g => g.append(() => getCategoryColorLegend(color))
+                .attr('transform', `translate(0,${-margin.top + 10})`))
+            .call(g => g.append('g')
+                .attr('id', 'tooltip')
+                .attr('font-size', '12px')
+                .attr('pointer-events', 'none')));
 
       draw();
 
@@ -114,7 +120,7 @@ function icicle() {
             .attr('fill', d => color(d.label));
 
         const rowHeight = partitions.datum().y1 - partitions.datum().y0;
-        const rowLabels = ['Root'].concat(metadata.selected);
+        const rowLabels = ['Root'].concat(selectedFeatures);
 
         g.select('#row-labels')
           .selectAll('.row-label')
@@ -125,7 +131,7 @@ function icicle() {
             .attr('text-anchor', 'end')
             .text(d => d);
 
-        const tooltip = svg.select('#tooltip');
+        const tooltip = g.select('#tooltip');
 
         partitions.on('mousemove', function() {
           const [x, y] = d3.mouse(g.node());
@@ -197,6 +203,8 @@ function icicle() {
     height = h - margin.top - margin.bottom;
     return chart;
   }
+
+  chart.kind = 'icicle';
 
   return chart;
 }

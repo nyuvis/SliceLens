@@ -4,6 +4,15 @@
  * References:
  */
 
+import * as d3_array from "d3-array";
+import * as d3_all from "d3";
+
+const d3 = {...d3_array, ...d3_all};
+
+import { getCategoryColorLegend } from './util.js';
+
+export {matrix as default };
+
 function matrix() {
   let margin = {
     top: 50,
@@ -20,22 +29,19 @@ function matrix() {
       const root = prepareData();
       const {color, size, y} = getScales();
 
-      const svg = d3.select(this)
-        .selectAll('svg')
+      const g = d3.select(this)
+        .selectAll('#vis-group')
         .data([root])
-        .join(enter => enter.append('svg')
-              .call(svg => svg.append('g').attr('id', 'vis-group')
-                  .call(g => g.append('g').attr('id', 'vis'))
-                  .call(g => g.append(() => getCategoryColorLegend(color))
-                      .attr('transform', `translate(0,${-margin.top})`))
-                  .call(g => g.append('g')
-                      .attr('id', 'tooltip')
-                      .attr('pointer-events', 'none'))))
-          .attr('width', width + margin.left + margin.right)
-          .attr('height', height + margin.top + margin.bottom);
-
-      const g = svg.select('#vis-group')
-          .attr('transform', `translate(${margin.left},${margin.top})`);
+        .join(enter => enter.append('g')
+            .attr('id', 'vis-group')
+            .attr('transform', `translate(${margin.left},${margin.top})`)
+            .call(g => g.append('g').attr('id', 'vis'))
+            .call(g => g.append(() => getCategoryColorLegend(color))
+                .attr('transform', `translate(0,${-margin.top + 10})`))
+            .call(g => g.append('g')
+                .attr('id', 'tooltip')
+                .attr('font-size', '12px')
+                .attr('pointer-events', 'none')));
 
       const stack = d3.stack()
           .keys(metadata.labelValues)
@@ -157,7 +163,7 @@ function matrix() {
 
 
       function setupTooltips() {
-        const tooltip = svg.select('#tooltip');
+        const tooltip = g.select('#tooltip');
 
         d3.selectAll('.node').on('mousemove', function() {
           const [x, y] = d3.mouse(g.node());
@@ -219,6 +225,7 @@ function matrix() {
     return chart;
   }
 
+  chart.kind = 'matrix';
 
   return chart;
 }
