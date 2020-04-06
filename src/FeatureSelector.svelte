@@ -26,8 +26,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   let dragInProgress = false;
   let draggingOverFeature = null;
 
-  $: console.log(draggingOverFeature);
-
   function dropHandler(event, i) {
     const item = JSON.parse(event.dataTransfer.getData("text"));
     const filtered = selected.filter(d => d !== item.id);
@@ -160,6 +158,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   .feature {
     display: flex;
     justify-content: space-between;
+    cursor: move;
     /* if features are right next to eachother then
     highlighting drop placement doesn't work */
     margin-bottom: 3px;
@@ -172,9 +171,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   .feature p {
     margin: 0;
     padding: 0;
-  }
-
-  .selected p {
     pointer-events: none;
   }
 
@@ -206,6 +202,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   .icon-tabler-trash, .icon-tabler-plus {
     visibility: hidden;
+    cursor: pointer;
   }
 
   .selected:hover .icon-tabler-trash, .all:hover .icon-tabler-plus {
