@@ -5,8 +5,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 -->
 
 <script>
-  import FeatureSuggesterWorker from 'web-worker:./FeatureSuggesterWorker';
-  import { dataset, metadata, selectedFeatures } from './stores.js';
+  import FeatureSuggesterWorker from 'web-worker:../FeatureSuggesterWorker';
+  import { dataset, metadata, selectedFeatures } from '../stores.js';
   import { get } from 'svelte/store';
 
   let features = [];

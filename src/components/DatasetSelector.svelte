@@ -1,6 +1,6 @@
 <script>
   import { onMount, createEventDispatcher } from 'svelte';
-  import { dataset, selectedFeatures } from './stores.js';
+  import { dataset, selectedFeatures } from '../stores.js';
   import * as d3 from "d3";
 
   let selected = 'census';

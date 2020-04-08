@@ -4,7 +4,7 @@
   import SplitSelector from './SplitSelector.svelte';
   import ChartSelector from './ChartSelector.svelte';
   import ChartManager from './ChartManager.svelte';
-  import matrix from './matrix.js';
+  import matrix from '../visualization/matrix.js';
 
   let chart = matrix();
 

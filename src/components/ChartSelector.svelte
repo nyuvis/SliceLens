@@ -2,9 +2,9 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import * as d3 from "d3";
 
-  import icicle from './icicle.js';
-  import nodelink from './nodelink.js';
-  import matrix from './matrix.js';
+  import icicle from '../visualization/icicle.js';
+  import nodelink from '../visualization/nodelink.js';
+  import matrix from '../visualization/matrix.js';
 
   const dispatch = createEventDispatcher();
 

@@ -1,9 +1,9 @@
 <script>
   import { onMount } from 'svelte';
-  import { dataset, data, metadata, selectedFeatures } from './stores.js';
-  import matrix from './matrix.js';
-  import icicle from './icicle.js';
-  import nodelink from './nodelink.js';
+  import { dataset, data, metadata, selectedFeatures } from '../stores.js';
+  import matrix from '../visualization/matrix.js';
+  import icicle from '../visualization/icicle.js';
+  import nodelink from '../visualization/nodelink.js';
   import * as d3 from 'd3';
 
   export let chart;
