@@ -16,8 +16,9 @@
     "svelte": "^3.0.0"
   },
   "dependencies": {
-    "sirv-cli": "^0.4.4",
     "d3": "5.15.0",
-    "d3-array": "2.4.0"
+    "d3-array": "2.4.0",
+    "rollup-plugin-web-worker-loader": "^0.9.0",
+    "sirv-cli": "^0.4.4"
   }
 }

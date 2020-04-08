@@ -1,53 +1,24 @@
 <script>
-  import { onMount } from 'svelte';
   import DatasetSelector from './DatasetSelector.svelte';
   import FeatureSelector from './FeatureSelector.svelte';
   import SplitSelector from './SplitSelector.svelte';
   import ChartSelector from './ChartSelector.svelte';
   import ChartManager from './ChartManager.svelte';
-  import {getMetadata, getData} from './DataTransformer.js';
-
   import matrix from './matrix.js';
 
-  let chartManagerComponent;
-
-  let dataset = [];
-  let selectedFeatures = [];
-  let splitType = '';
   let chart = matrix();
-  
-  $: features = dataset.columns ? dataset.columns.slice(0, -1) : [];
-  $: label = dataset.columns ? dataset.columns[dataset.columns.length - 1] : '';
-
-  $: metadata = getMetadata(features, dataset, label, splitType);
-  $: data = getData(metadata.features, selectedFeatures, dataset);
-
-  function onDatasetChange(e) {
-    dataset = e.detail;
-    selectedFeatures = [];
-  }
 
 </script>
 
 <div id="container">
   <div id="controls">
-    <DatasetSelector on:update={onDatasetChange}/>
-    <SplitSelector on:update={e => splitType = e.detail}/>
+    <DatasetSelector/>
+    <SplitSelector/>
     <ChartSelector on:update={e => chart = e.detail}/>
-    <FeatureSelector {features}
-      {metadata}
-      {dataset}
-      bind:selected={selectedFeatures}/>
+    <FeatureSelector/>
   </div>
 
-  <ChartManager
-    {dataset}
-    {chart}
-    {metadata}
-    {data}
-    {selectedFeatures}
-    bind:this={chartManagerComponent}
-  />
+  <ChartManager {chart}/>
 </div>
 
 <style>

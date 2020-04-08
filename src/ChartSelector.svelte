@@ -15,8 +15,7 @@
   ];
 
   // since this is basically a form component,
-  // I wonder if componement binding would be okay here
-  // same with split selector
+  // I wonder if componement binding would be okay
   let chart = charts[0].value;
   $: dispatch('update', chart);
   onMount(() => dispatch('update', chart));

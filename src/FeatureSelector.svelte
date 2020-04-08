@@ -5,13 +5,14 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 -->
 
 <script>
-  import { getSuggestedFeature } from './FeatureSuggester.js';
+  import FeatureSuggesterWorker from 'web-worker:./FeatureSuggesterWorker';
+  import { dataset, metadata, selectedFeatures } from './stores.js';
+  import { get } from 'svelte/store';
 
-  export let features = [];
-  export let selected = [];
-
-  export let metadata;
-  export let dataset;
+  let features = [];
+  $: if ($metadata !== null) {
+    features = $metadata.featureNames;
+  }
   
   let criterion = 'purity';
   
@@ -21,16 +22,27 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   ];
 
   let suggestion = '';
-  $: suggestion = getSuggestedFeature(features, selected, criterion, metadata, dataset);
+  
+  const worker = new FeatureSuggesterWorker();
+  worker.onmessage = e => suggestion = e.data;
+
+  $: if ($dataset && $metadata !== null) {
+    worker.postMessage({
+      criterion,
+      selected: $selectedFeatures,
+      metadata: $metadata,
+      dataset: $dataset
+    });
+  }
 
   let dragInProgress = false;
   let draggingOverFeature = null;
 
   function dropHandler(event, i) {
     const item = JSON.parse(event.dataTransfer.getData("text"));
-    const filtered = selected.filter(d => d !== item.id);
+    const filtered = $selectedFeatures.filter(d => d !== item.id);
     filtered.splice(i, 0, item.id);
-    selected = filtered;
+    $selectedFeatures = filtered;
   }
 
   function startHandler(event) {
@@ -45,13 +57,13 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   }
 
   function plusClickHandler(feature) {
-    if (!selected.includes(feature)) {
-      selected = [...selected, feature];
+    if (!$selectedFeatures.includes(feature)) {
+      $selectedFeatures = [...$selectedFeatures, feature];
     }
   }
 
   function trashClickHandler(feature) {
-    selected = selected.filter(d => d !== feature);
+    $selectedFeatures = $selectedFeatures.filter(d => d !== feature);
   }
 </script>
 
@@ -109,7 +121,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   <p class="control-label">Selected</p>
   <div id="selected-features" class="feature-box" class:dragInProgress>
-    {#each selected as feature, i (feature)}
+    {#each $selectedFeatures as feature, i (feature)}
       <div class="feature selected"
         id={feature}
         draggable=true
@@ -141,7 +153,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     {/each}
     <div class="placeHolder"
       ondragover="return false"
-      on:drop|preventDefault={e => dropHandler(e, selected.length)}
+      on:drop|preventDefault={e => dropHandler(e, $selectedFeatures.length)}
     >
     </div>
   </div>

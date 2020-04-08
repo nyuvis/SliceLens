@@ -1,10 +1,9 @@
 <script>
   import { onMount, createEventDispatcher } from 'svelte';
+  import { dataset, selectedFeatures } from './stores.js';
   import * as d3 from "d3";
 
   let selected = 'census';
-
-  const dispatch = createEventDispatcher();
 
   const datasets = [
     { value: 'census', display: 'Census' },
@@ -13,7 +12,8 @@
 
   function load(name) {
     d3.csv(`../datasets/${name}.csv`, d3.autoType).then(data => {
-      dispatch('update', data);
+      $dataset = data;
+      $selectedFeatures = [];
     });
   }
 

@@ -5,7 +5,15 @@ const d3 = {...d3_array, ...d3_all};
 
 export { getMetadata, getData };
 
-function getMetadata(featureNames, dataset, label, splitType) {
+function getMetadata(dataset, splitType) {
+  if (!dataset || !dataset.columns) {
+    return null;
+  }
+
+  const cols = dataset.columns;
+  const featureNames = cols.slice(0, -1);
+  const label = cols[cols.length - 1];
+
   const labelValues = Array.from(new Set(dataset.map(d => d[label])));
 
   const numBins = 3;
@@ -22,32 +30,19 @@ function getMetadata(featureNames, dataset, label, splitType) {
       feature.values = verbs;
       
       const extent = d3.extent(values);
-      
-      const equalInterval = d3.bin()
-          .value(d => d[val])
-          .domain(extent)
-          .thresholds(equalIntervalThresholds(extent));
-      
-      const quantiles = d3.bin()
-          .value(d => d[val])
-          .domain(extent)
-          .thresholds(quantileThresholds(values));
+      feature.extent = extent;
 
-      feature.split = data => {
-        if (splitType === 'interval') {
-          return equalInterval(data);
-        } else {
-          return quantiles(data);
-        }
+      if (splitType === 'interval') {
+        feature.thresholds = equalIntervalThresholds(extent);
+      } else {
+        feature.thresholds = quantileThresholds(values);
       }
     } else if (values[0] instanceof Date) {
       feature.type = 'T';
+      // TODO: handle dates
     } else {
       feature.values = Array.from(new Set(values));
       feature.type = 'C';
-      feature.split = data => {
-        return d3.groups(data, d => d[val]).map(d => d[1]);
-      }
     }
 
     acc[val] = feature;
@@ -56,9 +51,10 @@ function getMetadata(featureNames, dataset, label, splitType) {
   }, {});
 
   return {
-    'features': features,
-    'label': label,
-    'labelValues': labelValues,
+    features: features,
+    featureNames: featureNames,
+    label: label,
+    labelValues: labelValues,
   }
 
   function equalIntervalThresholds([min, max]) {
@@ -75,7 +71,11 @@ function getMetadata(featureNames, dataset, label, splitType) {
   }
 }
 
-function getData(features, selectedFeatures, dataset) {
+function getData(metadata, selectedFeatures, dataset) {
+  if (metadata === null) {
+    return null;
+  }
+
   return splitData(dataset, 0, '', '');
       
   function splitData(data, index, splitFeature, splitLabel) {
@@ -85,9 +85,20 @@ function getData(features, selectedFeatures, dataset) {
 
     if (index < selectedFeatures.length) {
       const nextFeatureName = selectedFeatures[index];
-      const nextFeature = features[nextFeatureName];
-      const splits = nextFeature.split(data);
+      const nextFeature = metadata.features[nextFeatureName];
+      let splits;
 
+      if (nextFeature.type === 'Q') {
+        const bin = d3.bin()
+            .value(d => d[nextFeatureName])
+            .domain(nextFeature.extent)
+            .thresholds(nextFeature.thresholds);
+        splits = bin(data);
+      } else if (nextFeature.type === 'C') {
+        splits = d3.groups(data, d => d[nextFeatureName])
+            .map(d => d[1]);
+      }
+  
       node.children = splits
           .map((d, i) => splitData(d, index + 1, nextFeatureName, nextFeature.values[i]))
           .filter(d => d !== undefined);
