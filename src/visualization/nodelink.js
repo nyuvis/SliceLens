@@ -27,6 +27,8 @@ function nodelink() {
   
   let width = 800 - margin.left - margin.right;
   let height = 600 - margin.top - margin.bottom;
+
+  let showPredictions = false;
   
   function chart(selection) {
     const lightgray = '#d3d3d3';
@@ -34,7 +36,7 @@ function nodelink() {
     selection.each(function({metadata, data, selectedFeatures}) {
       const maxNodeSize = 50;
       const root = prepareData();
-      const {size, y, color} = getScales();
+      const {size, y, color, incorrectScale} = getScales();
 
       const g = d3.select(this)
         .selectAll('#vis-group')
@@ -74,11 +76,13 @@ function nodelink() {
 
         const y = d3.scaleLinear();
 
+        const incorrectScale = d3.scaleLinear();
+
         const color = d3.scaleOrdinal()
             .domain(metadata.labelValues)
             .range(d3.schemeCategory10);
      
-        return {size, y, color};
+        return {size, y, color, incorrectScale};
       }
 
       function draw() {
@@ -100,9 +104,10 @@ function nodelink() {
             });
 
         const nodes = g.select('#nodes')
-          .selectAll('g')
+          .selectAll('.node')
           .data(root.descendants())
           .join(enter => enter.append('g')
+              .attr('class', 'node')
               .call(g => g.append('text')
                   .attr('font-size', 10)
                   .attr('text-anchor', 'end')
@@ -112,38 +117,79 @@ function nodelink() {
                   .text(d => d.depth === 0 ? '' : d.data.splitLabel)))
             .attr('transform', d => `translate(${d.x},${d.y})`);
 
-        nodes.selectAll('.segment')
+        const segments = nodes.selectAll('.segment')
           .data(d => {
             const stack = d3.stack()
                 .keys(metadata.labelValues)
                 .value((d, key) => d.get(key));
 
-            const stacked = stack([d.data.counts]);
+            const counts = showPredictions ?
+                d.data.predictionCounts :
+                d.data.counts;
+  
+            const stacked = stack([counts]);
 
             const mapped = stacked.map(b => {
+              const label = b.key;
               const sideLength = size(d.value);
               const pos = b[0];
 
               y.domain([0, d.value]).range([0, sideLength]);
 
-              return {
+              const rect = {
                 width: sideLength,
                 height: y(pos[1]) - y(pos[0]),
                 x: -sideLength / 2,
                 y: y(pos[0]),
-                color: color(b.key),
+                color: color(label),
+                label: label,
+                count: counts.get(label),
+              };
+
+              if (showPredictions) {
+                const predictionResults = d.data.predictionResults.get(label);
+                if (predictionResults !== undefined && predictionResults.has('incorrect')) {
+                  rect.incorrect = predictionResults.get('incorrect');
+                } else {
+                  rect.incorrect = 0;
+                }
               }
+
+              return rect;
             });
 
             return mapped;
           })
+          .join(enter => enter.append('g')
+              .attr('class', 'segment')
+              .call(g => g.append('rect')
+                  .attr('class', 'class-rect')))
+            .attr('transform', d => `translate(${d.x},${d.y})`);
+
+        segments.select('.class-rect')
+            .attr('height', d => d.height)
+            .attr('width', d => d.width)
+            .attr('fill', d => d.color);
+
+        segments.selectAll('.incorrect')
+          .data(d => {
+            if (!showPredictions) {
+              return [];
+            }
+
+            incorrectScale.domain([0, d.count])
+                .range([0, d.height]);
+
+            return [{
+              width: d.width,
+              height: incorrectScale(d.incorrect),
+            }];
+          })
           .join('rect')
-            .attr('class', 'segment')
-            .attr('x', d => d.x)
-            .attr('y', d => d.y)
+            .attr('class', 'incorrect')
             .attr('width', d => d.width)
             .attr('height', d => d.height)
-            .attr('fill', d => d.color);
+            .attr('fill', 'url(#stripes)');
 
         const rowLabels = ['Root'].concat(selectedFeatures);
         const labels = root.path(root.leaves()[0])
@@ -225,11 +271,16 @@ function nodelink() {
     });
   }
 
-
   chart.size = function([w, h]) {
     if (!arguments.length) return [width, height];
     width = w - margin.left - margin.right;
     height = h - margin.top - margin.bottom;
+    return chart;
+  }
+
+  chart.showPredictions = function(p) {
+    if (!arguments.length) return showPredictions;
+    showPredictions = p;
     return chart;
   }
 

@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { dataset, data, metadata, selectedFeatures } from '../stores.js';
   import matrix from '../visualization/matrix.js';
   import icicle from '../visualization/icicle.js';
@@ -7,6 +7,7 @@
   import * as d3 from 'd3';
 
   export let chart;
+  export let showPredictions;
 
   let width = 800;
   let height = 600;
@@ -14,9 +15,7 @@
   let svg;
   let selection;
 
-  // this feels like a hack
-  // the intention is to clear the visualization when the dataset
-  // or visualization type changes
+  // clear the visualization when dataset or chart type changes
   $: if (($dataset.length > 0 || chart) && svg !== undefined) {
     svg.innerHTML = '';
   }
@@ -25,8 +24,11 @@
     selection = d3.select(svg);
   });
 
+  // TODO: better ways to keep showPredictions and $metadata.hasPredictions in sync?
   $: if (selection !== undefined && $data !== null) {
-    chart.size([width, height]);
+    chart
+      .size([width, height])
+      .showPredictions(showPredictions && $metadata.hasPredictions);
     
     const chartData = {
       metadata: $metadata,
@@ -34,13 +36,21 @@
       selectedFeatures: $selectedFeatures
     };
 
-    selection.datum(chartData)
-        .call(chart);
+    tick().then(() => {
+      selection.datum(chartData)
+        .call(chart)
+    });
   }
 </script>
 
 <div id="chart" bind:clientWidth={width} bind:clientHeight={height}>
-  <svg bind:this={svg}></svg>
+  <svg>
+    <!-- https://stackoverflow.com/questions/13069446/simple-fill-pattern-in-svg-diagonal-hatching -->
+    <pattern id="stripes" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="0" y2="10" style="stroke:white; stroke-width:10" />  
+    </pattern>
+    <g bind:this={svg}></g>
+  </svg>
 </div>
 
 <style>

@@ -11,10 +11,12 @@ function getMetadata(dataset, splitType) {
   }
 
   const cols = dataset.columns;
-  const featureNames = cols.slice(0, -1);
-  const label = cols[cols.length - 1];
 
+  const label = 'label';
   const labelValues = Array.from(new Set(dataset.map(d => d[label])));
+  
+  const featureNames = cols.filter(d => d !== 'label' && d !== 'prediction');
+  const hasPredictions = cols.includes('prediction');
 
   const numBins = 3;
   const verbs = ['low', 'medium', 'high'];
@@ -55,6 +57,7 @@ function getMetadata(dataset, splitType) {
     featureNames: featureNames,
     label: label,
     labelValues: labelValues,
+    hasPredictions: hasPredictions,
   }
 
   function equalIntervalThresholds([min, max]) {
@@ -63,7 +66,6 @@ function getMetadata(dataset, splitType) {
         .map(d => min + d * binSize);
     return thresholds;
   }
-
 
   function quantileThresholds(values) {
     return d3.range(1, numBins)
@@ -82,6 +84,23 @@ function getData(metadata, selectedFeatures, dataset) {
     const counts = d3.rollup(data, v => v.length, d => d.label);
 
     const node = {counts, splitFeature, splitLabel};
+
+    if (metadata.hasPredictions) {
+      const predictionCounts = d3.rollup(data, v => v.length, d => d.prediction);
+  
+      const predictionResults = d3.rollup(data,
+        v => d3.rollup(v, g => g.length, p => {
+          if (p.prediction === p.label) {
+            return 'correct';
+          } else {
+            return 'incorrect';
+          }
+        }),
+        d => d.prediction);
+
+      node.predictionCounts = predictionCounts;
+      node.predictionResults = predictionResults;
+    }
 
     if (index < selectedFeatures.length) {
       const nextFeatureName = selectedFeatures[index];

@@ -24,10 +24,12 @@ function matrix() {
   let width = 600 - margin.left - margin.right;
   let height = 600 - margin.top - margin.bottom;
 
+  let showPredictions = false;
+
   function chart(selection) {
     selection.each(function({metadata, data}) {
       const root = prepareData();
-      const {color, size, y} = getScales();
+      const {color, size, y, incorrectScale} = getScales();
 
       const g = d3.select(this)
         .selectAll('#vis-group')
@@ -71,11 +73,13 @@ function matrix() {
             .range(d3.schemeCategory10);
 
         const size = d3.scaleSqrt()
-            .domain([0, d3.max(root.leaves(), d => d.value)])
+            .domain([0, d3.max(root.leaves(), d => d.value)]);
+
+        const incorrectScale = d3.scaleLinear();
 
         const y = d3.scaleLinear();
 
-        return {color, size, y};
+        return {color, size, y, incorrectScale};
       }
 
 
@@ -87,36 +91,77 @@ function matrix() {
           const maxCellSize = Math.min(xSpace, ySpace);
           size.range([0, maxCellSize]);
 
-          const stacked = stack([node.data.counts]);
+          const counts = showPredictions ?
+              node.data.predictionCounts :
+              node.data.counts;
+
+          const stacked = stack([counts]);
           const sideLength = size(node.value);
 
           y.domain([0, node.value])
               .range([0, sideLength]);
           
           const mapped = stacked.map(b => {
+            const label = b.key;
             const pos = b[0];
 
-            return {
+            const rect = {
               width: sideLength,
               height: y(pos[1]) - y(pos[0]),
               x: 0,
               y: y(pos[0]),
-              color: color(b.key),
+              label: label,
+              color: color(label),
+              count: counts.get(label),
+            };
+
+            if (showPredictions) {
+              const predictionResults = node.data.predictionResults.get(label);
+              if (predictionResults !== undefined && predictionResults.has('incorrect')) {
+                rect.incorrect = predictionResults.get('incorrect');
+              } else {
+                rect.incorrect = 0;
+              }
             }
+
+            return rect;
           });
 
-          cell.append('g')
+          const segments = cell.append('g')
               .attr('class', 'node')
               .attr('transform', `translate(${(xSpace - sideLength) / 2},${(ySpace - sideLength) / 2})`)
             .selectAll('.segment')
             .data(mapped)
-            .join('rect')
-              .attr('class', 'segment')
-              .attr('x', d => d.x)
-              .attr('y', d => d.y)
+            .join(enter => enter.append('g')
+                .attr('class', 'segment')
+                .call(g => g.append('rect')
+                  .attr('class', 'class-rect')))
+              .attr('transform', d => `translate(${d.x},${d.y})`);
+
+          segments.select('.class-rect')
               .attr('width', d => d.width)
               .attr('height', d => d.height)
               .attr('fill', d => d.color);
+
+          segments.selectAll('.incorrect')
+            .data(d => {
+              if (!showPredictions) {
+                return [];
+              }
+
+              incorrectScale.domain([0, d.count])
+                  .range([0, d.height]);
+
+              return [{
+                width: d.width,
+                height: incorrectScale(d.incorrect),
+              }];
+            })
+            .join('rect')
+              .attr('class', 'incorrect')
+              .attr('width', d => d.width)
+              .attr('height', d => d.height)
+              .attr('fill', 'url(#stripes)');
 
           return;
         }
@@ -216,12 +261,17 @@ function matrix() {
     });
   }
 
-
   chart.size = function([w, h]) {
     if (!arguments.length) return [width, height];
     const minDim = Math.min(w, h);
     width = minDim - margin.left - margin.right;
     height = minDim - margin.top - margin.bottom;
+    return chart;
+  }
+
+  chart.showPredictions = function(p) {
+    if (!arguments.length) return showPredictions;
+    showPredictions = p;
     return chart;
   }
 

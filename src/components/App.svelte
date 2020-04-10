@@ -7,18 +7,18 @@
   import matrix from '../visualization/matrix.js';
 
   let chart = matrix();
-
+  let showPredictions = false;
 </script>
 
 <div id="container">
   <div id="controls">
-    <DatasetSelector/>
+    <DatasetSelector on:update={e => showPredictions = e.detail}/>
     <SplitSelector/>
     <ChartSelector on:update={e => chart = e.detail}/>
     <FeatureSelector/>
   </div>
 
-  <ChartManager {chart}/>
+  <ChartManager {chart} {showPredictions}/>
 </div>
 
 <style>
