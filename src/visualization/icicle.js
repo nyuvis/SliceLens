@@ -28,10 +28,13 @@ function icicle() {
   let width = 800 - margin.left - margin.right;
   let height = 600 - margin.top - margin.bottom;
 
+  let showPredictions = false;
+
   function chart(selection) {
     selection.each(function({metadata, data, selectedFeatures}) {
       const root = prepareData();
-      const {yScale, color} = getScales();
+      const rowHeight = root.y1 - root.y0;
+      const {yScale, color, incorrectScale} = getScales();
 
       const g = d3.select(this)
         .selectAll('#vis-group')
@@ -67,13 +70,15 @@ function icicle() {
       function getScales() {
         const yScale = d3.scaleLinear()
             .domain([0, 1])
-            .range([0, root.y1 - root.y0]);
+            .range([0, rowHeight]);
+
+        const incorrectScale = d3.scaleLinear();
 
         const color = d3.scaleOrdinal()
             .domain(metadata.labelValues)
             .range(d3.schemeCategory10);
      
-        return {yScale, color};
+        return {yScale, color, incorrectScale};
       }
 
 
@@ -94,32 +99,82 @@ function icicle() {
                 .node();
             });
 
-        partitions.selectAll('.border-rect')
+        partitions.select('.border-rect')
             .attr('width', d => d.x1 - d.x0)
             .attr('height', d => d.y1 - d.y0);
 
-        partitions.selectAll('.segment')
+        const segments = partitions.selectAll('.segment')
           .data(d => {
             const stack = d3.stack()
                 .keys(metadata.labelValues)
                 .value((d, key) => d.get(key));
-            const stacked = stack([d.data.counts]);
-            const mapped = stacked.map(b => ({
-              label: b.key,
-              pos: [b[0][0] / d.value, b[0][1] / d.value],
-              width: d.x1 - d.x0,
-              height: d.y1 - d.y0
-            }));
+
+            const counts = showPredictions ?
+              d.data.predictionCounts :
+              d.data.counts;
+
+            const stacked = stack([counts]);
+
+            const mapped = stacked.map(b => {
+              const label = b.key;
+              const pos = [b[0][0] / d.value, b[0][1] / d.value];
+
+              const rect = {
+                label: label,
+                color: color(label),
+                width: d.x1 - d.x0,
+                height: yScale(pos[1]) - yScale(pos[0]),
+                y:  yScale(pos[0]),
+                count: counts.get(label),
+              };
+
+              if (showPredictions) {
+                const predictionResults = d.data.predictionResults.get(label);
+                if (predictionResults !== undefined && predictionResults.has('incorrect')) {
+                  rect.incorrect = predictionResults.get('incorrect');
+                } else {
+                  rect.incorrect = 0;
+                }
+              }
+
+              return rect;
+            });
+
             return mapped;
           })
-          .join('rect')
-            .attr('class', 'segment')
-            .attr('height', d => yScale(d.pos[1]) - yScale(d.pos[0]))
-            .attr('y', d => yScale(d.pos[0]))
-            .attr('width', d => d.width)
-            .attr('fill', d => color(d.label));
+          .join(enter => enter.append('g')
+              .attr('class', 'segment')
+              .call(g => g.append('rect')
+                  .attr('class', 'class-rect')))
+            .attr('transform', d => `translate(0,${d.y})`);
 
-        const rowHeight = partitions.datum().y1 - partitions.datum().y0;
+        // select is needed here instead of select all
+        // so that the parent g's datum is re-binded to the rect
+        segments.select('.class-rect')
+            .attr('height', d => d.height)
+            .attr('width', d => d.width)
+            .attr('fill', d => d.color);
+
+        segments.selectAll('.incorrect')
+          .data(d => {
+            if (!showPredictions) {
+              return [];
+            }
+
+            incorrectScale.domain([0, d.count])
+                .range([0, d.height]);
+
+            return [{
+              width: d.width,
+              height: incorrectScale(d.incorrect),
+            }];
+          })
+          .join('rect')
+            .attr('class', 'incorrect')
+            .attr('width', d => d.width)
+            .attr('height', d => d.height)
+            .attr('fill', 'url(#stripes)');
+
         const rowLabels = ['Root'].concat(selectedFeatures);
 
         g.select('#row-labels')
@@ -201,6 +256,12 @@ function icicle() {
     if (!arguments.length) return [width, height];
     width = w - margin.left - margin.right;
     height = h - margin.top - margin.bottom;
+    return chart;
+  }
+
+  chart.showPredictions = function(p) {
+    if (!arguments.length) return showPredictions;
+    showPredictions = p;
     return chart;
   }
 

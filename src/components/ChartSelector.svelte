@@ -2,9 +2,9 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import * as d3 from "d3";
 
-  import icicle from './icicle.js';
-  import nodelink from './nodelink.js';
-  import matrix from './matrix.js';
+  import icicle from '../visualization/icicle.js';
+  import nodelink from '../visualization/nodelink.js';
+  import matrix from '../visualization/matrix.js';
 
   const dispatch = createEventDispatcher();
 
@@ -15,8 +15,7 @@
   ];
 
   // since this is basically a form component,
-  // I wonder if componement binding would be okay here
-  // same with split selector
+  // I wonder if componement binding would be okay
   let chart = charts[0].value;
   $: dispatch('update', chart);
   onMount(() => dispatch('update', chart));
