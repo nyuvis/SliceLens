@@ -9,9 +9,9 @@
   const dispatch = createEventDispatcher();
 
   const charts = [
+    { value: matrix(), display: 'Matrix' },
     { value: icicle(), display: 'Icicle' },
     { value: nodelink(), display: 'Node Link' },
-    { value: matrix(), display: 'Matrix' }
   ];
 
   // since this is basically a form component,
