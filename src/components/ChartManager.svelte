@@ -46,8 +46,8 @@
 <div id="chart" bind:clientWidth={width} bind:clientHeight={height}>
   <svg>
     <!-- https://stackoverflow.com/questions/13069446/simple-fill-pattern-in-svg-diagonal-hatching -->
-    <pattern id="stripes" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-      <line x1="0" y1="0" x2="0" y2="10" style="stroke:white; stroke-width:10" />  
+    <pattern id="stripes" width="3" height="3" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="0" y2="3" style="stroke:white; stroke-width:3" />
     </pattern>
     <g bind:this={svg}></g>
   </svg>
