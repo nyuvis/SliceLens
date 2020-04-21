@@ -13,6 +13,6 @@ npm run start
 
 ## Datasets
 * [Graduate Admission](https://www.kaggle.com/mohansacharya/graduate-admissions)
- * Mohan S Acharya, Asfia Armaan, Aneeta S Antony : A Comparison of Regression Models for Prediction of Graduate Admissions, IEEE International Conference on Computational Intelligence in Data Science 2019
+  * Mohan S Acharya, Asfia Armaan, Aneeta S Antony : A Comparison of Regression Models for Prediction of Graduate Admissions, IEEE International Conference on Computational Intelligence in Data Science 2019
 * [Heart Disease](http://archive.ics.uci.edu/ml/datasets/Heart+Disease)
 * [Census Income](http://archive.ics.uci.edu/ml/datasets/Census+Income)

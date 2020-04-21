@@ -13,13 +13,19 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   $: if ($metadata !== null) {
     features = $metadata.featureNames;
   }
-  
+
   let criterion = 'purity';
+
+  $: hasPredictions = $metadata !== null && $metadata.hasPredictions;
+  $: if (!hasPredictions) {
+    criterion = 'purity';
+  }
   
-  let criteria = [
-    { value: 'purity', display: 'Purity' },
-    { value: 'none', display: 'None'},
-  ];
+  $: criteria = [
+    { value: 'purity', display: 'Purity', requiresPrediction: false },
+    { value: 'error', display: 'Error', requiresPrediction: true},
+    { value: 'none', display: 'None', requiresPrediction: false},
+  ].filter(d => (!d.requiresPrediction || hasPredictions));
 
   let suggestion = '';
   

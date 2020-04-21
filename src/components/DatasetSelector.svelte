@@ -6,7 +6,7 @@
   let selected = 'census';
 
   const datasets = [
-    { value: 'census', display: 'Census' },
+    { value: 'census', display: 'Census Income' },
     { value: 'heart-disease-with-predictions', display: 'Heart Disease' },
     { value: 'graduate-admissions-binary-with-predictions', display: 'Graduate Admissions' },
   ];
