@@ -23,11 +23,15 @@ function getMetadata(dataset, splitType) {
 
   const features = featureNames.reduce((acc, val) => {
     const values = dataset.map(d => d[val]);
+    const uniqueValues = Array.from(new Set(values)).sort();
     const feature = {
       name: val
     };
 
-    if (!isNaN(values[0])) {
+    if (uniqueValues.length <= 5) {
+      feature.values = uniqueValues;
+      feature.type = 'C';
+    } else if (!isNaN(values[0])) {
       feature.type = 'Q';
       feature.values = verbs;
       
@@ -43,7 +47,7 @@ function getMetadata(dataset, splitType) {
       feature.type = 'T';
       // TODO: handle dates
     } else {
-      feature.values = Array.from(new Set(values));
+      feature.values = uniqueValues;
       feature.type = 'C';
     }
 
