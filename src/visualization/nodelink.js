@@ -19,7 +19,7 @@ export {nodelink as default };
 
 function nodelink() {
   let margin = {
-    top: 50,
+    top: 60,
     bottom: 100,
     left: 25,
     right: 0

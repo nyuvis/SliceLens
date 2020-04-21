@@ -7,7 +7,8 @@
 
   const datasets = [
     { value: 'census', display: 'Census' },
-    { value: 'heart-disease-with-predictions', display: 'Heart Disease' }
+    { value: 'heart-disease-with-predictions', display: 'Heart Disease' },
+    { value: 'graduate-admissions-binary-with-predictions', display: 'Graduate Admissions' },
   ];
 
   function load(name) {

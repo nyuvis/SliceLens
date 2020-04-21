@@ -19,7 +19,7 @@ export { icicle as default };
 
 function icicle() {
   let margin = {
-    top: 50,
+    top: 60,
     bottom: 20,
     left: 100,
     right: 100
