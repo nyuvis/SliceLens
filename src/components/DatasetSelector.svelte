@@ -13,8 +13,8 @@
 
   function load(name) {
     d3.csv(`../datasets/${name}.csv`, d3.autoType).then(data => {
-      $dataset = data;
       $selectedFeatures = [];
+      $dataset = data;
     });
   }
 
