@@ -7,9 +7,11 @@ export const selectedFeatures = writable([]);
 
 export const splitType = writable('interval');
 
+export const numberOfSplits = writable(3);
+
 export const metadata = derived(
-  [dataset, splitType],
-  ([$dataset, $splitType]) => getMetadata($dataset, $splitType)
+  [dataset, splitType, numberOfSplits],
+  ([$dataset, $splitType, $numberOfSplits]) => getMetadata($dataset, $splitType, $numberOfSplits)
 );
 
 export const data = derived(

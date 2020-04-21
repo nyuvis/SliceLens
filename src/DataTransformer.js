@@ -1,11 +1,11 @@
 import * as d3_array from "d3-array";
 import * as d3_all from "d3";
 
-const d3 = {...d3_array, ...d3_all};
+const d3 = {...d3_all, ...d3_array,};
 
 export { getMetadata, getData };
 
-function getMetadata(dataset, splitType) {
+function getMetadata(dataset, splitType, numBins) {
   if (!dataset || !dataset.columns) {
     return null;
   }
@@ -18,8 +18,14 @@ function getMetadata(dataset, splitType) {
   const featureNames = cols.filter(d => d !== 'label' && d !== 'prediction');
   const hasPredictions = cols.includes('prediction');
 
-  const numBins = 3;
-  const verbs = ['low', 'medium', 'high'];
+  const verbsByBins = {
+    2: ['low', 'high'],
+    3: ['low', 'medium', 'high'],
+    4: ['very low', 'low', 'high', 'very high'],
+    5: ['very low', 'low', 'medium', 'high', 'very high']
+  }
+
+  const verbs = verbsByBins[numBins];
 
   const features = featureNames.reduce((acc, val) => {
     const values = dataset.map(d => d[val]);
