@@ -20,8 +20,10 @@ function getSuggestedFeature({criterion, selected, metadata, dataset}) {
 
   if (criterion === 'purity') {
     return purity({selected, metadata, dataset, available});
-  } else if (criterion === 'error') {
-    return error({selected, metadata, dataset, available});
+  } else if (criterion === 'errorCount') {
+    return errorCount({selected, metadata, dataset, available});
+  } else if (criterion === 'errorPercent') {
+    return errorPercent({selected, metadata, dataset, available});
   } else {
     return '';
   }
@@ -50,7 +52,7 @@ function purity({selected, metadata, dataset, available}) {
   return suggestion;
 }
 
-function error({selected, metadata, dataset, available}) {
+function errorCount({selected, metadata, dataset, available}) {
   let suggestion = '';
   let maxError = 0;
 
@@ -59,8 +61,36 @@ function error({selected, metadata, dataset, available}) {
     const data = getData(metadata, sel, dataset);
     const root = d3.hierarchy(data).sum(d => d.value);
 
-    const errors = d3.sum(root.leaves(), d => {
-      return d3.sum(Array.from(d.data.predictionResults.values()).map(d => d.has("incorrect") ? d.get("incorrect") : 0));
+    const errors = d3.max(root.leaves(), d => {
+      const predictionResultsPerClass = Array.from(d.data.predictionResults.values());
+      return d3.sum(predictionResultsPerClass, p => p.has('incorrect') ? p.get('incorrect') : 0);
+    });
+
+    if (errors > maxError) {
+      suggestion = feature;
+      maxError = errors;
+    }
+  });
+
+  return suggestion;
+}
+
+function errorPercent({selected, metadata, dataset, available}) {
+  let suggestion = '';
+  let maxError = 0;
+
+  available.forEach(feature => {
+    const sel = [...selected, feature];
+    const data = getData(metadata, sel, dataset);
+    const root = d3.hierarchy(data).sum(d => d.value);
+
+    const errors = d3.max(root.leaves(), d => {
+      const predictionResultsPerClass = Array.from(d.data.predictionResults.values());
+      const errorCount = d3.sum(predictionResultsPerClass,
+        p => p.has('incorrect') ?
+          p.get('incorrect') :
+          0);
+      return errorCount / d.value;
     });
 
     if (errors > maxError) {

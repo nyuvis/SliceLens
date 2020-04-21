@@ -166,6 +166,12 @@ function matrix() {
           return;
         }
 
+        // don't recurse if the node doesn't have any children
+        // this can happen when a node has no datapoints
+        if (!node.children) {
+          return;
+        }
+
         const isXSplit = node.depth % 2 === 0;
 
         const splitLabels = node.children.map(d => d.data.splitLabel);

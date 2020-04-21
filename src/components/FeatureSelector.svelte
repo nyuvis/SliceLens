@@ -15,17 +15,21 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   }
 
   let criterion = 'purity';
+  const criteriaRequiringPredictions = new Set(['errorCount', 'errorPercent']);
 
   $: hasPredictions = $metadata !== null && $metadata.hasPredictions;
-  $: if (!hasPredictions) {
+  // reset criterion if predictions are not available,
+  // which would happen when changing datasets
+  $: if (!hasPredictions && criteriaRequiringPredictions.has(criterion)) {
     criterion = 'purity';
   }
-  
+
   $: criteria = [
-    { value: 'purity', display: 'Purity', requiresPrediction: false },
-    { value: 'error', display: 'Error', requiresPrediction: true},
-    { value: 'none', display: 'None', requiresPrediction: false},
-  ].filter(d => (!d.requiresPrediction || hasPredictions));
+    { value: 'purity', display: 'Purity' },
+    { value: 'errorCount', display: 'Error Count' },
+    { value: 'errorPercent', display: 'Error Percent' },
+    { value: 'none', display: 'None' },
+  ].filter(d => (!criteriaRequiringPredictions.has(d.value) || hasPredictions));
 
   let suggestion = '';
   
