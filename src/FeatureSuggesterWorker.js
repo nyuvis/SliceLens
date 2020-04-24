@@ -62,7 +62,9 @@ function errorCount({selected, metadata, dataset, available}) {
     const root = d3.hierarchy(data).sum(d => d.value);
 
     const errors = d3.max(root.leaves(), d => {
+      // one Map per class
       const predictionResultsPerClass = Array.from(d.data.predictionResults.values());
+      // get sum of incorrect predictions for each class
       return d3.sum(predictionResultsPerClass, p => p.has('incorrect') ? p.get('incorrect') : 0);
     });
 

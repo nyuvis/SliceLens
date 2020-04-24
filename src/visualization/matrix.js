@@ -15,21 +15,21 @@ export {matrix as default };
 
 function matrix() {
   let margin = {
-    top: 60,
-    bottom: 50,
-    left: 50,
-    right: 50
+    top: 100,
+    bottom: 10,
+    left: 100,
+    right: 0
   };
-  
+
   let width = 600 - margin.left - margin.right;
   let height = 600 - margin.top - margin.bottom;
 
   let showPredictions = false;
 
   function chart(selection) {
-    selection.each(function({metadata, data}) {
+    selection.each(function({metadata, data, selectedFeatures}) {
       const root = prepareData();
-      const {color, size, y, incorrectScale} = getScales();
+      const {color, size, y, incorrectScale, xAxisMargin, yAxisMargin} = getScales();
 
       const g = d3.select(this)
         .selectAll('#vis-group')
@@ -39,7 +39,7 @@ function matrix() {
             .attr('transform', `translate(${margin.left},${margin.top})`)
             .call(g => g.append('g').attr('id', 'vis'))
             .call(g => g.append(() => getCategoryColorLegend(color))
-                .attr('transform', `translate(0,${-margin.top + 10})`))
+                .attr('transform', `translate(${-margin.left + 10},${-margin.top + 10})`))
             .call(g => g.append('g')
                 .attr('id', 'tooltip')
                 .attr('font-size', '12px')
@@ -53,8 +53,16 @@ function matrix() {
       g.selectAll('.cell').remove();
       g.selectAll('.node').remove();
       g.selectAll('.axis').remove();
+      g.selectAll('.divider').remove();
 
-      draw(g.select('#vis'), width, height, 0);
+      draw({
+        cell: g.select('#vis'),
+        xSpace: width,
+        ySpace: height,
+        showXAxis: true,
+        showYAxis: true,
+        showDividers: selectedFeatures.length > 2,
+      });
 
       setupTooltips();
 
@@ -66,7 +74,7 @@ function matrix() {
         return root;
       }
 
-     
+
       function getScales() {
         const color = d3.scaleOrdinal()
             .domain(metadata.labelValues)
@@ -79,13 +87,23 @@ function matrix() {
 
         const y = d3.scaleLinear();
 
-        return {color, size, y, incorrectScale};
+        const xAxisMargin = d3.scalePoint()
+            .domain(selectedFeatures.filter((d, i) => i % 2 === 0))
+            .range([-margin.top, 0])
+            .padding(1);
+
+        const yAxisMargin = d3.scalePoint()
+            .domain(selectedFeatures.filter((d, i) => i % 2 !== 0))
+            .range([-margin.left, 0])
+            .padding(1);
+
+        return {color, size, y, incorrectScale, xAxisMargin, yAxisMargin};
       }
 
 
-      function draw(cell, xSpace, ySpace, index) {
+      function draw({ cell, xSpace, ySpace, showXAxis, showYAxis, showDividers }) {
         const node = cell.datum();
-        
+
         // if leaf node
         if (node.depth === root.height) {
           const maxCellSize = Math.min(xSpace, ySpace);
@@ -100,7 +118,7 @@ function matrix() {
 
           y.domain([0, node.value])
               .range([0, sideLength]);
-          
+
           const mapped = stacked.map(b => {
             const label = b.key;
             const pos = b[0];
@@ -174,11 +192,12 @@ function matrix() {
 
         const isXSplit = node.depth % 2 === 0;
 
-        const splitLabels = node.children.map(d => d.data.splitLabel);
+        const splitFeature = node.children[0].data.splitFeature;
+        const splitLabels = metadata.features[splitFeature].values;
         const scale = d3.scaleBand()
             .domain(splitLabels)
             .range([0, isXSplit ? xSpace : ySpace])
-            .padding(0.1);
+            .padding(0.05);
 
         const nextXSpace = isXSplit ? scale.bandwidth() : xSpace;
         const nextYSpace = isXSplit ? ySpace : scale.bandwidth();
@@ -193,21 +212,88 @@ function matrix() {
               return `translate(${xOffset},${yOffset})`;
             })
             .each(function(d, i, nodes) {
-              draw(d3.select(this), nextXSpace, nextYSpace, i);
+              const showXAxisNext = isXSplit ?
+                showXAxis :
+                showXAxis && i === 0;
+
+              const showYAxisNext = isXSplit ?
+                showYAxis && i === 0:
+                showYAxis;
+
+              draw({
+                cell: d3.select(this),
+                xSpace: nextXSpace,
+                ySpace: nextYSpace,
+                showXAxis: showXAxisNext,
+                showYAxis: showYAxisNext,
+                showDividers: node.depth === 0 && selectedFeatures.length > 3
+              });
             });
 
-        if (index === 0) {
-          const axis = isXSplit ? d3.axisTop(scale) : d3.axisLeft(scale);
- 
+        // add axes
+
+        if (isXSplit && showXAxis) {
+          const axis = d3.axisTop(scale).tickSize(0);
+
+          cell.append('g')
+              .attr('class', 'axis')
+              .call(axis)
+              .call(g => g.selectAll('.domain').remove())
+              .attr('transform', `translate(0, ${xAxisMargin(splitFeature)})`)
+            .append('text')
+              .attr('x', xSpace / 2)
+              .attr('y', -15)
+              .attr('font-weight', 'bold')
+              .attr('fill', 'black')
+              .text(splitFeature)
+
+        } else if (!isXSplit && showYAxis) {
+          const axis = d3.axisLeft(scale).tickSize(0);
+
           const axisGroup = cell.append('g')
               .attr('class', 'axis')
               .call(axis)
               .call(g => g.selectAll('.domain').remove())
+              .attr('transform', `translate(${yAxisMargin(splitFeature)},0)`)
 
-          if (!isXSplit) {
-            axisGroup.selectAll('text')
-                .attr('transform', 'rotate(-90,-9,0) translate(0,-5)')
-                .attr('text-anchor', 'middle')
+          axisGroup.append('text')
+              .attr('y', ySpace / 2)
+              .attr('x', -15)
+              .attr('font-weight', 'bold')
+              .attr('fill', 'black')
+              .attr('text-anchor', 'middle')
+              .attr('transform', `rotate(-90,-15,${ySpace / 2})`)
+              .text(splitFeature)
+
+          axisGroup.selectAll('.tick text')
+              .attr('transform', 'rotate(-90,-3,0)')
+              .attr('text-anchor', 'middle');
+        }
+
+        // add dividers
+        if (showDividers) {
+          const midPoints = d3.pairs(splitLabels,
+            (a, b) => (scale(a) + scale(b) + scale.bandwidth()) / 2);
+
+          const lines = cell.selectAll(`.divider.${isXSplit ? 'x' : 'y'}`)
+            .data(midPoints)
+            .join('line')
+              .attr('stroke', '#dcdcdc')
+              .attr('stroke-width', 1)
+              .attr('class', 'divider');
+
+          if (isXSplit) {
+            lines
+                .attr('x1', d => d)
+                .attr('x2', d => d)
+                .attr('y1', 0)
+                .attr('y2', ySpace);
+          } else {
+            lines
+                .attr('x1', 0)
+                .attr('x2', xSpace)
+                .attr('y1', d => d)
+                .attr('y2', d => d);
           }
         }
       }
@@ -220,7 +306,7 @@ function matrix() {
           const [x, y] = d3.mouse(g.node());
           const cell = d3.select(this);
           const padding = 5;
-          
+
           tooltip.style('display', null)
               .attr('transform', `translate(${x},${y + padding * 3})`);
 
@@ -229,7 +315,7 @@ function matrix() {
             .join('rect')
               .style('stroke', 'black')
               .style('fill', 'white');
- 
+
           const node = cell.datum();
 
           const lines = node.depth === 0 ? ["Root node"] : node.ancestors()
@@ -242,7 +328,7 @@ function matrix() {
           const text = tooltip.selectAll('text')
             .data([null])
             .join('text');
- 
+
           text.selectAll('tspan')
             .data(lines)
             .join('tspan')
@@ -258,7 +344,7 @@ function matrix() {
               .attr('height', boxHeight + 2 * padding);
 
           text.attr('transform', `translate(${-boxWidth / 2},0)`);
-     
+
         })
         .on('mouseleave', function() {
           tooltip.style('display', 'none');
