@@ -321,7 +321,7 @@ function matrix() {
           const lines = node.depth === 0 ? ["Root node"] : node.ancestors()
               .reverse()
               .slice(1)
-              .map(d => `${d.data.splitFeature} is ${d.data.splitLabel}`);
+              .map(d => `${d.data.splitFeature}: ${d.data.splitLabel}`);
 
           lines.push(`${node.value} data points`);
 

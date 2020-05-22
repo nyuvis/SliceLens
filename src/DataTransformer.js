@@ -14,18 +14,9 @@ function getMetadata(dataset, splitType, numBins) {
 
   const label = 'label';
   const labelValues = Array.from(new Set(dataset.map(d => d[label])));
-  
+
   const featureNames = cols.filter(d => d !== 'label' && d !== 'prediction');
   const hasPredictions = cols.includes('prediction');
-
-  const verbsByBins = {
-    2: ['low', 'high'],
-    3: ['low', 'medium', 'high'],
-    4: ['very low', 'low', 'high', 'very high'],
-    5: ['very low', 'low', 'medium', 'high', 'very high']
-  }
-
-  const verbs = verbsByBins[numBins];
 
   const features = featureNames.reduce((acc, val) => {
     const values = dataset.map(d => d[val]);
@@ -39,8 +30,7 @@ function getMetadata(dataset, splitType, numBins) {
       feature.type = 'C';
     } else if (!isNaN(values[0])) {
       feature.type = 'Q';
-      feature.values = verbs;
-      
+
       const extent = d3.extent(values);
       feature.extent = extent;
 
@@ -49,6 +39,12 @@ function getMetadata(dataset, splitType, numBins) {
       } else {
         feature.thresholds = quantileThresholds(values);
       }
+      const format = d3.format(".2~f");
+      feature.values = d3.pairs(
+        [extent[0], ...feature.thresholds, extent[1]],
+        (a, b) => `[${format(a)}, ${format(b)})`
+      );
+
     } else if (values[0] instanceof Date) {
       feature.type = 'T';
       // TODO: handle dates
@@ -89,7 +85,7 @@ function getData(metadata, selectedFeatures, dataset) {
   }
 
   return splitData(dataset, 0, '', '');
-      
+
   function splitData(data, index, splitFeature, splitLabel) {
     const counts = d3.rollup(data, v => v.length, d => d.label);
 
@@ -97,7 +93,7 @@ function getData(metadata, selectedFeatures, dataset) {
 
     if (metadata.hasPredictions) {
       const predictionCounts = d3.rollup(data, v => v.length, d => d.prediction);
-  
+
       const predictionResults = d3.rollup(data,
         v => d3.rollup(v, g => g.length, p => {
           if (p.prediction === p.label) {
@@ -127,7 +123,7 @@ function getData(metadata, selectedFeatures, dataset) {
         splits = d3.groups(data, d => d[nextFeatureName])
             .map(d => d[1]);
       }
-  
+
       node.children = splits
           .map((d, i) => splitData(d, index + 1, nextFeatureName, nextFeature.values[i]))
           .filter(d => d !== undefined);
