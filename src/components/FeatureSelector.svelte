@@ -198,7 +198,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     text-overflow: ellipsis;
   }
 
-  .feature, .instruction {
+  .feature {
     display: flex;
     cursor: move;
     /* if features are right next to eachother then
@@ -218,6 +218,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   .instruction {
     padding-left: 1em;
+    margin-bottom: 3px;
   }
 
   .placeHolder {

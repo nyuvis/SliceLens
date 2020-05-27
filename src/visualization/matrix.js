@@ -195,7 +195,9 @@ function matrix() {
         const splitFeature = node.children[0].data.splitFeature;
         const splitLabels = metadata.features[splitFeature].values;
         const scale = d3.scaleBand()
-            .domain(splitLabels)
+            .domain(isXSplit ?
+              splitLabels :
+              splitLabels.slice().reverse())
             .range([0, isXSplit ? xSpace : ySpace])
             .padding(0.05);
 
