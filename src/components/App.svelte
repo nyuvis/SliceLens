@@ -26,10 +26,14 @@
 		display: flex;
 		height: 100%;
   }
-  
+
   #controls {
     flex: 0 0 200px;
     background-color: #E5E5E5;
     padding: 5px 15px;
+
+    max-width: 200px;
+    display: flex;
+    flex-direction: column;
   }
 </style>
