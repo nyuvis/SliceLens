@@ -4,6 +4,7 @@
   import SplitSelector from './SplitSelector.svelte';
   import ChartSelector from './ChartSelector.svelte';
   import ChartManager from './ChartManager.svelte';
+  import NotesSidebar from './notes/NotesSidebar.svelte';
   import matrix from '../visualization/matrix.js';
 
   let chart = matrix();
@@ -12,6 +13,7 @@
 
 <div id="container">
   <div id="controls">
+    <h2>Controls</h2>
     <DatasetSelector on:update={e => showPredictions = e.detail}/>
     <SplitSelector/>
     <ChartSelector on:update={e => chart = e.detail}/>
@@ -19,6 +21,8 @@
   </div>
 
   <ChartManager {chart} {showPredictions}/>
+
+  <NotesSidebar/>
 </div>
 
 <style>
