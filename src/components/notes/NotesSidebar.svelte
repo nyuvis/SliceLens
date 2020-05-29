@@ -4,8 +4,13 @@
   import Viewer from './Viewer.svelte';
 
   let notes = [];
-  notes = [{title: 'Note 1'}, {title: 'Note 2'}, {title: 'Note 3'}];
-  let selected = null;
+  notes = [
+    { title: 'Note 1', body: 'Contents of note one.' },
+    { title: 'Note 2', body: 'Contents of note two.' },
+    { title: 'Note 3', body: 'Contents of note three.' }
+  ];
+  let selectedIndex = -1;
+  let selectedNode = null;
 </script>
 
 <div id="notes">
@@ -18,7 +23,7 @@
   <p class="control-label">Recorded</p>
   <div id="list">
     {#each notes as note, i}
-      <div on:click={() => selected = note}>
+      <div on:click={() => { selectedIndex = i, selectedNode = note }}>
         {note.title}
       </div>
     {/each}
@@ -27,7 +32,19 @@
     {/if}
   </div>
 
-  <Viewer note={selected} on:close={() => selected = null}/>
+  <Viewer note={selectedNode}
+    on:close={() => {
+      selectedIndex = -1;
+      selectedNode = null;
+      notes = notes;
+    }}
+    on:delete={() => {
+      notes.splice(selectedIndex, 1);
+      selectedIndex = -1;
+      selectedNode = null;
+      notes = notes;
+    }}
+  />
 
 </div>
 
