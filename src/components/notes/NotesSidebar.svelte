@@ -9,21 +9,53 @@
     { title: 'Note 2', body: 'Contents of note two.' },
     { title: 'Note 3', body: 'Contents of note three.' }
   ];
+
   let selectedIndex = -1;
-  let selectedNode = null;
+  let selectedNote = null;
+  let edit = false;
+
+  function selectNote(note, i) {
+    selectedIndex = i;
+    selectedNote = note;
+    edit = false;
+  }
+
+  function newNote() {
+    selectedIndex = notes.length;
+    selectedNote = { title: 'New Note', body: '' };
+    notes.push(selectedNote);
+    notes = notes;
+    edit = true;
+  }
+
+  function closeNote() {
+    selectedIndex = -1;
+    selectedNote = null;
+    notes = notes;
+  }
+
+  function deleteNote() {
+    notes.splice(selectedIndex, 1);
+    selectedIndex = -1;
+    selectedNote = null;
+    notes = notes;
+  }
 </script>
 
 <div id="notes">
-  <h2>Notes</h2>
-  <div id="import-export">
+  <div class="header">
+    <h2>Notes</h2>
+    <div class="gap"></div>
     <Importer on:upload={e => notes = e.detail}/>
     <Exporter {notes}/>
   </div>
 
+  <button on:click={newNote}>New Note</button>
+
   <p class="control-label">Recorded</p>
   <div id="list">
     {#each notes as note, i}
-      <div on:click={() => { selectedIndex = i, selectedNode = note }}>
+      <div on:click={() => selectNote(note, i)}>
         {note.title}
       </div>
     {/each}
@@ -32,18 +64,11 @@
     {/if}
   </div>
 
-  <Viewer note={selectedNode}
-    on:close={() => {
-      selectedIndex = -1;
-      selectedNode = null;
-      notes = notes;
-    }}
-    on:delete={() => {
-      notes.splice(selectedIndex, 1);
-      selectedIndex = -1;
-      selectedNode = null;
-      notes = notes;
-    }}
+  <Viewer
+    note={selectedNote}
+    {edit}
+    on:close={closeNote}
+    on:delete={deleteNote}
   />
 
 </div>
@@ -57,10 +82,6 @@
     max-width: 300px;
     display: flex;
     flex-direction: column;
-  }
-
-  #import-export {
-    margin-top: 16px;
   }
 
   #list {
@@ -77,5 +98,17 @@
 
   #list div:hover {
     font-weight: bold;
+  }
+
+  .header {
+    display: flex;
+  }
+
+  .gap {
+    flex-grow: 1;
+  }
+
+  button {
+    width: 100px;
   }
 </style>
