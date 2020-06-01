@@ -2,12 +2,13 @@
   import Exporter from './Exporter.svelte';
   import Importer from './Importer.svelte';
   import Viewer from './Viewer.svelte';
+  import { selectedFeatures, splitType, numberOfSplits } from '../../stores.js';
 
   let notes = [];
   notes = [
-    { title: 'Note 1', body: 'Contents of note one.' },
-    { title: 'Note 2', body: 'Contents of note two.' },
-    { title: 'Note 3', body: 'Contents of note three.' }
+    { title: 'Note 1', body: 'Contents of note one.', },
+    { title: 'Note 2', body: 'Contents of note two.', },
+    { title: 'Note 3', body: 'Contents of note three.', }
   ];
 
   let selectedIndex = -1;
@@ -15,22 +16,36 @@
   let edit = false;
 
   function selectNote(note, i) {
+    if (selectedNote !== null && edit) {
+      // save opened note before opening a different one
+      setNoteState();
+    }
+
+    edit = false;
     selectedIndex = i;
     selectedNote = note;
-    edit = false;
   }
 
   function newNote() {
+    if (selectedNote !== null && edit) {
+      // save opened note before creating a new note
+      setNoteState();
+    }
+
     selectedIndex = notes.length;
-    selectedNote = { title: 'New Note', body: '' };
+    selectedNote = { title: 'New Note', body: '', linked: false };
     notes.push(selectedNote);
     notes = notes;
     edit = true;
   }
 
   function closeNote() {
+    if (edit) {
+      setNoteState();
+    }
     selectedIndex = -1;
     selectedNote = null;
+    edit = false;
     notes = notes;
   }
 
@@ -38,21 +53,42 @@
     notes.splice(selectedIndex, 1);
     selectedIndex = -1;
     selectedNote = null;
+    edit = false;
     notes = notes;
+  }
+
+  function saveNote() {
+    setNoteState();
+    edit = false;
+    notes = notes;
+  }
+
+  function editNote() {
+    edit = true;
+  }
+
+  function setNoteState() {
+    if (selectedNote.linked) {
+      selectedNote.state = {
+        selectedFeatures: $selectedFeatures,
+        splitType: $splitType,
+        numberOfSplits: $numberOfSplits,
+      };
+    } else {
+      selectedNote.state = null;
+    }
   }
 </script>
 
 <div id="notes">
+  <p class="control-label">Notes</p>
   <div class="header">
-    <h2>Notes</h2>
+    <p class="link" on:click={newNote}>New Note</p>
     <div class="gap"></div>
     <Importer on:upload={e => notes = e.detail}/>
     <Exporter {notes}/>
   </div>
 
-  <button on:click={newNote}>New Note</button>
-
-  <p class="control-label">Recorded</p>
   <div id="list">
     {#each notes as note, i}
       <div on:click={() => selectNote(note, i)}>
@@ -66,9 +102,11 @@
 
   <Viewer
     note={selectedNote}
-    {edit}
+    edit={edit}
     on:close={closeNote}
     on:delete={deleteNote}
+    on:save={saveNote}
+    on:edit={editNote}
   />
 
 </div>
@@ -109,6 +147,6 @@
   }
 
   button {
-    width: 100px;
+    align-self: flex-start;
   }
 </style>

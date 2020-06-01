@@ -13,7 +13,6 @@
 
 <div id="container">
   <div id="controls">
-    <h2>Controls</h2>
     <DatasetSelector on:update={e => showPredictions = e.detail}/>
     <SplitSelector/>
     <ChartSelector on:update={e => chart = e.detail}/>

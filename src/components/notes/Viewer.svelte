@@ -1,5 +1,6 @@
 <script>
   import { createEventDispatcher } from 'svelte';
+  import { selectedFeatures, splitType, numberOfSplits } from '../../stores.js';
   import marked from 'marked';
   import DOMPurify from 'dompurify';
 
@@ -7,6 +8,12 @@
 
   export let note = null;
   export let edit = false;
+
+  function gotoState() {
+    $selectedFeatures = note.state.selectedFeatures;
+    $splitType = note.state.splitType;
+    $numberOfSplits = note.state.numberOfSplits;
+  }
 </script>
 
 {#if note !== null}
@@ -28,7 +35,7 @@
           stroke-width="2" stroke="currentColor"
           fill="none" stroke-linecap="round"
           stroke-linejoin="round"
-          on:click={() => edit = false}
+          on:click={() => dispatch('save')}
         >
           <path stroke="none" d="M0 0h24v24H0z"/>
           <circle cx="12" cy="12" r="2" />
@@ -43,7 +50,7 @@
           stroke-width="2" stroke="currentColor"
           fill="none" stroke-linecap="round"
           stroke-linejoin="round"
-          on:click={() => edit = true}
+          on:click={() => dispatch('edit')}
         >
           <path stroke="none" d="M0 0h24v24H0z"/>
           <path d="M9 7 h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-3" />
@@ -85,6 +92,16 @@
   </div>
 
   {#if edit}
+    <label class="sub-control-label">
+      <input type="checkbox" bind:checked={note.linked}> Link note to current state
+    </label>
+  {:else}
+    {#if note.linked}
+      <button class="sub-control-label" on:click={gotoState}>Go to state</button>
+    {/if}
+  {/if}
+
+  {#if edit}
     <textarea
       rows="5"
       class="viewer"
@@ -112,6 +129,10 @@
     height: 20px;
     padding: 0;
     font-family: monospace;
+  }
+
+  button {
+    align-self: flex-start;
   }
 
   .viewer {
