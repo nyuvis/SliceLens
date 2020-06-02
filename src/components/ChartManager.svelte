@@ -29,7 +29,7 @@
     chart
       .size([width, height])
       .showPredictions(showPredictions && $metadata.hasPredictions);
-    
+
     const chartData = {
       metadata: $metadata,
       data: $data,

@@ -213,13 +213,13 @@ function matrix() {
               const yOffset = isXSplit ? 0 : scale(d.data.splitLabel);
               return `translate(${xOffset},${yOffset})`;
             })
-            .each(function(d, i, nodes) {
+            .each(function(d) {
               const showXAxisNext = isXSplit ?
                 showXAxis :
-                showXAxis && i === 0;
+                showXAxis && d.data.splitLabel === scale.domain()[0];
 
               const showYAxisNext = isXSplit ?
-                showYAxis && i === 0:
+                showYAxis && d.data.splitLabel === scale.domain()[0]:
                 showYAxis;
 
               draw({

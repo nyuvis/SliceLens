@@ -87,11 +87,14 @@ function getData(metadata, selectedFeatures, dataset) {
   return splitData(dataset, 0, '', '');
 
   function splitData(data, index, splitFeature, splitLabel) {
+    // count number of instances for each ground truth label
     const counts = d3.rollup(data, v => v.length, d => d.label);
 
     const node = {counts, splitFeature, splitLabel};
 
     if (metadata.hasPredictions) {
+      // if the dataset has model predictions, also count the number of each prediction
+      // and the amount correct and incorrect
       const predictionCounts = d3.rollup(data, v => v.length, d => d.prediction);
 
       const predictionResults = d3.rollup(data,
@@ -108,6 +111,7 @@ function getData(metadata, selectedFeatures, dataset) {
       node.predictionResults = predictionResults;
     }
 
+    // if there are more features to split on
     if (index < selectedFeatures.length) {
       const nextFeatureName = selectedFeatures[index];
       const nextFeature = metadata.features[nextFeatureName];
@@ -118,14 +122,14 @@ function getData(metadata, selectedFeatures, dataset) {
             .value(d => d[nextFeatureName])
             .domain(nextFeature.extent)
             .thresholds(nextFeature.thresholds);
-        splits = bin(data);
+        const bins = bin(data);
+        splits = d3.zip(nextFeature.values, bins);
       } else if (nextFeature.type === 'C') {
-        splits = d3.groups(data, d => d[nextFeatureName])
-            .map(d => d[1]);
+        splits = d3.groups(data, d => d[nextFeatureName]);
       }
 
       node.children = splits
-          .map((d, i) => splitData(d, index + 1, nextFeatureName, nextFeature.values[i]))
+          .map(([label, d]) => splitData(d, index + 1, nextFeatureName, label))
           .filter(d => d !== undefined);
     } else {
       node.value = data.length;

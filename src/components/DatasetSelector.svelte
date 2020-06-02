@@ -9,7 +9,7 @@
     { value: 'census', display: 'Census Income' },
     { value: 'heart-disease-with-predictions', display: 'Heart Disease' },
     { value: 'graduate-admissions-binary-with-predictions', display: 'Graduate Admissions' },
-    { value: 'feature-test', display: 'Feature Test' },
+    { value: 'feature-test', display: 'UI Test' },
   ];
 
   function load(name) {

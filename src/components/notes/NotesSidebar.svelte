@@ -5,11 +5,6 @@
   import { selectedFeatures, splitType, numberOfSplits } from '../../stores.js';
 
   let notes = [];
-  notes = [
-    { title: 'Note 1', body: 'Contents of note one.', },
-    { title: 'Note 2', body: 'Contents of note two.', },
-    { title: 'Note 3', body: 'Contents of note three.', }
-  ];
 
   let selectedIndex = -1;
   let selectedNote = null;
@@ -144,9 +139,5 @@
 
   .gap {
     flex-grow: 1;
-  }
-
-  button {
-    align-self: flex-start;
   }
 </style>
