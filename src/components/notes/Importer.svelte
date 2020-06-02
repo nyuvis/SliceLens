@@ -12,10 +12,16 @@
     }
 
     const file = files[0];
-    file.text().then(text => {
+
+    const reader = new FileReader();
+
+    reader.onload = function(event) {
+      const text = event.target.result;
       const json = JSON.parse(text);
       dispatch('upload', json);
-    });
+    }
+
+    reader.readAsText(file);
   }
 
   function onclick() {
