@@ -76,15 +76,15 @@
 </script>
 
 <div id="notes">
-  <p class="label">Notes</p>
+  <p class="label bold">Notes</p>
   <div class="header">
-    <p class="link" on:click={newNote}>New Note</p>
+    <p class="link small" on:click={newNote}>New Note</p>
     <div class="gap"></div>
     <Importer on:upload={e => notes = e.detail}/>
     <Exporter {notes}/>
   </div>
 
-  <div id="list">
+  <div class="list small">
     {#each notes as note, i}
       <div on:click={() => selectNote(note, i)}>
         {note.title}
@@ -103,7 +103,6 @@
     on:save={saveNote}
     on:edit={editNote}
   />
-
 </div>
 
 <style>
@@ -117,19 +116,18 @@
     flex-direction: column;
   }
 
-  #list {
+  .list {
     border-radius: 5px;
     padding: 5px;
     background: white;
-    font-size: 14px;
     line-height: 1.25;
   }
 
-  #list div {
+  .list div {
     cursor: pointer;
   }
 
-  #list div:hover {
+  .list div:hover {
     font-weight: 500;
   }
 

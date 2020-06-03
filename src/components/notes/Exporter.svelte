@@ -8,4 +8,4 @@
   }
 </script>
 
-<p on:click={onclick} class="link">Export</p>
+<p on:click={onclick} class="link small">Export</p>

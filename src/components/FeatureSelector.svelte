@@ -77,7 +77,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   }
 </script>
 
-<p class="label">Suggestion Criteria</p>
+<p class="label bold">Suggestion Criteria</p>
 <div>
   <select bind:value={criterion}>
     {#each criteria as {value, display}}
@@ -86,7 +86,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   </select>
 </div>
 
-<p class="label">Selected</p>
+<p class="label bold">Selected</p>
 <div id="selected-features" class="feature-box" class:dragInProgress>
   {#each $selectedFeatures as feature, i (feature)}
     <div class="feature selected"
@@ -130,7 +130,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   </div>
 </div>
 
-<p class="label">Features</p>
+<p class="label bold">Features</p>
 <div class="all-features">
   <div class="feature-box">
     {#each features as feature, i  (feature)}

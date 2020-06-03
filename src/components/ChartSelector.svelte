@@ -22,7 +22,7 @@
 </script>
 
 <div>
-  <p class="label">Visualization</p>
+  <p class="label bold">Visualization</p>
   <select bind:value={chart}>
     {#each charts as {value, display}}
       <option {value}>{display}</option>

@@ -44,7 +44,7 @@
 </script>
 
 <div>
-  <p class="label">Dataset</p>
+  <p class="label bold">Dataset</p>
   <select bind:value={selected} on:change={onchange}>
     {#each datasets as {value, display}}
       <option {value}>{display}</option>
