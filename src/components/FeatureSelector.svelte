@@ -77,7 +77,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   }
 </script>
 
-<p class="control-label">Suggestion Criteria</p>
+<p class="label">Suggestion Criteria</p>
 <div>
   <select bind:value={criterion}>
     {#each criteria as {value, display}}
@@ -86,7 +86,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   </select>
 </div>
 
-<p class="control-label">Selected</p>
+<p class="label">Selected</p>
 <div id="selected-features" class="feature-box" class:dragInProgress>
   {#each $selectedFeatures as feature, i (feature)}
     <div class="feature selected"
@@ -118,19 +118,19 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       <p class="feature-name">{feature}</p>
     </div>
   {/each}
-  {#if $selectedFeatures.length === 0}
-      <div class="instruction">
-        <p>Add features from below.</p>
-      </div>
-  {/if}
   <div class="placeHolder"
     ondragover="return false"
     on:drop|preventDefault={e => dropHandler(e, $selectedFeatures.length)}
   >
+    {#if $selectedFeatures.length === 0}
+      <div class="instruction">
+        <p>Add features from below.</p>
+      </div>
+    {/if}
   </div>
 </div>
 
-<p class="control-label">Features</p>
+<p class="label">Features</p>
 <div class="all-features">
   <div class="feature-box">
     {#each features as feature, i  (feature)}
@@ -156,8 +156,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         <p class="feature-name">
           {feature}
         </p>
-        <p>
-          {#if feature === suggestion}
+        {#if feature === suggestion}
+          <p>
             <!-- light bulb icon -->
             <svg xmlns="http://www.w3.org/2000/svg"
               class="icon icon-tabler icon-tabler-bulb"
@@ -170,8 +170,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
               <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
               <line x1="9.7" y1="17" x2="14.3" y2="17" />
             </svg>
-          {/if}
-        </p>
+          </p>
+        {/if}
       </div>
     {/each}
   </div>
@@ -180,7 +180,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 <style>
   .feature-box {
     background-color: white;
-    font-size: 14px;
     border-radius: 5px;
     padding: 5px 0px;
   }
@@ -204,10 +203,12 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     /* if features are right next to eachother then
     highlighting drop placement doesn't work */
     margin-bottom: 3px;
+    font-size: 0.875em;
+    align-items: center;
   }
 
   .feature:hover {
-    font-weight: bold;
+    font-weight: 500;
   }
 
   .feature p, .instruction p {
@@ -219,6 +220,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   .instruction {
     padding-left: 1em;
     margin-bottom: 3px;
+    font-size: 0.875em;
   }
 
   .placeHolder {
@@ -228,7 +230,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   /* dragging */
 
   .draggingOverFeature {
-    font-weight: bold;
+    font-weight: 500;
   }
 
   .draggingOverFeature * {

@@ -33,9 +33,3 @@
 
 <input bind:this={fileInput} type="file" accept=".json" style="display:none" on:change={onchange}>
 <p on:click={onclick} class="link">Import</p>
-
-<style>
-  p {
-    padding-right: 7px;
-  }
-</style>

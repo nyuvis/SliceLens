@@ -76,7 +76,7 @@
 </script>
 
 <div id="notes">
-  <p class="control-label">Notes</p>
+  <p class="label">Notes</p>
   <div class="header">
     <p class="link" on:click={newNote}>New Note</p>
     <div class="gap"></div>
@@ -130,14 +130,10 @@
   }
 
   #list div:hover {
-    font-weight: bold;
+    font-weight: 500;
   }
 
   .header {
     display: flex;
-  }
-
-  .gap {
-    flex-grow: 1;
   }
 </style>

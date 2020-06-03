@@ -1,33 +1,42 @@
+/* @import url('https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap'); */
+@import url('https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,400;0,500;1,400;1,500&display=swap');
+
+html {
+  font-family: 'Fira Sans', sans-serif;
+  font-size: 16px;
+}
+
 body {
-  font-family: sans-serif;
   margin: 0;
 }
 
-.control-label {
-  font-weight: bold;
+.label {
+  font-weight: 500;
+  font-size: 1em;
   margin-top: 1em;
   margin-bottom: 0.25em;
 }
 
-.sub-control-label {
-  font-size: 0.8em;
+.sub-label {
+  font-size: 0.875em;
   margin-top: 0.25em;
   margin-bottom: 0.25em;
 }
 
 .link {
-  font-size: 0.8em;
+  font-size: 0.875em;
   margin-top: 0.25em;
   margin-bottom: 0.25em;
   cursor: pointer;
+  padding-right: 5px;
+  color: steelblue;
+  text-decoration: underline;
 }
 
 .link:hover {
-  color: steelblue;
+  text-decoration: none;
 }
 
-h2 {
-  font-size: 1.5em;
-  margin-top: 0.25em;
-  margin-bottom: 0;
+.gap {
+  flex-grow: 1;
 }

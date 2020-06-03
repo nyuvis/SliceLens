@@ -44,7 +44,7 @@
 </script>
 
 <div>
-  <p class="control-label">Dataset</p>
+  <p class="label">Dataset</p>
   <select bind:value={selected} on:change={onchange}>
     {#each datasets as {value, display}}
       <option {value}>{display}</option>
@@ -60,7 +60,6 @@
 
 <style>
   label {
-    font-size: 14px;
     display: inline-block;
   }
 </style>
