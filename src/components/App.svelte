@@ -12,7 +12,7 @@
 </script>
 
 <div id="container">
-  <div id="controls">
+  <div id="controls" class="sidebar">
     <DatasetSelector on:update={e => showPredictions = e.detail}/>
     <SplitSelector/>
     <ChartSelector on:update={e => chart = e.detail}/>
@@ -21,7 +21,9 @@
 
   <ChartManager {chart} {showPredictions}/>
 
-  <NotesSidebar/>
+  <div id="notes" class="sidebar">
+    <NotesSidebar/>
+  </div>
 </div>
 
 <style>
@@ -30,13 +32,21 @@
 		height: 100%;
   }
 
-  #controls {
-    flex: 0 0 200px;
+  .sidebar {
     background-color: #E5E5E5;
-    padding: 5px 15px;
+    padding: 0px 1em 1em 1em;
 
-    max-width: 200px;
     display: flex;
     flex-direction: column;
+  }
+
+  #controls {
+    flex: 0 0 200px;
+    max-width: 200px;
+  }
+
+  #notes {
+    flex: 0 0 300px;
+    max-width: 300px;
   }
 </style>

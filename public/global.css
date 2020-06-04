@@ -1,9 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,400;0,500;1,400;1,500&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500&display=swap');
 
+/* * {
+  outline: 1px solid red;
+} */
+
 html {
   font-family: 'Fira Sans', sans-serif;
   font-size: 16px;
+  margin: 0;
 }
 
 body, p {
@@ -38,10 +43,34 @@ body, p {
   text-decoration: underline;
 }
 
-.link:hover {
+a {
+  color: steelblue;
+}
+
+a:hover, .link:hover {
   text-decoration: none;
 }
 
 .gap {
   flex-grow: 1;
+}
+
+.cutoff {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/*
+https://css-tricks.com/almanac/properties/w/word-break/
+https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-container/
+*/
+.hyphen {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto;
+  -moz-hyphens: auto;
+  hyphens: auto;
 }

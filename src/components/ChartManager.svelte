@@ -38,7 +38,7 @@
 
     tick().then(() => {
       selection.datum(chartData)
-        .call(chart)
+        .call(chart);
     });
   }
 </script>
@@ -55,11 +55,12 @@
 
 <style>
     #chart {
-        flex: 1;
-        height: 100vh;
+      flex: 1;
+      height: 100vh;
     }
 
     svg {
+      display: block;
       width: 100%;
       height: 100%;
     }

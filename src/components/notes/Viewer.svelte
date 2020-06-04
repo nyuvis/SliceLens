@@ -46,19 +46,21 @@
   {#if edit}
     <input class="title bold" type="text" minlength="1" required bind:value={note.title}>
   {:else}
-    <p class="title bold">{note.title}</p>
+    <p class="title bold hyphen">{note.title}</p>
   {/if}
 
   {#if edit}
     <textarea
       rows="5"
-      class="viewer small"
+      class="content small"
       bind:value={note.body}
       placeholder="This text area supports markdown."
     ></textarea>
   {:else}
-    <div class="viewer small">
-      {@html DOMPurify.sanitize(marked(note.body))}
+    <div class="content-container">
+      <div class="viewer content small hyphen">
+        {@html DOMPurify.sanitize(marked(note.body))}
+      </div>
     </div>
   {/if}
 {/if}
@@ -93,14 +95,24 @@
     padding-right: 7px;
   }
 
+  .content-container {
+    flex: 1 1 1px;
+    overflow-y: scroll;
+    border-radius: 5px;
+  }
+
   .viewer {
     border-radius: 5px;
     padding: 5px;
     background: white;
   }
 
-  .viewer :global(p) {
+  .viewer :global(:first-child) {
     margin-top: 0;
+  }
+
+  .viewer :global(p) {
+    margin: 1em 0;
   }
 
   .viewer :global(strong) {

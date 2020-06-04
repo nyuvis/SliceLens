@@ -75,45 +75,37 @@
   }
 </script>
 
-<div id="notes">
-  <p class="label bold">Notes</p>
-  <div class="header">
-    <p class="link small" on:click={newNote}>New Note</p>
-    <div class="gap"></div>
-    <Importer on:upload={e => notes = e.detail}/>
-    <Exporter {notes}/>
-  </div>
-
-  <div class="list small">
-    {#each notes as note, i}
-      <div on:click={() => selectNote(note, i)}>
-        {note.title}
-      </div>
-    {/each}
-    {#if notes.length === 0}
-        No notes.
-    {/if}
-  </div>
-
-  <Viewer
-    note={selectedNote}
-    edit={edit}
-    on:close={closeNote}
-    on:delete={deleteNote}
-    on:save={saveNote}
-    on:edit={editNote}
-  />
+<p class="label bold">Notes</p>
+<div class="header">
+  <p class="link small" on:click={newNote}>New Note</p>
+  <div class="gap"></div>
+  <Importer on:upload={e => notes = e.detail}/>
+  <Exporter {notes}/>
 </div>
 
-<style>
-  #notes {
-    flex: 0 0 300px;
-    background-color: #E5E5E5;
-    padding: 5px 15px;
+<div class="list small">
+  {#each notes as note, i}
+    <div class='note-title cutoff' on:click={() => selectNote(note, i)}>
+      {note.title}
+    </div>
+  {/each}
+  {#if notes.length === 0}
+      No notes.
+  {/if}
+</div>
 
-    max-width: 300px;
+<Viewer
+  note={selectedNote}
+  edit={edit}
+  on:close={closeNote}
+  on:delete={deleteNote}
+  on:save={saveNote}
+  on:edit={editNote}
+/>
+
+<style>
+  .header {
     display: flex;
-    flex-direction: column;
   }
 
   .list {
@@ -121,6 +113,9 @@
     padding: 5px;
     background: white;
     line-height: 1.25;
+
+    max-height: 150px;
+    overflow-y: scroll;
   }
 
   .list div {
@@ -129,9 +124,5 @@
 
   .list div:hover {
     font-weight: 500;
-  }
-
-  .header {
-    display: flex;
   }
 </style>

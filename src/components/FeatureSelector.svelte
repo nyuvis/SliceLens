@@ -115,7 +115,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
         <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
       </svg>
-      <p class="feature-name">{feature}</p>
+      <p class="feature-name cutoff">{feature}</p>
     </div>
   {/each}
   <div class="placeHolder"
@@ -153,7 +153,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
           <line x1="5" y1="12" x2="19" y2="12" />
         </svg>
 
-        <p class="feature-name">
+        <p class="feature-name cutoff">
           {feature}
         </p>
         {#if feature === suggestion}
@@ -192,9 +192,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   .feature-name {
     max-width: 85%;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
   }
 
   .feature {
