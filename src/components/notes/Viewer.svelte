@@ -68,6 +68,7 @@
     resize: vertical;
     margin: 0;
     border: none;
+    font-family: 'Fira Sans';
   }
 
   input[type=text] {
@@ -76,17 +77,7 @@
     height: 20px;
     padding: 0;
     font-size: 1em;
-    font-family: monospace;
-  }
-
-  .viewer {
-    border-radius: 5px;
-    padding: 5px;
-    background: white;
-  }
-
-  .viewer :global(p) {
-    margin-top: 0;
+    font-family: 'Fira Sans';
   }
 
   .title {
@@ -100,5 +91,23 @@
 
   .header > p {
     padding-right: 7px;
+  }
+
+  .viewer {
+    border-radius: 5px;
+    padding: 5px;
+    background: white;
+  }
+
+  .viewer :global(p) {
+    margin-top: 0;
+  }
+
+  .viewer :global(strong) {
+    font-weight: 500;
+  }
+
+  .viewer :global(code) {
+    font-family: 'Fira Mono', monospace;
   }
 </style>
