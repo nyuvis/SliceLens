@@ -2,9 +2,11 @@
   import Exporter from './Exporter.svelte';
   import Importer from './Importer.svelte';
   import Viewer from './Viewer.svelte';
-  import { selectedFeatures, splitType, numberOfSplits } from '../../stores.js';
+  import { selectedFeatures, splitType, numberOfSplits, dataset } from '../../stores.js';
 
   let notes = [];
+
+  $: notesForDataset = notes.filter(d => d.state === null || d.state.dataset === $dataset.name);
 
   let selectedIndex = -1;
   let selectedNote = null;
@@ -28,7 +30,7 @@
     }
 
     selectedIndex = notes.length;
-    selectedNote = { title: 'New Note', body: '', linked: false };
+    selectedNote = { title: 'New Note', body: '', linked: false, state: null };
     notes.push(selectedNote);
     notes = notes;
     edit = true;
@@ -68,6 +70,7 @@
         selectedFeatures: $selectedFeatures,
         splitType: $splitType,
         numberOfSplits: $numberOfSplits,
+        dataset: $dataset.name
       };
     } else {
       selectedNote.state = null;
@@ -84,13 +87,15 @@
 </div>
 
 <div class="list small">
-  {#each notes as note, i}
+  {#each notesForDataset as note, i}
     <div class='note-title cutoff' on:click={() => selectNote(note, i)}>
       {note.title}
     </div>
   {/each}
   {#if notes.length === 0}
       No notes.
+  {:else if notesForDataset.length === 0}
+      No notes for this dataset.
   {/if}
 </div>
 
