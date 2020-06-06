@@ -3,7 +3,21 @@
   import { dataset, selectedFeatures, metadata } from '../stores.js';
   import * as d3 from "d3";
 
-  let selected = 'census';
+  let selectedDemoDatasetName = 'census';
+  let uploadedDatasetName = null;
+  let useCustomDataset = false;
+  let fileInput;
+
+  function switchDemoOrCustom() {
+    useCustomDataset = !useCustomDataset;
+
+    if (!useCustomDataset) {
+      uploadedDatasetName = null;
+      load(selectedDemoDatasetName);
+    }
+  }
+
+  // demo datasets
 
   const datasets = [
     { value: 'census', display: 'Census Income' },
@@ -14,18 +28,49 @@
 
   function load(name) {
     d3.csv(`../datasets/${name}.csv`, d3.autoType).then(data => {
+      data.name = name;
       $selectedFeatures = [];
       $dataset = data;
     });
   }
 
-  function onchange() {
-    load(selected);
+  function onSelectChange() {
+    load(selectedDemoDatasetName);
   }
 
   onMount(async () => {
-    load(selected);
+    load(selectedDemoDatasetName);
   });
+
+  // uploaded dataset
+
+  function onUploadChange(event) {
+    const files = event.target.files;
+    if (files.length === 0) {
+      return;
+    }
+
+    const file = files[0];
+
+    const reader = new FileReader();
+
+    reader.onload = function(event) {
+      const text = event.target.result;
+      const data = d3.csvParse(text, d3.autoType);
+      data.name = file.name;
+      uploadedDatasetName = file.name;
+      $selectedFeatures = [];
+      $dataset = data;
+    }
+
+    reader.readAsText(file);
+  }
+
+  function onUploadclick() {
+    if (fileInput) {
+      fileInput.click();
+    }
+  }
 
   // whether or not the chart should show predicted values
 
@@ -45,14 +90,31 @@
 
 <div>
   <p class="label bold">Dataset</p>
-  <select bind:value={selected} on:change={onchange}>
-    {#each datasets as {value, display}}
-      <option {value}>{display}</option>
-    {/each}
-  </select>
+
+  <p class="link small" on:click={switchDemoOrCustom}>
+    {
+      useCustomDataset ?
+        "Use demo dataset" :
+        "Use my own dataset"
+    }
+  </p>
+
+  {#if useCustomDataset}
+    <input bind:this={fileInput} type="file" accept=".csv" style="display:none" on:change={onUploadChange}>
+    <p on:click={onUploadclick} class="link small">Select File</p>
+    {#if uploadedDatasetName !== null}
+      <p class="sub-label small">Current: {uploadedDatasetName}</p>
+    {/if}
+  {:else}
+    <select bind:value={selectedDemoDatasetName} on:change={onSelectChange}>
+      {#each datasets as {value, display}}
+        <option {value}>{display}</option>
+      {/each}
+    </select>
+  {/if}
 
   {#if showPredictionsCheckBox}
-    <label>
+    <label class="sub-label small">
       <input type="checkbox" bind:checked={predictions}>Show predictions
     </label>
   {/if}
