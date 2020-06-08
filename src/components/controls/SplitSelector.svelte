@@ -1,5 +1,5 @@
 <script>
-  import { splitType, numberOfSplits } from '../stores.js';
+  import { splitType, numberOfSplits } from '../../stores.js';
 
   const splits = [
     { value: 'interval', display: 'Equal Intervals' },

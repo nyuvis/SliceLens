@@ -9,9 +9,7 @@ import * as d3_all from "d3";
 
 const d3 = {...d3_all, ...d3_array,};
 
-import { getCategoryColorLegend } from './util.js';
-
-export {matrix as default };
+export { matrix as default };
 
 function matrix() {
   let margin = {
@@ -25,11 +23,13 @@ function matrix() {
   let height = 600 - margin.top - margin.bottom;
 
   let showPredictions = false;
+  let color = d3.scaleOrdinal()
+      .range(d3.schemeCategory10);
 
   function chart(selection) {
     selection.each(function({metadata, data, selectedFeatures}) {
       const root = prepareData();
-      const {color, size, y, incorrectScale, xAxisMargin, yAxisMargin} = getScales();
+      const {size, y, incorrectScale, xAxisMargin, yAxisMargin} = getScales();
 
       const g = d3.select(this)
         .selectAll('#vis-group')
@@ -38,8 +38,6 @@ function matrix() {
             .attr('id', 'vis-group')
             .attr('transform', `translate(${margin.left},${margin.top})`)
             .call(g => g.append('g').attr('id', 'vis'))
-            .call(g => g.append(() => getCategoryColorLegend(color))
-                .attr('transform', `translate(${-margin.left + 10},${-margin.top + 10})`))
             .call(g => g.append('g')
                 .attr('id', 'tooltip')
                 .attr('font-size', '14px')
@@ -76,10 +74,6 @@ function matrix() {
 
 
       function getScales() {
-        const color = d3.scaleOrdinal()
-            .domain(metadata.labelValues)
-            .range(d3.schemeCategory10);
-
         const size = d3.scaleSqrt()
             .domain([0, d3.max(root.leaves(), d => d.value)]);
 
@@ -97,7 +91,7 @@ function matrix() {
             .range([-margin.left, 0])
             .padding(1);
 
-        return {color, size, y, incorrectScale, xAxisMargin, yAxisMargin};
+        return {size, y, incorrectScale, xAxisMargin, yAxisMargin};
       }
 
 
@@ -370,6 +364,12 @@ function matrix() {
   chart.showPredictions = function(p) {
     if (!arguments.length) return showPredictions;
     showPredictions = p;
+    return chart;
+  }
+
+  chart.color = function(c) {
+    if (!arguments.length) return color;
+    color = c;
     return chart;
   }
 

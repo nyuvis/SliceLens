@@ -1,8 +1,8 @@
 <script>
-  import DatasetSelector from './DatasetSelector.svelte';
-  import FeatureSelector from './FeatureSelector.svelte';
-  import SplitSelector from './SplitSelector.svelte';
-  import ChartSelector from './ChartSelector.svelte';
+  import DatasetSelector from './controls/DatasetSelector.svelte';
+  import FeatureSelector from './controls/FeatureSelector.svelte';
+  import SplitSelector from './controls/SplitSelector.svelte';
+  import ChartSelector from './controls/ChartSelector.svelte';
   import ChartManager from './ChartManager.svelte';
   import NotesSidebar from './notes/NotesSidebar.svelte';
   import matrix from '../visualization/matrix.js';
