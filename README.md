@@ -1,3 +1,7 @@
+# Slice Lens
+
+[Demo](https://mental-model-explorer.now.sh/)
+
 ## How to run
 
 First clone this repository and install [npm](https://www.npmjs.com/get-npm). Then run the following:

@@ -16,7 +16,7 @@ function matrix() {
     top: 100,
     bottom: 10,
     left: 100,
-    right: 0
+    right: 10
   };
 
   let width = 600 - margin.left - margin.right;
