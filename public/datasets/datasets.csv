@@ -1,0 +1,5 @@
+name,path
+Graduate Admissions,/datasets/graduate-admissions-binary-with-predictions.csv
+Heart Disease,/datasets/heart-disease-with-predictions.csv
+Census Income,https://gist.githubusercontent.com/DanielKerrigan/93e040a90b78a22a5f1d1a322ccb907f/raw/3bc5844b7b0231a2a5b03a2599a22edb8a9c947e/census-income.csv
+UI Test,/datasets/ui-test.csv
