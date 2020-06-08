@@ -3,7 +3,7 @@
   import { dataset, selectedFeatures, metadata } from '../stores.js';
   import * as d3 from "d3";
 
-  let selectedDemoDatasetName = 'census';
+  let selectedDemoDataset = null;
   let uploadedDatasetName = null;
   let useCustomDataset = false;
   let fileInput;
@@ -13,21 +13,16 @@
 
     if (!useCustomDataset) {
       uploadedDatasetName = null;
-      load(selectedDemoDatasetName);
+      load(selectedDemoDataset);
     }
   }
 
   // demo datasets
 
-  const datasets = [
-    { value: 'census', display: 'Census Income' },
-    { value: 'heart-disease-with-predictions', display: 'Heart Disease' },
-    { value: 'graduate-admissions-binary-with-predictions', display: 'Graduate Admissions' },
-    { value: 'feature-test', display: 'UI Test' },
-  ];
+  let datasets = [];
 
-  function load(name) {
-    d3.csv(`../datasets/${name}.csv`, d3.autoType).then(data => {
+  function load({path, name}) {
+    d3.csv(path, d3.autoType).then(data => {
       data.name = name;
       $selectedFeatures = [];
       $dataset = data;
@@ -35,11 +30,15 @@
   }
 
   function onSelectChange() {
-    load(selectedDemoDatasetName);
+    load(selectedDemoDataset);
   }
 
   onMount(async () => {
-    load(selectedDemoDatasetName);
+    d3.csv('../datasets/datasets.csv').then(d => {
+      datasets = d;
+      selectedDemoDataset = datasets[0];
+      load(selectedDemoDataset);
+    });
   });
 
   // uploaded dataset
@@ -100,15 +99,24 @@
   </p>
 
   {#if useCustomDataset}
-    <input bind:this={fileInput} type="file" accept=".csv" style="display:none" on:change={onUploadChange}>
+    <input
+      bind:this={fileInput}
+      type="file"
+      accept=".csv"
+      style="display:none"
+      on:change={onUploadChange}
+    >
+
     <p on:click={onUploadclick} class="link small">Select File</p>
+
     {#if uploadedDatasetName !== null}
       <p class="sub-label small">Current: {uploadedDatasetName}</p>
     {/if}
+
   {:else}
-    <select bind:value={selectedDemoDatasetName} on:change={onSelectChange}>
-      {#each datasets as {value, display}}
-        <option {value}>{display}</option>
+    <select bind:value={selectedDemoDataset} on:change={onSelectChange}>
+      {#each datasets as dataset}
+        <option value={dataset}>{dataset.name}</option>
       {/each}
     </select>
   {/if}

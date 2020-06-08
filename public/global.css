@@ -35,12 +35,12 @@ body, p {
   margin-bottom: 0.25em;
   cursor: pointer;
   padding-right: 5px;
-  color: steelblue;
+  color: rgb(0, 99, 206);
   text-decoration: underline;
 }
 
 a {
-  color: steelblue;
+  color: rgb(0, 99, 206);
 }
 
 a:hover, .link:hover {
