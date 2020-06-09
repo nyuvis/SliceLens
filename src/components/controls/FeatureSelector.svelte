@@ -75,9 +75,35 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   function trashClickHandler(feature) {
     $selectedFeatures = $selectedFeatures.filter(d => d !== feature);
   }
+
+  const suggestionTooltip = `Choose the metric that the tool uses to
+  suggest which feature to explore next. A lightbulb icon is next to
+  the name of the suggested feature.`;
+
+  const selectFeatureTooltip = `You can select features by dragging
+  and dropping from below or by clicking on the plus icon that appears
+  when you hover over the name of a feature. You can reorder selected
+  features by dragging and dropping.`;
+
 </script>
 
-<p class="label bold">Suggestion Criteria</p>
+<div class="label help-row">
+  <p class="bold">Suggestion Criteria</p>
+  <div data-tooltip="{suggestionTooltip}">
+    <svg xmlns="http://www.w3.org/2000/svg"
+      class="icon icon-tabler icon-tabler-help"
+      width="24" height="24" viewBox="0 0 24 24"
+      stroke-width="2" stroke="currentColor"
+      fill="none" stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path stroke="none" d="M0 0h24v24H0z"/>
+      <circle cx="12" cy="12" r="9" />
+      <line x1="12" y1="17" x2="12" y2="17.01" />
+      <path d="M12 13.5a1.5 1.5 0 0 1 1 -1.5a2.6 2.6 0 1 0 -3 -4" />
+    </svg>
+  </div>
+</div>
 <div>
   <select bind:value={criterion}>
     {#each criteria as {value, display}}
@@ -86,7 +112,23 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   </select>
 </div>
 
-<p class="label bold">Selected</p>
+<div class="label help-row">
+  <p class="bold">Selected</p>
+  <div data-tooltip="{selectFeatureTooltip}">
+    <svg xmlns="http://www.w3.org/2000/svg"
+      class="icon icon-tabler icon-tabler-help"
+      width="24" height="24" viewBox="0 0 24 24"
+      stroke-width="2" stroke="currentColor"
+      fill="none" stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path stroke="none" d="M0 0h24v24H0z"/>
+      <circle cx="12" cy="12" r="9" />
+      <line x1="12" y1="17" x2="12" y2="17.01" />
+      <path d="M12 13.5a1.5 1.5 0 0 1 1 -1.5a2.6 2.6 0 1 0 -3 -4" />
+    </svg>
+  </div>
+</div>
 <div id="selected-features" class="feature-box" class:dragInProgress>
   {#each $selectedFeatures as feature, i (feature)}
     <div class="feature selected"
@@ -224,6 +266,11 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     height: 1.5em;
   }
 
+  .help-row {
+    display: flex;
+    align-items: center;
+  }
+
   /* dragging */
 
   .draggingOverFeature {
@@ -262,5 +309,9 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   .all:hover .icon-tabler-plus:hover {
     color: green;
+  }
+
+  .icon-tabler-help {
+    margin-left: 0.5em;
   }
 </style>

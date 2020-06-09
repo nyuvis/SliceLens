@@ -97,6 +97,7 @@
     #legend {
       flex: 0 0 20px;
       max-height: 20px;
+      margin-top: 5px;
 
       display: flex;
     }

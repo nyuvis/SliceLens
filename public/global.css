@@ -74,3 +74,41 @@ https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-conta
   -moz-hyphens: auto;
   hyphens: auto;
 }
+
+/* tooltips */
+
+/*
+  https://stackoverflow.com/questions/7117073/add-a-tooltip-to-a-div
+  https://elazizi.com/a-step-by-step-guide-to-making-pure-css-tooltips
+*/
+
+[data-tooltip]::after {
+  position: absolute;
+  content: attr(data-tooltip);
+  opacity: 0;
+
+  margin-left: 0.5em;
+  padding: 5px;
+
+  transform: translateY(0.5em) translateY(-50%);
+
+  border-radius: 5px;
+  max-width: 30em;
+
+  font-size: 0.875em;
+  font-weight: 400;
+
+  /* background: black;
+  color: white; */
+  border: 1px solid black;
+  color: black;
+  background: white;
+
+  z-index: 99;
+
+  pointer-events: none;
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+}
