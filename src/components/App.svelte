@@ -52,11 +52,6 @@
     justify-content: space-between;
   }
 
-  .icon {
-    height: 1em;
-    width: 1em;
-  }
-
   a {
     line-height: 0;
   }
