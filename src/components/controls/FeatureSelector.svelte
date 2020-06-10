@@ -31,12 +31,15 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     { value: 'none', display: 'None' },
   ].filter(d => (!criteriaRequiringPredictions.has(d.value) || hasPredictions));
 
+  const maxFeatures = 4;
+  $: canAddFeatures = $selectedFeatures.length < maxFeatures;
+
   let suggestion = '';
 
   const worker = new FeatureSuggesterWorker();
   worker.onmessage = e => suggestion = e.data;
 
-  $: if ($dataset && $metadata !== null) {
+  $: if ($dataset && $metadata !== null && canAddFeatures) {
     worker.postMessage({
       criterion,
       selected: $selectedFeatures,
@@ -83,7 +86,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   const selectFeatureTooltip = `You can select features by dragging
   and dropping from below or by clicking on the plus icon that appears
   when you hover over the name of a feature. You can reorder selected
-  features by dragging and dropping.`;
+  features by dragging and dropping. You can select at most four features.`;
 
 </script>
 
@@ -104,6 +107,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     </svg>
   </div>
 </div>
+
 <div>
   <select bind:value={criterion}>
     {#each criteria as {value, display}}
@@ -160,16 +164,18 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       <p class="feature-name cutoff">{feature}</p>
     </div>
   {/each}
-  <div class="placeHolder"
-    ondragover="return false"
-    on:drop|preventDefault={e => dropHandler(e, $selectedFeatures.length)}
-  >
-    {#if $selectedFeatures.length === 0}
-      <div class="instruction">
-        <p>Add features from below.</p>
-      </div>
-    {/if}
-  </div>
+  {#if canAddFeatures}
+    <div class="place-holder"
+      ondragover="return false"
+      on:drop|preventDefault={e => dropHandler(e, $selectedFeatures.length)}
+    >
+      <p class="instruction"
+        class:hidden="{$selectedFeatures.length !== 0}"
+      >
+        Add features from below.
+      </p>
+    </div>
+  {/if}
 </div>
 
 <p class="label bold">Features</p>
@@ -177,6 +183,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   <div class="feature-box">
     {#each features as feature, i  (feature)}
       <div class="feature all"
+        class:no-pointer-event="{!canAddFeatures}"
         id={feature}
         draggable=true
         on:dragstart={startHandler}
@@ -198,7 +205,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         <p class="feature-name cutoff">
           {feature}
         </p>
-        {#if feature === suggestion}
+        {#if feature === suggestion && canAddFeatures}
           <p>
             <!-- light bulb icon -->
             <svg xmlns="http://www.w3.org/2000/svg"
@@ -250,7 +257,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     font-weight: 500;
   }
 
-  .feature p, .instruction p {
+  .feature p {
     margin: 0;
     padding: 0;
     pointer-events: none;
@@ -258,17 +265,24 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   .instruction {
     padding-left: 1em;
-    margin-bottom: 3px;
-    font-size: 0.875em;
   }
 
-  .placeHolder {
-    height: 1.5em;
+  .place-holder {
+    margin-bottom: 3px;
+    font-size: 0.875em;
   }
 
   .help-row {
     display: flex;
     align-items: center;
+  }
+
+  .no-pointer-event {
+    pointer-events: none;
+  }
+
+  .hidden {
+    visibility: hidden;
   }
 
   /* dragging */
