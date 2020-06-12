@@ -58,7 +58,7 @@
     margin-left: 0.5em;
   }
 
-  .icon-tabler-help{
+  .icon-tabler-help {
     vertical-align: top;
   }
 </style>
