@@ -2,12 +2,11 @@
   import { onMount, tick } from 'svelte';
   import { dataset, data, metadata, selectedFeatures } from '../stores.js';
   import matrix from '../visualization/matrix.js';
-  import icicle from '../visualization/icicle.js';
-  import nodelink from '../visualization/nodelink.js';
   import * as d3 from 'd3';
 
-  export let chart;
   export let showPredictions;
+
+  let chart = matrix();
 
   let width = 800;
   let height = 600;

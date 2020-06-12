@@ -2,12 +2,10 @@
   import DatasetSelector from './controls/DatasetSelector.svelte';
   import FeatureSelector from './controls/FeatureSelector.svelte';
   import SplitSelector from './controls/SplitSelector.svelte';
-  import ChartSelector from './controls/ChartSelector.svelte';
   import ChartManager from './ChartManager.svelte';
   import NotesSidebar from './notes/NotesSidebar.svelte';
   import matrix from '../visualization/matrix.js';
 
-  let chart = matrix();
   let showPredictions = false;
 </script>
 
@@ -31,11 +29,10 @@
     </div>
     <DatasetSelector on:update={e => showPredictions = e.detail}/>
     <SplitSelector/>
-    <ChartSelector on:update={e => chart = e.detail}/>
     <FeatureSelector/>
   </div>
 
-  <ChartManager {chart} {showPredictions}/>
+  <ChartManager {showPredictions}/>
 
   <div id="notes" class="sidebar">
     <NotesSidebar/>
