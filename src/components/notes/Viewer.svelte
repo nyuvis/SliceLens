@@ -51,7 +51,7 @@
 
   {#if edit}
     <textarea
-      rows="5"
+      rows="10"
       class="content small"
       bind:value={note.body}
       placeholder="This text area supports markdown."
@@ -67,15 +67,17 @@
 
 <style>
   textarea {
-    resize: vertical;
+    resize: none;
     margin: 0;
     border: none;
     font-family: 'Fira Sans';
+    padding: 5px;
+    max-height: 100%;
+    height: 100%;
   }
 
   input[type=text] {
     border: none;
-    border-radius: 5px;
     height: 20px;
     padding: 0;
     font-size: 1em;
@@ -102,9 +104,9 @@
   }
 
   .viewer {
-    border-radius: 5px;
     padding: 5px;
     background: white;
+    border-radius: 5px;
   }
 
   .viewer :global(:first-child) {
