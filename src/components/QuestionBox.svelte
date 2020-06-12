@@ -28,10 +28,8 @@
     content: attr(data-tooltip);
     opacity: 0;
 
-    margin-left: 0.5em;
+    margin-left: 1.5em;
     padding: 5px;
-
-    transform: translateY(0.5em) translateY(-50%);
 
     border-radius: 5px;
     max-width: 30em;
@@ -39,8 +37,6 @@
     font-size: 0.875em;
     font-weight: 400;
 
-    /* background: black;
-    color: white; */
     border: 1px solid black;
     color: black;
     background: white;
@@ -56,9 +52,7 @@
 
   .tooltip-container {
     margin-left: 0.5em;
-  }
-
-  .icon-tabler-help {
-    vertical-align: top;
+    display: flex;
+    align-items: center;
   }
 </style>

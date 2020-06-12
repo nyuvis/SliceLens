@@ -276,10 +276,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   /* icons */
 
-  .icon-tabler {
-    vertical-align: top;
-  }
-
   .icon-tabler-trash, .icon-tabler-plus {
     visibility: hidden;
     cursor: pointer;
