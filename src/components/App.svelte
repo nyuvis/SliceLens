@@ -12,9 +12,9 @@
 <div id="container">
   <div id="controls" class="sidebar">
     <div id="header">
-      <p id="title" class="large bold">Slice Lens</p>
+      <p id="title" class="large bold">SliceLens</p>
       <!-- GitHub icon -->
-      <a href="https://github.com/nyuvis/mental-model-explorer">
+      <a href="https://github.com/nyuvis/SliceLens">
         <svg xmlns="http://www.w3.org/2000/svg"
           class="icon icon-tabler icon-tabler-brand-github"
           width="24" height="24" viewBox="0 0 24 24"

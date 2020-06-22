@@ -1,6 +1,6 @@
-# Slice Lens
+# SliceLens
 
-[Demo](https://mental-model-explorer.now.sh/)
+[Demo](https://slicelens.vercel.app/)
 
 ## How to run
 
