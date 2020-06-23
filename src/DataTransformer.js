@@ -25,10 +25,7 @@ function getMetadata(dataset, splitType, numBins) {
       name: val
     };
 
-    if (uniqueValues.length <= 5) {
-      feature.values = uniqueValues;
-      feature.type = 'C';
-    } else if (!isNaN(values[0])) {
+    if (!isNaN(values[0]) && uniqueValues.length > 5) {
       feature.type = 'Q';
 
       const extent = d3.extent(values);
@@ -44,12 +41,10 @@ function getMetadata(dataset, splitType, numBins) {
         [extent[0], ...feature.thresholds, extent[1]],
         (a, b) => `[${format(a)}, ${format(b)})`
       );
-
-    } else if (values[0] instanceof Date) {
-      feature.type = 'T';
-      // TODO: handle dates
     } else {
       feature.values = uniqueValues;
+      feature.categories = uniqueValues;
+      feature.valueToGroup = new Map(d3.zip(uniqueValues, uniqueValues));
       feature.type = 'C';
     }
 
@@ -125,7 +120,7 @@ function getData(metadata, selectedFeatures, dataset) {
         const bins = bin(data);
         splits = d3.zip(nextFeature.values, bins);
       } else if (nextFeature.type === 'C') {
-        splits = d3.groups(data, d => d[nextFeatureName]);
+        splits = d3.groups(data, d => nextFeature.valueToGroup.get(d[nextFeatureName]));
       }
 
       node.children = splits

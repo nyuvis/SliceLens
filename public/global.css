@@ -35,8 +35,6 @@ body, p {
 }
 
 .link {
-  margin-top: 0.25em;
-  margin-bottom: 0.25em;
   cursor: pointer;
   padding-right: 5px;
   color: rgb(0, 99, 206);

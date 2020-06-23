@@ -17,7 +17,7 @@
 </script>
 
 {#if note !== null}
-  <div class="header">
+  <div class="header sub-label">
     {#if edit}
       {#if note.linked}
         <p class="link small" on:click={() => note.linked = false}>Unlink from current state</p>

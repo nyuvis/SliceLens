@@ -7,6 +7,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 <script>
   import FeatureSuggesterWorker from 'web-worker:../../FeatureSuggesterWorker';
   import QuestionBox from '../QuestionBox.svelte';
+  import FeatureEditor from './FeatureEditor.svelte';
   import { dataset, metadata, selectedFeatures } from '../../stores.js';
   import { get } from 'svelte/store';
 
@@ -89,7 +90,20 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   when you hover over the name of a feature. You can reorder selected
   features by dragging and dropping. You can select at most four features.`;
 
+  let showFeatureEditor = false;
+  let featureToEdit = null;
+
 </script>
+
+{#if showFeatureEditor}
+  <FeatureEditor
+    featureName={featureToEdit}
+    on:close={() => {
+      showFeatureEditor = false;
+      featureToEdit = null;
+    }}
+  />
+{/if}
 
 <div class="label help-row">
   <p class="bold">Suggestion Criteria</p>
@@ -181,21 +195,37 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
           {feature}
         </p>
         {#if feature === suggestion && canAddFeatures}
-          <p>
-            <!-- light bulb icon -->
-            <svg xmlns="http://www.w3.org/2000/svg"
-              class="icon icon-tabler icon-tabler-bulb"
-              width="24" height="24" viewBox="0 0 24 24"
-              stroke-width="2" stroke="currentColor" fill="none"
-              stroke-linecap="round" stroke-linejoin="round"
-            >
-              <path stroke="none" d="M0 0h24v24H0z"/>
-              <path d="M3 12h1M12 3v1M20 12h1M5.6 5.6l.7 .7M18.4 5.6l-.7 .7" />
-              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
-              <line x1="9.7" y1="17" x2="14.3" y2="17" />
-            </svg>
-          </p>
+          <!-- light bulb icon -->
+          <svg xmlns="http://www.w3.org/2000/svg"
+            class="icon icon-tabler icon-tabler-bulb"
+            width="24" height="24" viewBox="0 0 24 24"
+            stroke-width="2" stroke="currentColor" fill="none"
+            stroke-linecap="round" stroke-linejoin="round"
+          >
+            <path stroke="none" d="M0 0h24v24H0z"/>
+            <path d="M3 12h1M12 3v1M20 12h1M5.6 5.6l.7 .7M18.4 5.6l-.7 .7" />
+            <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+            <line x1="9.7" y1="17" x2="14.3" y2="17" />
+          </svg>
         {/if}
+
+        <div class="gap"></div>
+
+        <!-- edit icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-edit"
+          width="24" height="24" viewBox="0 0 24 24"
+          stroke-width="2" stroke="currentColor" fill="none"
+          stroke-linecap="round" stroke-linejoin="round"
+          on:click={() => {
+            featureToEdit = feature;
+            showFeatureEditor = true;
+          }}
+        >
+          <path stroke="none" d="M0 0h24v24H0z"/>
+          <path d="M9 7 h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-3" />
+          <path d="M9 15h3l8.5 -8.5a1.5 1.5 0 0 0 -3 -3l-8.5 8.5v3" />
+          <line x1="16" y1="5" x2="19" y2="8" />
+        </svg>
       </div>
     {/each}
   </div>
@@ -204,6 +234,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 <style>
   .feature-box {
     background-color: white;
+    border: 1px solid white;
     border-radius: 5px;
     padding: 5px 0px;
   }
@@ -276,12 +307,14 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   /* icons */
 
-  .icon-tabler-trash, .icon-tabler-plus {
+  .icon-tabler-trash, .icon-tabler-plus, .icon-tabler-edit {
     visibility: hidden;
     cursor: pointer;
   }
 
-  .selected:hover .icon-tabler-trash, .all:hover .icon-tabler-plus {
+  .selected:hover .icon-tabler-trash,
+  .all:hover .icon-tabler-plus,
+  .all:hover .icon-tabler-edit {
     visibility: visible;
     color: black;
   }
@@ -292,5 +325,9 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   .all:hover .icon-tabler-plus:hover {
     color: green;
+  }
+
+  .all:hover .icon-tabler-edit:hover {
+    color: rgb(0, 99, 206);
   }
 </style>

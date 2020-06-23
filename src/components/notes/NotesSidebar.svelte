@@ -79,7 +79,7 @@
 </script>
 
 <p class="label bold">Notes</p>
-<div class="header">
+<div class="header sub-label">
   <p class="link small" on:click={newNote}>New Note</p>
   <div class="gap"></div>
   <Importer on:upload={e => notes = e.detail}/>
