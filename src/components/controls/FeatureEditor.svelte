@@ -46,12 +46,21 @@ https://www.w3schools.com/howto/howto_css_modals.asp
 
   // dragging
 
-  let draggingOverGroup = null;
+  let groupBeingDragged = null;
+  let groupBeneath = null;
   let valueDragInProgress = false;
   let groupDragInProgress = false;
 
+  $: if (!groupDragInProgress) {
+    groupBeingDragged = null;
+  }
+
   function dropHandler(event, endGroupIndex) {
     const item = JSON.parse(event.dataTransfer.getData("text"));
+
+    valueDragInProgress = false;
+    groupDragInProgress = false;
+    groupBeneath = null;
 
     if (item.startGroupIndex === endGroupIndex) {
       return;
@@ -71,6 +80,7 @@ https://www.w3schools.com/howto/howto_css_modals.asp
 
   function onValueDragStart(groupIndex, value) {
     valueDragInProgress = true;
+
     const item = {
       startGroupIndex: groupIndex,
       value,
@@ -81,11 +91,12 @@ https://www.w3schools.com/howto/howto_css_modals.asp
 
   function onValueDragEnd() {
     valueDragInProgress = false;
-    draggingOverGroup = null;
+    groupBeneath = null;
   }
 
   function onGroupDragStart(groupIndex) {
     groupDragInProgress = true;
+    groupBeingDragged = groupIndex;
     const item = {
       startGroupIndex: groupIndex,
       type: "group"
@@ -94,14 +105,34 @@ https://www.w3schools.com/howto/howto_css_modals.asp
   }
 
   function onGroupDragEnd() {
-    groupDragInProgress = false;
-    draggingOverGroup = null;
+    groupBeingDragged = null;
+    groupBeneath = null;
+  }
+
+  function onDragEnter(i) {
+    groupBeneath = i;
+  }
+
+  function onDragEnterBackground() {
+    groupBeneath = null;
+  }
+
+  function getBorderClass(currentIndex, overIndex, startIndex, groupDragInProgress) {
+    if (!groupDragInProgress || startIndex === null || currentIndex !== overIndex) {
+      return "";
+    } else if (overIndex <= startIndex) {
+      return "border-top";
+    } else {
+      return "border-bottom";
+    }
   }
 
 </script>
 
 <div class="modal-background">
-  <div class="modal-content">
+  <div class="modal-content"
+    on:dragenter={onDragEnterBackground}
+  >
     <div class="header">
       <div class="feature-name large bold">{featureName}</div>
 
@@ -124,44 +155,47 @@ https://www.w3schools.com/howto/howto_css_modals.asp
     {#if feature.type === "C"}
       <div class="groups">
         {#each groups as {name, values}, i}
-          <div class="group"
+          <div
+            class="group-container {getBorderClass(i, groupBeneath, groupBeingDragged, groupDragInProgress)}"
             ondragover="return false"
             on:drop|preventDefault={e => dropHandler(e, i)}
-            on:dragenter={() => draggingOverGroup = i}
-            on:dragleave={() => draggingOverGroup = null}
-
-            draggable="true"
-            on:dragstart={() => onGroupDragStart(i)}
-            on:dragend={onGroupDragEnd}
+            on:dragenter|stopPropagation={() => onDragEnter(i)}
           >
-            <div class="group-name-row"
+            <div class="group"
+              draggable="true"
+              on:dragstart={() => onGroupDragStart(i)}
+              on:dragend={onGroupDragEnd}
+              class:highlight={groupBeneath === i && valueDragInProgress}
             >
-              {#if editingGroupName !== i}
-                <div class="bold group-name">{name}</div>
-                <div class="gap"></div>
-                <div class="link edit-name"
-                  on:click={() => editingGroupName = i}
-                >
-                  Edit name
-                </div>
-              {:else}
-                <input class="bold group-name-input" bind:value={name}>
-                <div class="link edit-name"
-                  on:click={() => editingGroupName = null}
-                >
-                  Save name
-                </div>
-              {/if}
-            </div>
-            {#each [...values] as value}
-              <div class="value small"
-                draggable="true"
-                on:dragstart|stopPropagation={() => onValueDragStart(i, value)}
-                on:dragend|stopPropagation={onValueDragEnd}
+              <div class="group-name-row"
               >
-                {value}
+                {#if editingGroupName !== i}
+                  <div class="bold group-name">{name}</div>
+                  <div class="gap"></div>
+                  <div class="link edit-name"
+                    on:click={() => editingGroupName = i}
+                  >
+                    Edit name
+                  </div>
+                {:else}
+                  <input class="bold group-name-input" bind:value={name}>
+                  <div class="link edit-name"
+                    on:click={() => editingGroupName = null}
+                  >
+                    Save name
+                  </div>
+                {/if}
               </div>
-            {/each}
+              {#each [...values] as value}
+                <div class="value small"
+                  draggable="true"
+                  on:dragstart|stopPropagation={() => onValueDragStart(i, value)}
+                  on:dragend={onValueDragEnd}
+                >
+                  {value}
+                </div>
+              {/each}
+            </div>
           </div>
         {/each}
       </div>
@@ -204,6 +238,11 @@ https://www.w3schools.com/howto/howto_css_modals.asp
     align-items: center;
   }
 
+  .divider {
+    width: 100%;
+    height: 3px;
+    background-color: black;
+  }
   .group-name {
     margin-right: 1em;
   }
@@ -219,9 +258,25 @@ https://www.w3schools.com/howto/howto_css_modals.asp
     font-size: 1rem;
   }
 
+  .group-container {
+    padding: 0.25em 0;
+  }
+
+  .border-bottom {
+    border-bottom: 1px solid black;
+  }
+
+  .border-top {
+    border-top: 1px solid black;
+  }
+
+  /* the border stays gray without !important */
+  .highlight {
+    border: 1px solid black !important;
+  }
+
   .group {
     padding: 0.5em;
-    margin: 0.75em 0;
 
     border-radius: 5px;
     border: 1px solid #E5E5E5;
