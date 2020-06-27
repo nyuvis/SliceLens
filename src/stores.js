@@ -1,5 +1,5 @@
 import { writable, derived } from 'svelte/store';
-import { getMetadata, getData } from './DataTransformer.js';
+import { getData } from './DataTransformer.js';
 
 export const dataset = writable([]);
 
@@ -9,10 +9,7 @@ export const splitType = writable('interval');
 
 export const numberOfSplits = writable(3);
 
-export const metadata = derived(
-  [dataset, splitType, numberOfSplits],
-  ([$dataset, $splitType, $numberOfSplits]) => getMetadata($dataset, $splitType, $numberOfSplits)
-);
+export const metadata = writable(null);
 
 export const data = derived(
   [metadata, selectedFeatures, dataset],

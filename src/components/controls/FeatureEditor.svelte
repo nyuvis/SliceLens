@@ -5,6 +5,7 @@ https://www.w3schools.com/howto/howto_css_modals.asp
 
 <script>
   import CategoricalFeature from "./CategoricalFeature.svelte";
+  import QuantitativeFeature from "./QuantitativeFeature.svelte";
   import { dataset, metadata } from "../../stores.js";
   import { onMount, createEventDispatcher } from "svelte";
   import { flip } from "svelte/animate";
@@ -17,32 +18,19 @@ https://www.w3schools.com/howto/howto_css_modals.asp
   const dispatch = createEventDispatcher();
 
   export let featureName;
-  const feature = $metadata.features[featureName];
+  $: feature = $metadata.features[featureName];
 
-  const groupToValues = d3.rollup(
-    Array.from(feature.valueToGroup)
-      .map(([value, group]) => ({value, group})),
-    v => new Set(v.map(d => d.value)),
-    d => d.group
-  );
-
-  let groups = feature.values.map((d, i) => ({
-    name: d,
-    values: groupToValues.get(d),
-    id: i
-  }));
+  let categoricalComponent;
+  let quantitativeComponent;
 
   function onWindowClose() {
-    feature.valueToGroup = new Map(
-      Array.from(groupToValues, ([group, values]) =>
-        [...values].map(v => [v, group])
-      ).flat()
-    );
+    if (categoricalComponent) {
+      categoricalComponent.onWindowClose();
+    } else if (quantitativeComponent) {
+      quantitativeComponent.onWindowClose();
+    }
 
-    feature.values = groups.map(d => d.name);
-
-    metadata.set($metadata);
-
+    $metadata = $metadata;
     dispatch("close");
   }
 
@@ -75,7 +63,9 @@ https://www.w3schools.com/howto/howto_css_modals.asp
     </div>
 
     {#if feature.type === 'C'}
-      <CategoricalFeature {groups} />
+      <CategoricalFeature {feature} bind:this={categoricalComponent} />
+    {:else}
+      <QuantitativeFeature {feature} bind:this={quantitativeComponent} />
     {/if}
   </div>
 </div>

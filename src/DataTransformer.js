@@ -5,10 +5,13 @@ const d3 = {...d3_all, ...d3_array,};
 
 export { getMetadata, getData };
 
-function getMetadata(dataset, splitType, numBins) {
+function getMetadata(dataset) {
   if (!dataset || !dataset.columns) {
     return null;
   }
+
+  const splitType = 'interval';
+  const numBins = 3;
 
   const cols = dataset.columns;
 

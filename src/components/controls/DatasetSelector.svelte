@@ -1,5 +1,6 @@
 <script>
   import { onMount, createEventDispatcher } from 'svelte';
+  import { getMetadata } from '../../DataTransformer.js';
   import { dataset, selectedFeatures, metadata } from '../../stores.js';
   import * as d3 from "d3";
 
@@ -24,8 +25,10 @@
   function load({path, name}) {
     d3.csv(path, d3.autoType).then(data => {
       data.name = name;
+      const md = getMetadata(data);
       $selectedFeatures = [];
       $dataset = data;
+      $metadata = md;
     });
   }
 

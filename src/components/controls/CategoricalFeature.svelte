@@ -10,9 +10,33 @@
 
   const dispatch = createEventDispatcher();
 
-  export let groups;
+  export let feature;
 
-  let uid = groups.length;
+  export function onWindowClose() {
+    feature.valueToGroup = new Map(
+      Array.from(groups, ({name, values}) =>
+        [...values].map(v => [v, name])
+      ).flat()
+    );
+
+    feature.values = groups.map(d => d.name);
+  }
+
+  let uid = 0;
+
+  let groupToValues = d3.rollup(
+    Array.from(feature.valueToGroup)
+      .map(([value, group]) => ({value, group})),
+    v => new Set(v.map(d => d.value)),
+    d => d.group
+  );
+
+  let groups = feature.values.map(d => ({
+    name: d,
+    values: groupToValues.get(d),
+    id: uid++
+  }));
+
   let editingGroupName = null;
 
   function onClickNewGroup() {
@@ -96,12 +120,7 @@
     groupBeneath = i;
   }
 
-  function getBorderClass(
-    currentIndex,
-    overIndex,
-    startIndex,
-    groupDragInProgress
-  ) {
+  function getBorderClass(currentIndex, overIndex, startIndex, groupDragInProgress) {
     if (
       !groupDragInProgress ||
       startIndex === null ||
@@ -255,6 +274,10 @@
     align-items: center;
   }
 
+  .icon-tabler-grip-vertical {
+    cursor: move;
+  }
+
   .edit-name, .icon-tabler-grip-vertical {
     visibility: hidden;
   }
@@ -267,7 +290,6 @@
   .handle {
     display: flex;
     align-items: center;
-    cursor: move;
   }
 
   .content {
