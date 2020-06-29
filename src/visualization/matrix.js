@@ -187,7 +187,7 @@ function matrix() {
         const isXSplit = node.depth % 2 === 0;
 
         const splitFeature = node.children[0].data.splitFeature;
-        const splitLabels = metadata.features[splitFeature].values;
+        const splitLabels = node.children.map(d => d.data.splitLabel);
         const scale = d3.scaleBand()
             .domain(isXSplit ?
               splitLabels :
@@ -297,7 +297,6 @@ function matrix() {
           }
         }
       }
-
 
       function setupTooltips() {
         const tooltip = g.select('#tooltip');

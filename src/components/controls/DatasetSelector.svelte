@@ -93,7 +93,7 @@
 <div>
   <p class="label bold">Dataset</p>
 
-  <p class="link small" on:click={switchDemoOrCustom}>
+  <p class="link small sub-label" on:click={switchDemoOrCustom}>
     {
       useCustomDataset ?
         "Use demo dataset" :

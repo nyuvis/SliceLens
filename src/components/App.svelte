@@ -1,7 +1,6 @@
 <script>
   import DatasetSelector from './controls/DatasetSelector.svelte';
   import FeatureSelector from './controls/FeatureSelector.svelte';
-  import SplitSelector from './controls/SplitSelector.svelte';
   import ChartManager from './ChartManager.svelte';
   import NotesSidebar from './notes/NotesSidebar.svelte';
   import matrix from '../visualization/matrix.js';
@@ -28,7 +27,6 @@
       </a>
     </div>
     <DatasetSelector on:update={e => showPredictions = e.detail}/>
-    <SplitSelector/>
     <FeatureSelector/>
   </div>
 
@@ -40,7 +38,6 @@
 </div>
 
 <style>
-
   #header {
     margin-top: 1rem;
 
