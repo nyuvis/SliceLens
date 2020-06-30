@@ -2,7 +2,8 @@
   import Exporter from './Exporter.svelte';
   import Importer from './Importer.svelte';
   import Viewer from './Viewer.svelte';
-  import { selectedFeatures, splitType, numberOfSplits, dataset } from '../../stores.js';
+  import { selectedFeatures, metadata, dataset } from '../../stores.js';
+  import { cloneMetadata } from '../../DataTransformer.js';
 
   let notes = [];
 
@@ -67,9 +68,8 @@
   function setNoteState() {
     if (selectedNote.linked) {
       selectedNote.state = {
-        selectedFeatures: $selectedFeatures,
-        splitType: $splitType,
-        numberOfSplits: $numberOfSplits,
+        selectedFeatures: [...$selectedFeatures],
+        metadata: cloneMetadata($metadata),
         dataset: $dataset.name
       };
     } else {

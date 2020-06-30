@@ -1,6 +1,6 @@
 <script>
   import { dataset, metadata } from "../../stores.js";
-  import { equalIntervalThresholds, quantileThresholds } from "../../DataTransformer.js";
+  import { equalIntervalThresholds, quantileThresholds, getBinLabels } from "../../DataTransformer.js";
 
   import * as d3_array from "d3-array";
   import * as d3_all from "d3";
@@ -28,8 +28,13 @@
     } else if (feature.splitType === 'quantile') {
       feature.thresholds = quantileThresholds(values, feature.numBins);
     }
-  }
 
+    const bin = d3.bin()
+      .domain(extent)
+      .thresholds(feature.thresholds);
+    const bins = bin(values);
+    feature.values = getBinLabels(bins);
+  }
 </script>
 
 <p class="sub-label small">Bins</p>

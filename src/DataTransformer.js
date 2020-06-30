@@ -3,7 +3,56 @@ import * as d3_all from "d3";
 
 const d3 = {...d3_all, ...d3_array,};
 
-export { equalIntervalThresholds, quantileThresholds, getMetadata, getData };
+export {
+  cloneMetadata,
+  equalIntervalThresholds,
+  quantileThresholds,
+  getMetadata,
+  getData,
+  getBinLabels,
+};
+
+function cloneMetadata(md) {
+  const features = Object.entries(md.features)
+    .map(([name, feature]) => {
+      const copy = {
+        name: feature.name,
+        type: feature.type,
+        values: feature.values,
+      };
+
+      if (feature.type === 'Q') {
+        copy.extent = [...feature.extent];
+        copy.splitType = feature.splitType;
+        copy.numBins = feature.numBins;
+        copy.thresholds = [...feature.thresholds];
+      } else {
+        copy.categories = [...feature.categories];
+        copy.valueToGroup = new Map(feature.valueToGroup);
+      }
+
+      return [name, copy];
+    });
+
+  return {
+    features: Object.fromEntries(features),
+    featureNames: [...md.featureNames],
+    labelValues: [...md.labelValues],
+    hasPredictions: md.hasPredictions,
+  };
+}
+
+function getBinLabels(bins) {
+  const format = d3.format(".2~f");
+  const n = bins.length;
+  return bins.map((bin, i) => {
+    // the right endpoint of the last bin is inclusive
+    const closing = i === n - 1 ?
+      ']' :
+      ')';
+    return `[${format(bin.x0)}, ${format(bin.x1)}${closing}`;
+  });
+}
 
 function equalIntervalThresholds([min, max], numBins) {
   const binSize = (max - min) / numBins;
@@ -39,11 +88,22 @@ function getMetadata(dataset) {
     const areNumbers = Array.from(uniqueValues).every(d => !isNaN(d));
 
     if (areNumbers && uniqueValues.length > 5) {
+      const numBins = 3;
+      const splitType = 'interval';
       const extent = d3.extent(values);
+      const thresholds = equalIntervalThresholds(extent, numBins);
+
+      const bin = d3.bin()
+        .domain(extent)
+        .thresholds(thresholds);
+      const bins = bin(values);
+      const featureValueLabels = getBinLabels(bins);
+
       feature.extent = extent;
-      feature.splitType = 'interval';
-      feature.numBins = 3;
-      feature.thresholds = equalIntervalThresholds(extent, feature.numBins);
+      feature.splitType = splitType;
+      feature.numBins = numBins;
+      feature.thresholds = thresholds;
+      feature.values = featureValueLabels;
       feature.type = 'Q';
     } else {
       feature.values = uniqueValues;
@@ -103,26 +163,17 @@ function getData(metadata, selectedFeatures, dataset) {
       const nextFeature = metadata.features[nextFeatureName];
       let splits;
 
-      const format = d3.format(".2~f");
-
       if (nextFeature.type === 'Q') {
         const bin = d3.bin()
             .value(d => d[nextFeatureName])
             .domain(nextFeature.extent)
             .thresholds(nextFeature.thresholds);
         const bins = bin(data);
-        const n = bins.length;
-        splits = bins.map((bin, i) => {
-          // the right endpoint of the last bin is inclusive
-          const closing = i === n - 1 ?
-            ']' :
-            ')';
-          const label = `[${format(bin.x0)}, ${format(bin.x1)}${closing}`;
-          return [label, bin];
-        });
+        splits = d3.zip(nextFeature.values, bins);
       } else if (nextFeature.type === 'C') {
         const groups = d3.group(data, d => nextFeature.valueToGroup.get(d[nextFeatureName]));
-        splits = nextFeature.values.map(d => [d, groups.get(d)]);
+        splits = nextFeature.values.map(d => [d, groups.get(d)])
+          .filter(([value, group]) => group !== undefined && group !== null && group.length !== 0);
       }
 
       node.children = splits

@@ -1,18 +1,18 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
-  import { selectedFeatures, splitType, numberOfSplits } from '../../stores.js';
+  import { onMount, createEventDispatcher } from 'svelte';
+  import { selectedFeatures, metadata } from '../../stores.js';
+  import { cloneMetadata } from '../../DataTransformer.js';
   import marked from 'marked';
   import DOMPurify from 'dompurify';
-
-  const dispatch = createEventDispatcher();
 
   export let note = null;
   export let edit = false;
 
+  const dispatch = createEventDispatcher();
+
   function gotoState() {
-    $selectedFeatures = note.state.selectedFeatures;
-    $splitType = note.state.splitType;
-    $numberOfSplits = note.state.numberOfSplits;
+    $selectedFeatures = [...note.state.selectedFeatures];
+    $metadata = cloneMetadata(note.state.metadata);
   }
 </script>
 

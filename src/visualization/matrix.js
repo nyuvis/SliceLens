@@ -187,7 +187,7 @@ function matrix() {
         const isXSplit = node.depth % 2 === 0;
 
         const splitFeature = node.children[0].data.splitFeature;
-        const splitLabels = node.children.map(d => d.data.splitLabel);
+        const splitLabels = metadata.features[splitFeature].values;
         const scale = d3.scaleBand()
             .domain(isXSplit ?
               splitLabels :
