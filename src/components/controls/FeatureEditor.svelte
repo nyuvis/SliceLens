@@ -20,10 +20,17 @@ https://www.w3schools.com/howto/howto_css_modals.asp
   export let featureName;
   $: feature = $metadata.features[featureName];
 
+  let valid = true;
+  $: canClose = valid || feature.type === 'C';
+
   let categoricalComponent;
   let quantitativeComponent;
 
   function onWindowClose() {
+    if (!canClose) {
+      return;
+    }
+
     if (categoricalComponent) {
       categoricalComponent.onWindowClose();
     } else if (quantitativeComponent) {
@@ -34,7 +41,15 @@ https://www.w3schools.com/howto/howto_css_modals.asp
     dispatch("close");
   }
 
+  function onkeydown(ev) {
+    if (ev.key === 'Escape') {
+      onWindowClose();
+    }
+  }
+
 </script>
+
+<svelte:window on:keydown={onkeydown}/>
 
 <div class="modal-background">
   <div class="modal-content">
@@ -43,29 +58,36 @@ https://www.w3schools.com/howto/howto_css_modals.asp
 
       <div class="gap" />
 
+      {#if canClose}
       <!-- x icon -->
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="icon icon-tabler icon-tabler-x"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        stroke-width="2"
-        stroke="currentColor"
-        fill="none"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        on:click={onWindowClose}>
-        <path stroke="none" d="M0 0h24v24H0z" />
-        <line x1="18" y1="6" x2="6" y2="18" />
-        <line x1="6" y1="6" x2="18" y2="18" />
-      </svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="icon icon-tabler icon-tabler-x"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          on:click={onWindowClose}>
+          <path stroke="none" d="M0 0h24v24H0z" />
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      {/if}
     </div>
 
     {#if feature.type === 'C'}
-      <CategoricalFeature {feature} bind:this={categoricalComponent} />
+      <CategoricalFeature
+        {feature}
+        bind:this={categoricalComponent} />
     {:else}
-      <QuantitativeFeature {feature} bind:this={quantitativeComponent} />
+      <QuantitativeFeature
+        {feature}
+        on:validate={ev => valid = ev.detail}
+        bind:this={quantitativeComponent} />
     {/if}
   </div>
 </div>

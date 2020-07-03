@@ -10,7 +10,10 @@ export {
   getMetadata,
   getData,
   getBinLabels,
+  format,
 };
+
+const format = d3.format(".2~f");
 
 function cloneMetadata(md) {
   const features = Object.entries(md.features)
@@ -43,7 +46,6 @@ function cloneMetadata(md) {
 }
 
 function getBinLabels(bins) {
-  const format = d3.format(".2~f");
   const n = bins.length;
   return bins.map((bin, i) => {
     // the right endpoint of the last bin is inclusive
