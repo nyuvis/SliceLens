@@ -81,7 +81,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     $selectedFeatures = $selectedFeatures.filter(d => d !== feature);
   }
 
-  const suggestionTooltip = `Choose the metric that the tool uses to
+  const suggestionTooltip = `Choose the metric that is used to
   suggest which feature to explore next. A lightbulb icon is next to
   the name of the suggested feature.`;
 
@@ -89,6 +89,9 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   and dropping from below or by clicking on the plus icon that appears
   when you hover over the name of a feature. You can reorder selected
   features by dragging and dropping. You can select at most four features.`;
+
+  const featureTooltip = `Click the edit icon that appears when you hover
+  over a feature to change how that feature is split.`;
 
   let showFeatureEditor = false;
   let featureToEdit = null;
@@ -167,7 +170,10 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   {/if}
 </div>
 
-<p class="label bold">Features</p>
+<div class="label help-row">
+  <p class="bold">Features</p>
+  <QuestionBox text={featureTooltip}/>
+</div>
 <div class="all-features">
   <div class="feature-box">
     {#each features as feature, i  (feature)}

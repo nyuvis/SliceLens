@@ -2,6 +2,7 @@
   import { onMount, createEventDispatcher } from 'svelte';
   import { getMetadata } from '../../DataTransformer.js';
   import { dataset, selectedFeatures, metadata } from '../../stores.js';
+  import QuestionBox from '../QuestionBox.svelte';
   import * as d3 from "d3";
 
   let selectedDemoDataset = null;
@@ -88,6 +89,10 @@
 
   const dispatch = createEventDispatcher();
   $: dispatch('update', predictions);
+
+  const datasetTooltip = `Your dataset must be a CSV file that has a "label" column,
+  representing the ground truth class label for each row. Optionally, the dataset
+  can also contain a "prediction" column, representing a predicted value for each row.`;
 </script>
 
 <div>
@@ -110,7 +115,10 @@
       on:change={onUploadChange}
     >
 
-    <p on:click={onUploadclick} class="link small">Select File</p>
+    <div class="help-row">
+      <p on:click={onUploadclick} id="selectFile" class="link small">Select File</p>
+      <QuestionBox text={datasetTooltip}/>
+    </div>
 
     {#if uploadedDatasetName !== null}
       <p class="sub-label small">Current: {uploadedDatasetName}</p>
@@ -134,5 +142,14 @@
 <style>
   label {
     display: inline-block;
+  }
+
+  .help-row {
+    display: flex;
+    align-items: center;
+  }
+
+  #selectFile {
+    padding-right: 0;
   }
 </style>
