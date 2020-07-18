@@ -31,7 +31,7 @@
     }
 
     selectedIndex = notes.length;
-    selectedNote = { title: 'New Note', body: '', linked: false, state: null };
+    selectedNote = { title: 'New Note', body: '', linked: true, state: null };
     notes.push(selectedNote);
     notes = notes;
     edit = true;
