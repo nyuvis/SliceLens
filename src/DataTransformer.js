@@ -10,10 +10,7 @@ export {
   getMetadata,
   getData,
   getBinLabels,
-  format,
 };
-
-const format = d3.format(".2~f");
 
 function cloneMetadata(md) {
   const features = Object.entries(md.features)
@@ -45,7 +42,7 @@ function cloneMetadata(md) {
   };
 }
 
-function getBinLabels(bins) {
+function getBinLabels(bins, format) {
   const n = bins.length;
   return bins.map((bin, i) => {
     // the right endpoint of the last bin is inclusive
@@ -99,13 +96,15 @@ function getMetadata(dataset) {
         .domain(extent)
         .thresholds(thresholds);
       const bins = bin(values);
-      const featureValueLabels = getBinLabels(bins);
+      const formatSpecifier = '.2~f';
+      const featureValueLabels = getBinLabels(bins, d3.format(formatSpecifier));
 
       feature.extent = extent;
       feature.splitType = splitType;
       feature.numBins = numBins;
       feature.thresholds = thresholds;
       feature.values = featureValueLabels;
+      feature.format = formatSpecifier;
       feature.type = 'Q';
     } else {
       feature.values = uniqueValues;

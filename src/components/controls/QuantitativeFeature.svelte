@@ -1,7 +1,7 @@
 <script>
   import { onMount, createEventDispatcher } from "svelte";
   import { dataset, metadata } from "../../stores.js";
-  import { equalIntervalThresholds, quantileThresholds, getBinLabels, format } from "../../DataTransformer.js";
+  import { equalIntervalThresholds, quantileThresholds, getBinLabels } from "../../DataTransformer.js";
 
   import * as d3_array from "d3-array";
   import * as d3_all from "d3";
@@ -11,10 +11,14 @@
   export let feature;
 
   export function onWindowClose() {
-    if (feature.splitType === 'custom') {
+    if (feature.splitType === 'custom' ||
+      originalFormatSpecifier !== feature.format) {
       setAxisValues();
     }
   }
+
+  const originalFormatSpecifier = feature.format;
+  let format = d3.format(feature.format);
 
   const dispatch = createEventDispatcher();
 
@@ -30,9 +34,20 @@
   const bins = [2, 3, 4, 5];
 
   let validThresholds = true;
-  $: dispatch('validate', validThresholds);
+  let validFormat = true;
+  $: valid = validThresholds && validFormat;
+  $: dispatch('validate', valid);
 
   onMount(() => dispatch('validate', true));
+
+  function onFormatInput() {
+    try {
+      format = d3.format(feature.format);
+      validFormat = true;
+    } catch (error) {
+      validFormat = false;
+    }
+  }
 
   function onSelectChange() {
     if (feature.splitType === 'interval') {
@@ -76,9 +91,31 @@
       .domain(extent)
       .thresholds(feature.thresholds);
     const bins = bin(datasetValues);
-    feature.values = getBinLabels(bins);
+    feature.values = getBinLabels(bins, format);
   }
 </script>
+
+<div class="section">
+  <p class="sub-label">Format</p>
+  <p class="sub-label small info">
+    This value can be any valid <a href="https://github.com/d3/d3-format#locale_format" target="_blank">d3-format specifier</a>.
+  </p>
+  <input
+    type="text"
+    bind:value={feature.format}
+    placeholder="Ex: .2~f"
+    size=8
+    on:input={onFormatInput}
+    on:change={() => {
+      if (validFormat) {
+        setAxisValues();
+      }
+    }}
+  >
+  {#if !validFormat}
+    <span class="invalid small">Invalid format.</span>
+  {/if}
+</div>
 
 <div class="section">
   <p class="sub-label">Number of bins</p>
@@ -88,7 +125,6 @@
     {/each}
   </select>
 </div>
-
 
 <div class="section">
   <p class="sub-label">Split type</p>

@@ -29,7 +29,7 @@
   );
 
   let groups = feature.values.map(d => ({
-    name: d,
+    name: new String(d),
     values: groupToValues.get(d),
     id: uid++
   }));
@@ -133,9 +133,9 @@
 </script>
 
 <div class="controls">
-  <div class="link" on:click={onClickNewGroup}>
+  <p class="link" on:click={onClickNewGroup}>
     New Group
-  </div>
+  </p>
 </div>
 
 <div class="groups">
@@ -188,7 +188,7 @@
                 Edit name
               </div>
             {:else}
-              <input class="bold group-name-input" bind:value={name} />
+              <input class="bold group-name-input" bind:value={name} size={Math.max(name.length, 1)}/>
               <div
                 class="link edit-name"
                 on:click={() => (editingGroupName = null)}>
@@ -214,6 +214,7 @@
 <style>
   .controls {
     margin: 0.5em 0;
+    align-self: start;
   }
 
   .group-name {
@@ -221,9 +222,6 @@
   }
 
   .group-name-input {
-    flex: 1 1 auto;
-
-    width: 0;
     margin-right: 1em;
     border: 0;
     padding: 0;

@@ -29,6 +29,10 @@ function getSuggestedFeature({criterion, selected, metadata, dataset}) {
   }
 }
 
+/*
+  Return the feature that results in the nodes with the
+  highest purity overall.
+*/
 function purity({selected, metadata, dataset, available}) {
   let suggestion = '';
   let maxPurity = 0;
@@ -39,10 +43,11 @@ function purity({selected, metadata, dataset, available}) {
     const root = d3.hierarchy(data).sum(d => d.value);
 
     const purity = d3.sum(root.leaves(), d => {
+      // get the number of instances in the most common class for this node
       const counts = Array.from(d.data.counts.values());
       return d3.max(counts);
     }) / root.value;
-    
+
     if (purity > maxPurity) {
       suggestion = feature;
       maxPurity = purity;
@@ -52,6 +57,10 @@ function purity({selected, metadata, dataset, available}) {
   return suggestion;
 }
 
+/*
+  Return the feature that results in the single node that has
+  the highest number of errors.
+*/
 function errorCount({selected, metadata, dataset, available}) {
   let suggestion = '';
   let maxError = 0;
@@ -65,7 +74,11 @@ function errorCount({selected, metadata, dataset, available}) {
       // one Map per class
       const predictionResultsPerClass = Array.from(d.data.predictionResults.values());
       // get sum of incorrect predictions for each class
-      return d3.sum(predictionResultsPerClass, p => p.has('incorrect') ? p.get('incorrect') : 0);
+      return d3.sum(predictionResultsPerClass,
+        p => p.has('incorrect') ?
+          p.get('incorrect') :
+          0
+      );
     });
 
     if (errors > maxError) {
@@ -77,6 +90,10 @@ function errorCount({selected, metadata, dataset, available}) {
   return suggestion;
 }
 
+/*
+  Return the feature that results in the single node that has
+  the highest percent of errors.
+*/
 function errorPercent({selected, metadata, dataset, available}) {
   let suggestion = '';
   let maxError = 0;
@@ -91,7 +108,8 @@ function errorPercent({selected, metadata, dataset, available}) {
       const errorCount = d3.sum(predictionResultsPerClass,
         p => p.has('incorrect') ?
           p.get('incorrect') :
-          0);
+          0
+      );
       return errorCount / d.value;
     });
 
