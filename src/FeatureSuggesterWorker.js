@@ -18,8 +18,8 @@ function getSuggestedFeature({criterion, selected, metadata, dataset}) {
 
   const available = metadata.featureNames.filter(d => !selected.includes(d));
 
-  if (criterion === 'purity') {
-    return purity({selected, metadata, dataset, available});
+  if (criterion === 'entropy') {
+    return entropy({selected, metadata, dataset, available});
   } else if (criterion === 'errorCount') {
     return errorCount({selected, metadata, dataset, available});
   } else if (criterion === 'errorPercent') {
@@ -31,30 +31,36 @@ function getSuggestedFeature({criterion, selected, metadata, dataset}) {
 
 /*
   Return the feature that results in the nodes with the
-  highest purity overall.
+  lowest average entropy.
 */
-function purity({selected, metadata, dataset, available}) {
+function entropy({selected, metadata, dataset, available}) {
   let suggestion = '';
-  let maxPurity = 0;
+  let minEntropy = Number.POSITIVE_INFINITY;
 
   available.forEach(feature => {
     const sel = [...selected, feature];
     const data = getData(metadata, sel, dataset);
     const root = d3.hierarchy(data).sum(d => d.value);
 
-    const purity = d3.sum(root.leaves(), d => {
-      // get the number of instances in the most common class for this node
-      const counts = Array.from(d.data.counts.values());
-      return d3.max(counts);
-    }) / root.value;
+    const ent = d3.sum(root.leaves(), square => {
+      const weight = square.value / root.value;
+      return weight * H(square);
+    });
 
-    if (purity > maxPurity) {
+    if (ent < minEntropy) {
       suggestion = feature;
-      maxPurity = purity;
+      minEntropy = ent;
     }
   });
 
   return suggestion;
+
+  function H(square) {
+    return -d3.sum(square.data.counts.values(), v => {
+      const p = v / square.value;
+      return p * Math.log2(p);
+    });
+  }
 }
 
 /*

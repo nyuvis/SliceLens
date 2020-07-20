@@ -16,18 +16,18 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     features = $metadata.featureNames;
   }
 
-  let criterion = 'purity';
+  let criterion = 'entropy';
   const criteriaRequiringPredictions = new Set(['errorCount', 'errorPercent']);
 
   $: hasPredictions = $metadata !== null && $metadata.hasPredictions;
   // reset criterion if predictions are not available,
   // which would happen when changing datasets
   $: if (!hasPredictions && criteriaRequiringPredictions.has(criterion)) {
-    criterion = 'purity';
+    criterion = 'entropy';
   }
 
   $: criteria = [
-    { value: 'purity', display: 'Purity' },
+    { value: 'entropy', display: 'Entropy' },
     { value: 'errorCount', display: 'Error Count' },
     { value: 'errorPercent', display: 'Error Percent' },
     { value: 'none', display: 'None' },
