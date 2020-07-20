@@ -27,9 +27,9 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   }
 
   $: criteria = [
-    { value: 'entropy', display: 'Entropy' },
-    { value: 'errorCount', display: 'Error Count' },
-    { value: 'errorPercent', display: 'Error Percent' },
+    { value: 'entropy', display: 'Min average entropy' },
+    { value: 'errorCount', display: 'Max single slice error count' },
+    { value: 'errorPercent', display: 'Max single slice error percent' },
     { value: 'none', display: 'None' },
   ].filter(d => (!criteriaRequiringPredictions.has(d.value) || hasPredictions));
 

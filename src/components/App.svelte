@@ -13,7 +13,7 @@
     <div id="header">
       <p id="title" class="large bold">SliceLens</p>
       <!-- GitHub icon -->
-      <a href="https://github.com/nyuvis/SliceLens">
+      <a href="https://github.com/nyuvis/SliceLens" target="_blank" rel="noopener noreferrer">
         <svg xmlns="http://www.w3.org/2000/svg"
           class="icon icon-tabler icon-tabler-brand-github"
           width="24" height="24" viewBox="0 0 24 24"

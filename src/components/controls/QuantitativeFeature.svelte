@@ -26,7 +26,7 @@
   const extent = d3.extent(datasetValues);
 
   const splits = [
-    { value: 'interval', display: 'Equal Intervals' },
+    { value: 'interval', display: 'Equal Width' },
     { value: 'quantile', display: 'Quantiles' },
     { value: 'custom', display: 'Custom' },
   ];
@@ -98,7 +98,7 @@
 <div class="section">
   <p class="sub-label">Format</p>
   <p class="sub-label small info">
-    This value can be any valid <a href="https://github.com/d3/d3-format#locale_format" target="_blank">d3-format specifier</a>.
+    This value can be any valid <a href="https://github.com/d3/d3-format#locale_format" target="_blank" rel="noopener noreferrer">d3-format specifier</a>.
   </p>
   <input
     type="text"
