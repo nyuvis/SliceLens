@@ -28,6 +28,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   $: criteria = [
     { value: 'entropy', display: 'Min average entropy' },
+    { value: 'errorDeviation', display: 'Max error deviation' },
     { value: 'errorCount', display: 'Max single slice error count' },
     { value: 'errorPercent', display: 'Max single slice error percent' },
     { value: 'none', display: 'None' },

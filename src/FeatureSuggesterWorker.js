@@ -24,6 +24,8 @@ function getSuggestedFeature({criterion, selected, metadata, dataset}) {
     return errorCount({selected, metadata, dataset, available});
   } else if (criterion === 'errorPercent') {
     return errorPercent({selected, metadata, dataset, available});
+  } else if (criterion === 'errorDeviation') {
+    return errorDeviation({selected, metadata, dataset, available})
   } else {
     return '';
   }
@@ -63,6 +65,26 @@ function entropy({selected, metadata, dataset, available}) {
   }
 }
 
+function errorDeviation({selected, metadata, dataset, available}) {
+  let suggestion = '';
+  let maxDeviation = 0;
+
+  available.forEach(feature => {
+    const sel = [...selected, feature];
+    const data = getData(metadata, sel, dataset);
+    const root = d3.hierarchy(data).sum(d => d.value);
+
+    const dev = d3.deviation(root.leaves(), d => getErrorCountForSquare(d) / d.value);
+
+    if (dev > maxDeviation) {
+      suggestion = feature;
+      maxDeviation = dev;
+    }
+  });
+
+  return suggestion;
+}
+
 /*
   Return the feature that results in the single node that has
   the highest number of errors.
@@ -76,16 +98,7 @@ function errorCount({selected, metadata, dataset, available}) {
     const data = getData(metadata, sel, dataset);
     const root = d3.hierarchy(data).sum(d => d.value);
 
-    const errors = d3.max(root.leaves(), d => {
-      // one Map per class
-      const predictionResultsPerClass = Array.from(d.data.predictionResults.values());
-      // get sum of incorrect predictions for each class
-      return d3.sum(predictionResultsPerClass,
-        p => p.has('incorrect') ?
-          p.get('incorrect') :
-          0
-      );
-    });
+    const errors = d3.max(root.leaves(), getErrorCountForSquare);
 
     if (errors > maxError) {
       suggestion = feature;
@@ -109,15 +122,7 @@ function errorPercent({selected, metadata, dataset, available}) {
     const data = getData(metadata, sel, dataset);
     const root = d3.hierarchy(data).sum(d => d.value);
 
-    const errors = d3.max(root.leaves(), d => {
-      const predictionResultsPerClass = Array.from(d.data.predictionResults.values());
-      const errorCount = d3.sum(predictionResultsPerClass,
-        p => p.has('incorrect') ?
-          p.get('incorrect') :
-          0
-      );
-      return errorCount / d.value;
-    });
+    const errors = d3.max(root.leaves(), d => getErrorCountForSquare(d) / d.value);
 
     if (errors > maxError) {
       suggestion = feature;
@@ -126,4 +131,17 @@ function errorPercent({selected, metadata, dataset, available}) {
   });
 
   return suggestion;
+}
+
+function getErrorCountForSquare(square) {
+  // one Map per class
+  const predictionResultsPerClass = Array.from(square.data.predictionResults.values());
+  // get sum of incorrect predictions for each class
+  const errorCount = d3.sum(predictionResultsPerClass,
+    p => p.has('incorrect') ?
+      p.get('incorrect') :
+      0
+  );
+
+  return errorCount;
 }
