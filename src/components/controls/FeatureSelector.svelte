@@ -19,6 +19,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   const criteria = [
     {
       title: 'Ground truth metrics',
+      requiresPredictions: false,
       options: [
         { value: 'entropy', display: 'Min average entropy', requiresPredictions: false },
         { value: 'none', display: 'None', requiresPredictions: false },
@@ -26,6 +27,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     },
     {
       title: 'Prediction metrics',
+      requiresPredictions: true,
       options: [
         { value: 'errorDeviation', display: 'Max error deviation', requiresPredictions: true },
         { value: 'errorCount', display: 'Max single slice error count', requiresPredictions: true },
@@ -126,7 +128,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
 <div>
   <select bind:value={criterion}>
-    {#each criteria as group}
+    {#each criteria.filter(d => (hasPredictions || !d.requiresPredictions)) as group}
       <optgroup label={group.title}>
         {#each group.options.filter(d => (hasPredictions || !d.requiresPredictions)) as opt}
           <option value={opt}>{opt.display}</option>

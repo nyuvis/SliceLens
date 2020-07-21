@@ -10,8 +10,12 @@
   export let feature;
 
   export function onWindowClose() {
-    feature.valueToGroup = new Map(
-      Array.from(groups, ({name, values}) =>
+    console.log('groupToValues', groupToValues);
+    console.log('groups', groups);
+    console.log('object entries', Object.entries(groups));
+    feature.valueToGroup = Object.fromEntries(
+      groups.map(({name, values}) =>
+        // values is a set
         [...values].map(v => [v, name])
       ).flat()
     );
@@ -22,7 +26,7 @@
   let uid = 0;
 
   let groupToValues = d3.rollup(
-    Array.from(feature.valueToGroup)
+    Object.entries(feature.valueToGroup)
       .map(([value, group]) => ({value, group})),
     v => new Set(v.map(d => d.value)),
     d => d.group

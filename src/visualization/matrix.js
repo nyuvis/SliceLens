@@ -317,7 +317,7 @@ function matrix() {
 
           const node = cell.datum();
 
-          const lines = node.depth === 0 ? ["Root node"] : node.ancestors()
+          const lines = node.depth === 0 ? ["Entire dataset"] : node.ancestors()
               .reverse()
               .slice(1)
               .map(d => `${d.data.splitFeature}: ${d.data.splitLabel}`);

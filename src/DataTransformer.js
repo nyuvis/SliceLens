@@ -28,7 +28,7 @@ function cloneMetadata(md) {
         copy.thresholds = [...feature.thresholds];
       } else {
         copy.categories = [...feature.categories];
-        copy.valueToGroup = new Map(feature.valueToGroup);
+        copy.valueToGroup = Object.assign({}, feature.valueToGroup);
       }
 
       return [name, copy];
@@ -109,7 +109,7 @@ function getMetadata(dataset) {
     } else {
       feature.values = uniqueValues;
       feature.categories = uniqueValues;
-      feature.valueToGroup = new Map(d3.zip(uniqueValues, uniqueValues));
+      feature.valueToGroup = Object.fromEntries(d3.zip(uniqueValues, uniqueValues));
       feature.type = 'C';
     }
 
@@ -172,7 +172,7 @@ function getData(metadata, selectedFeatures, dataset) {
         const bins = bin(data);
         splits = d3.zip(nextFeature.values, bins);
       } else if (nextFeature.type === 'C') {
-        const groups = d3.group(data, d => nextFeature.valueToGroup.get(d[nextFeatureName]));
+        const groups = d3.group(data, d => nextFeature.valueToGroup[d[nextFeatureName]]);
         splits = nextFeature.values.map(d => [d, groups.get(d)])
           .filter(([value, group]) => group !== undefined && group !== null && group.length !== 0);
       }
