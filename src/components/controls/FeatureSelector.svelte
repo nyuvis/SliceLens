@@ -16,23 +16,33 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     features = $metadata.featureNames;
   }
 
-  let criterion = 'entropy';
-  const criteriaRequiringPredictions = new Set(['errorCount', 'errorPercent']);
+  const criteria = [
+    {
+      title: 'Ground truth metrics',
+      options: [
+        { value: 'entropy', display: 'Min average entropy', requiresPredictions: false },
+        { value: 'none', display: 'None', requiresPredictions: false },
+      ],
+    },
+    {
+      title: 'Prediction metrics',
+      options: [
+        { value: 'errorDeviation', display: 'Max error deviation', requiresPredictions: true },
+        { value: 'errorCount', display: 'Max single slice error count', requiresPredictions: true },
+        { value: 'errorPercent', display: 'Max single slice error percent', requiresPredictions: true },
+      ],
+    },
+  ];
+
+  const defaultCriterion = criteria[0].options[0];
+  let criterion = defaultCriterion;
 
   $: hasPredictions = $metadata !== null && $metadata.hasPredictions;
   // reset criterion if predictions are not available,
   // which would happen when changing datasets
-  $: if (!hasPredictions && criteriaRequiringPredictions.has(criterion)) {
-    criterion = 'entropy';
+  $: if (!hasPredictions && criterion.requiresPredictions) {
+    criterion = defaultCriterion;
   }
-
-  $: criteria = [
-    { value: 'entropy', display: 'Min average entropy' },
-    { value: 'errorDeviation', display: 'Max error deviation' },
-    { value: 'errorCount', display: 'Max single slice error count' },
-    { value: 'errorPercent', display: 'Max single slice error percent' },
-    { value: 'none', display: 'None' },
-  ].filter(d => (!criteriaRequiringPredictions.has(d.value) || hasPredictions));
 
   const maxFeatures = 4;
   $: canAddFeatures = $selectedFeatures.length < maxFeatures;
@@ -44,7 +54,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   $: if ($dataset && $metadata !== null && canAddFeatures) {
     worker.postMessage({
-      criterion,
+      criterion: criterion.value,
       selected: $selectedFeatures,
       metadata: $metadata,
       dataset: $dataset
@@ -116,8 +126,12 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
 <div>
   <select bind:value={criterion}>
-    {#each criteria as {value, display}}
-      <option {value}>{display}</option>
+    {#each criteria as group}
+      <optgroup label={group.title}>
+        {#each group.options.filter(d => (hasPredictions || !d.requiresPredictions)) as opt}
+          <option value={opt}>{opt.display}</option>
+        {/each}
+      </optgroup>
     {/each}
   </select>
 </div>
