@@ -169,6 +169,24 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
       </svg>
       <p class="feature-name cutoff">{feature}</p>
+
+      <div class="gap"></div>
+
+      <!-- edit icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-edit"
+        width="24" height="24" viewBox="0 0 24 24"
+        stroke-width="2" stroke="currentColor" fill="none"
+        stroke-linecap="round" stroke-linejoin="round"
+        on:click={() => {
+          featureToEdit = feature;
+          showFeatureEditor = true;
+        }}
+      >
+        <path stroke="none" d="M0 0h24v24H0z"/>
+        <path d="M9 7 h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-3" />
+        <path d="M9 15h3l8.5 -8.5a1.5 1.5 0 0 0 -3 -3l-8.5 8.5v3" />
+        <line x1="16" y1="5" x2="19" y2="8" />
+      </svg>
     </div>
   {/each}
   {#if canAddFeatures}
@@ -333,6 +351,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     cursor: pointer;
   }
 
+  .selected:hover .icon-tabler-edit,
   .selected:hover .icon-tabler-trash,
   .all:hover .icon-tabler-plus,
   .all:hover .icon-tabler-edit {
@@ -348,6 +367,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     color: green;
   }
 
+  .selected:hover .icon-tabler-edit:hover,
   .all:hover .icon-tabler-edit:hover {
     color: rgb(0, 99, 206);
   }
