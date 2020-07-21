@@ -26,6 +26,7 @@ function cloneMetadata(md) {
         copy.splitType = feature.splitType;
         copy.numBins = feature.numBins;
         copy.thresholds = [...feature.thresholds];
+        copy.format = feature.format;
       } else {
         copy.categories = [...feature.categories];
         copy.valueToGroup = Object.assign({}, feature.valueToGroup);
