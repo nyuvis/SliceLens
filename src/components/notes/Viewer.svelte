@@ -85,12 +85,14 @@
   }
 
   .title {
+    margin-left: 0;
     margin-bottom: 0.25em;
   }
 
   .header {
     display: flex;
     margin-top: 1em;
+    flex: 0 0 auto;
   }
 
   .header > p {

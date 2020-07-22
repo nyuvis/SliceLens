@@ -111,6 +111,7 @@
 <style>
   .header {
     display: flex;
+    flex: 0 0 auto;
   }
 
   .list {
@@ -121,6 +122,7 @@
 
     max-height: 150px;
     overflow-y: scroll;
+    flex: 0 0 auto;
   }
 
   .list div {
