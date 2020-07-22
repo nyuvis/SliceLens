@@ -185,7 +185,7 @@
           <div class="group-name-row">
             {#if editingGroupName !== i}
               <div class="bold group-name">{name}</div>
-              <div class="gap" />
+              <div class="gap"></div>
               <div
                 class="link edit-name"
                 on:click={() => (editingGroupName = i)}>
@@ -193,6 +193,7 @@
               </div>
             {:else}
               <input class="bold group-name-input" bind:value={name} size={Math.max(name.length, 1)}/>
+              <div class="gap"></div>
               <div
                 class="link edit-name"
                 on:click={() => (editingGroupName = null)}>
