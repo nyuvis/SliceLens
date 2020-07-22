@@ -46,4 +46,4 @@ Your dataset must be a CSV file that has a "label" column, representing the grou
 * [Census Income](http://archive.ics.uci.edu/ml/datasets/Census+Income)
 * [Broward County COMPAS](https://doi.org/10.1126/sciadv.aao5580)
   * Dressel, Julia, and Hany Farid. “The Accuracy, Fairness, and Limits of Predicting Recidivism.” Science Advances, vol. 4, no. 1, 17 Jan. 2018, doi:10.1126/sciadv.aao5580.
-  * Based on `BROWARD_CLEAN_SUBSET.csv` from the above article's [https://farid.berkeley.edu/downloads/publications/scienceadvances17/](data and material).
+  * Based on `BROWARD_CLEAN_SUBSET.csv` from the above article's [data and material](https://farid.berkeley.edu/downloads/publications/scienceadvances17/).
