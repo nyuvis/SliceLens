@@ -352,8 +352,9 @@ function matrix() {
     });
   }
 
-  chart.size = function([w, h]) {
+  chart.size = function(dims) {
     if (!arguments.length) return [width, height];
+    const [w, h] = dims;
     const minDim = Math.min(w, h);
     width = minDim - margin.left - margin.right;
     height = minDim - margin.top - margin.bottom;
