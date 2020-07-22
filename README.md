@@ -1,6 +1,23 @@
 # SliceLens
 
-[Demo](https://slicelens.vercel.app/)
+![Screenshot](screenshot.png?raw=true)
+
+SliceLens is a tool for exploring machine learning datasets and model predictions. To explore a dataset, you select combinations of features that you are interested in. SliceLens will split those features into bins and then visualize the class distribution for the subset of data created by each combination of bins. SliceLens can also suggest which feature you should add next to help guide your exploration.
+
+## Demo
+
+Try out the [online demo](https://slicelens.vercel.app/).
+
+Watch the [demo video](https://vimeo.com/440767670).
+
+## Suggestion Criteria
+
+SliceLens can use several criteria to suggest the next feature for the user to add:
+
+- **Min average entropy** suggests the feature that results in the subsets with the lowest weighted average entropy.
+- **Max error deviation** suggests the feature that leads to the subsets with highest standard deviation of percent error.
+- **Max single slice error count** suggests the feature that leads to the individual subset that has the highest number of errors.
+- **Max single slice error percent** suggests the feature that leads to the individual subset that has the highest percent of errors.
 
 ## How to run
 
