@@ -62,8 +62,11 @@
       const data = d3.csvParse(text, d3.autoType);
       data.name = file.name;
       uploadedDatasetName = file.name;
+
+      const md = getMetadata(data);
       $selectedFeatures = [];
       $dataset = data;
+      $metadata = md;
     }
 
     reader.readAsText(file);

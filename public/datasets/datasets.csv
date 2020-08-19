@@ -1,6 +1,6 @@
 name,path
 Heart Disease,/datasets/heart-disease-with-predictions.csv
-Census Income,https://gist.githubusercontent.com/DanielKerrigan/93e040a90b78a22a5f1d1a322ccb907f/raw/3bc5844b7b0231a2a5b03a2599a22edb8a9c947e/census-income.csv
-Broward County COMPAS,https://gist.githubusercontent.com/DanielKerrigan/77224a5ed741e4ae30a7277778918821/raw/c6154ff59a699afd86917f5532735c451301c38c/broward-compas.csv
-Graduate Admissions,/datasets/graduate-admissions-binary-with-predictions.csv
+Census Income,https://gist.githubusercontent.com/DanielKerrigan/93e040a90b78a22a5f1d1a322ccb907f/raw/de377ba83f1b93dee693e83de6a1180acc0bce27/census-income.csv
+Broward County COMPAS,https://gist.githubusercontent.com/DanielKerrigan/77224a5ed741e4ae30a7277778918821/raw/af798d4d7a2108a04344382ac2af8374825a86bd/broward-compas.csv
+Heart Disease (no predictions),/datasets/heart-disease-no-predictions.csv
 UI Test,/datasets/ui-test.csv

@@ -40,10 +40,8 @@ Your dataset must be a CSV file that has a "label" column, representing the grou
 
 ## Demo Datasets
 
-* [Graduate Admission](https://www.kaggle.com/mohansacharya/graduate-admissions)
-  * Mohan S Acharya, Asfia Armaan, Aneeta S Antony : A Comparison of Regression Models for Prediction of Graduate Admissions, IEEE International Conference on Computational Intelligence in Data Science 2019
 * [Heart Disease](http://archive.ics.uci.edu/ml/datasets/Heart+Disease)
 * [Census Income](http://archive.ics.uci.edu/ml/datasets/Census+Income)
 * [Broward County COMPAS](https://doi.org/10.1126/sciadv.aao5580)
   * Dressel, Julia, and Hany Farid. “The Accuracy, Fairness, and Limits of Predicting Recidivism.” Science Advances, vol. 4, no. 1, 17 Jan. 2018, doi:10.1126/sciadv.aao5580.
-  * Based on `BROWARD_CLEAN_SUBSET.csv` from the above article's [data and material](https://farid.berkeley.edu/downloads/publications/scienceadvances17/).
+  * Based on `BROWARD_CLEAN.csv` from the above article's [data and material](https://farid.berkeley.edu/downloads/publications/scienceadvances17/).
