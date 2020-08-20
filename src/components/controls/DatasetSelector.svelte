@@ -33,7 +33,7 @@
     });
   }
 
-  function onSelectChange() {
+  function onSelectBlur() {
     load(selectedDemoDataset);
   }
 
@@ -128,7 +128,7 @@
     {/if}
 
   {:else}
-    <select bind:value={selectedDemoDataset} on:change={onSelectChange}>
+    <select bind:value={selectedDemoDataset} on:blur={onSelectBlur}>
       {#each datasets as dataset}
         <option value={dataset}>{dataset.name}</option>
       {/each}
