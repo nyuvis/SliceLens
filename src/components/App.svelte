@@ -1,11 +1,16 @@
 <script>
   import DatasetSelector from './controls/DatasetSelector.svelte';
   import FeatureSelector from './controls/FeatureSelector.svelte';
+  import VisualizationSettings from './controls/VisualizationSettings.svelte';
   import ChartManager from './ChartManager.svelte';
   import NotesSidebar from './notes/NotesSidebar.svelte';
   import matrix from '../visualization/matrix.js';
 
   let showPredictions = false;
+  // setting this to false makes the vis not show size by default
+  // but i don't see why it should be out of sync with
+  // visualization settings.
+  let showSize = true;
 </script>
 
 <div id="container">
@@ -27,10 +32,11 @@
       </a>
     </div>
     <DatasetSelector on:update={e => showPredictions = e.detail}/>
+    <VisualizationSettings on:update={e => showSize = e.detail}/>
     <FeatureSelector/>
   </div>
 
-  <ChartManager {showPredictions}/>
+  <ChartManager {showPredictions} {showSize} />
 
   <div id="notes" class="sidebar">
     <NotesSidebar/>

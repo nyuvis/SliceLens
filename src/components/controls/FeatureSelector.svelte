@@ -366,6 +366,10 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   }
 
   .all:hover .icon-tabler-plus:hover {
+    color: rgb(0, 99, 206);;
+  }
+
+  .icon-tabler-bulb {
     color: green;
   }
 

@@ -23,6 +23,7 @@ function matrix() {
   let height = 600 - margin.top - margin.bottom;
 
   let showPredictions = false;
+  let showSize = true;
   let color = d3.scaleOrdinal()
       .range(d3.schemeCategory10);
 
@@ -108,7 +109,7 @@ function matrix() {
               node.data.counts;
 
           const stacked = stack([counts]);
-          const sideLength = size(node.value);
+          const sideLength = showSize ? size(node.value) : maxCellSize;
 
           y.domain([0, node.value])
               .range([0, sideLength]);
@@ -317,23 +318,65 @@ function matrix() {
 
           const node = cell.datum();
 
-          const lines = node.depth === 0 ? ["Entire dataset"] : node.ancestors()
+          const splitLines = node.depth === 0 ? ["Entire dataset"] : node.ancestors()
               .reverse()
               .slice(1)
               .map(d => `${d.data.splitFeature}: ${d.data.splitLabel}`);
 
-          lines.push(`${node.value} data points`);
+          let countLines = [];
+          if (showPredictions) {
+            countLines = Array.from(node.data.predictionResults, ([label, counts]) => {
+              return Array.from(counts, ([correct, count]) => {
+                const prefix = correct === 'correct' ? 'true' : 'false';
+                return `${prefix} ${label}: ${count}`;
+              }).sort();
+            }).flat();
+          } else {
+            countLines = Array.from(node.data.counts, ([key, val]) => `${key}: ${val}`);
+          }
+
+          countLines.push(`total: ${node.value}`);
 
           const text = tooltip.selectAll('text')
             .data([null])
             .join('text');
 
-          text.selectAll('tspan')
-            .data(lines)
+          text.selectAll('.split')
+            .data([null])
             .join('tspan')
+              .attr('class', 'split')
+              .attr('dominant-baseline', 'hanging')
+              .attr('font-weight', 'bold')
+              .attr('x', 0)
+              .attr('y', 0)
+              .text('Split');
+
+          text.selectAll('.split-line')
+            .data(splitLines)
+            .join('tspan')
+              .attr('class', 'split-line')
               .attr('dominant-baseline', 'hanging')
               .attr('x', 0)
-              .attr('y', (d, i) => `${i * 1.1}em`)
+              .attr('y', (d, i) => `${(i + 1) * 1.1}em`)
+              .text(d => d);
+
+          text.selectAll('.count')
+            .data([null])
+            .join('tspan')
+              .attr('class', 'split')
+              .attr('dominant-baseline', 'hanging')
+              .attr('font-weight', 'bold')
+              .attr('x', 0)
+              .attr('y', `${(splitLines.length + 1) * 1.1}em`)
+              .text('Counts');
+
+          text.selectAll('.count-line')
+            .data(countLines)
+            .join('tspan')
+              .attr('class', 'count-line')
+              .attr('dominant-baseline', 'hanging')
+              .attr('x', 0)
+              .attr('y', (d, i) => `${(i + 2 + splitLines.length) * 1.1}em`)
               .text(d => d);
 
           const {width: boxWidth, height: boxHeight} = text.node().getBBox();
@@ -364,6 +407,12 @@ function matrix() {
   chart.showPredictions = function(p) {
     if (!arguments.length) return showPredictions;
     showPredictions = p;
+    return chart;
+  }
+
+  chart.showSize = function(s) {
+    if (!arguments.length) return showSize;
+    showSize = s;
     return chart;
   }
 

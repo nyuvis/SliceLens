@@ -5,6 +5,7 @@
   import * as d3 from 'd3';
 
   export let showPredictions;
+  export let showSize;
 
   let chart = matrix();
 
@@ -35,7 +36,8 @@
     chart
       .size([width, height])
       .color(color)
-      .showPredictions(showPredictions && $metadata.hasPredictions);
+      .showPredictions(showPredictions && $metadata.hasPredictions)
+      .showSize(showSize);
 
     const chartData = {
       metadata: $metadata,
@@ -60,6 +62,12 @@
           </p>
         </div>
       {/each}
+      {#if showPredictions && $metadata.hasPredictions}
+        <div class="legend-cell">
+            <div class="legend-square" id="incorrect"></div>
+            <p class="small legend-label">Incorrect</p>
+        </div>
+      {/if}
     {/if}
   </div>
 
@@ -111,5 +119,15 @@
       height: 14px;
       margin-right: 0.5em;
       margin-left: 1em;
+    }
+
+    #incorrect {
+      background: repeating-linear-gradient(
+        135deg,
+        black,
+        black 2px,
+        white 2px,
+        white 4px
+      );
     }
 </style>
