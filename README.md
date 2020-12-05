@@ -14,10 +14,10 @@ Watch the [demo video](https://vimeo.com/440767670).
 
 SliceLens can use several criteria to suggest the next feature for the user to add:
 
-- **Min average entropy** suggests the feature that results in the subsets with the lowest weighted average entropy.
-- **Max error deviation** suggests the feature that leads to the subsets with highest standard deviation of percent error.
-- **Max single slice error count** suggests the feature that leads to the individual subset that has the highest number of errors.
-- **Max single slice error percent** suggests the feature that leads to the individual subset that has the highest percent of errors.
+- **Purity** suggests the feature that results in the subsets with the lowest weighted average entropy.
+- **Error deviation** suggests the feature that leads to the subsets with highest standard deviation of percent error.
+- **Error count** suggests the feature that leads to the individual subset that has the highest number of errors.
+- **Error percent** suggests the feature that leads to the individual subset that has the highest percent of errors.
 
 ## How to run
 

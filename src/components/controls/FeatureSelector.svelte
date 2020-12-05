@@ -21,7 +21,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       title: 'Ground truth metrics',
       requiresPredictions: false,
       options: [
-        { value: 'entropy', display: 'Min average entropy', requiresPredictions: false },
+        { value: 'entropy', display: 'Purity', requiresPredictions: false },
         { value: 'none', display: 'None', requiresPredictions: false },
       ],
     },
@@ -29,9 +29,9 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       title: 'Prediction metrics',
       requiresPredictions: true,
       options: [
-        { value: 'errorDeviation', display: 'Max error deviation', requiresPredictions: true },
-        { value: 'errorCount', display: 'Max single slice error count', requiresPredictions: true },
-        { value: 'errorPercent', display: 'Max single slice error percent', requiresPredictions: true },
+        { value: 'errorDeviation', display: 'Error deviation', requiresPredictions: true },
+        { value: 'errorCount', display: 'Error count', requiresPredictions: true },
+        { value: 'errorPercent', display: 'Error percent', requiresPredictions: true },
       ],
     },
   ];
@@ -96,7 +96,12 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   const suggestionTooltip = `Choose the metric that is used to
   suggest which feature to explore next. A lightbulb icon is next to
-  the name of the suggested feature.`;
+  the name of the suggested feature. "Purity" suggests the feature
+  that results in the subsets with the lowest weighted average entropy.
+  "Error deviation" suggests the feature that leads to the subsets with
+  highest standard deviation of percent error. "Error count"
+  and "Error percent" suggest the feature that leads to the individual
+  subset that has the highest number or percent of errors, respectively.`;
 
   const selectFeatureTooltip = `You can select features by dragging
   and dropping from below or by clicking on the plus icon that appears
