@@ -1,9 +1,6 @@
 import { getData } from './DataTransformer.js';
 
-import * as d3_array from "d3-array";
-import * as d3_all from "d3";
-
-const d3 = {...d3_all, ...d3_array,};
+import * as d3 from "d3";
 
 
 onmessage = e => {

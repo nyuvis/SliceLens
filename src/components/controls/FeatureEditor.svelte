@@ -10,10 +10,7 @@ https://www.w3schools.com/howto/howto_css_modals.asp
   import { onMount, createEventDispatcher } from "svelte";
   import { flip } from "svelte/animate";
 
-  import * as d3_array from "d3-array";
-  import * as d3_all from "d3";
-
-  const d3 = { ...d3_all, ...d3_array };
+  import * as d3 from "d3";
 
   const dispatch = createEventDispatcher();
 

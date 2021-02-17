@@ -21,8 +21,7 @@
     "svelte": "^3.24.1"
   },
   "dependencies": {
-    "d3": "5.15.0",
-    "d3-array": "2.4.0",
+    "d3": "^6.5.0",
     "dompurify": "^2.0.17",
     "marked": "^2.0.0",
     "rollup-plugin-web-worker-loader": "^0.9.1",
