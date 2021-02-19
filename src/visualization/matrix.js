@@ -299,8 +299,8 @@ function matrix() {
       function setupTooltips() {
         const tooltip = g.select('#tooltip');
 
-        d3.selectAll('.node').on('mousemove', function() {
-          const [x, y] = d3.mouse(g.node());
+        d3.selectAll('.node').on('mousemove', function(event) {
+          const [x, y] = d3.pointer(event, g.node());
           const cell = d3.select(this);
           const padding = 5;
 
