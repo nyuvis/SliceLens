@@ -121,6 +121,7 @@ function getMetadata(dataset) {
     featureNames: featureNames,
     labelValues: labelValues,
     hasPredictions: hasPredictions,
+    size: dataset.length
   }
 }
 
@@ -128,6 +129,62 @@ function getData(metadata, selectedFeatures, dataset) {
   if (metadata === null) {
     return null;
   }
+
+  function reducer(g) {
+    const groundTruth = d3.rollup(g, v => v.length, d => d.label);
+    const node = { groundTruth };
+    if (metadata.hasPredictions) {
+      // if the dataset has model predictions,
+      // also count the number of each prediction
+      // and the amount correct and incorrect
+      const predictionCounts = d3.rollup(g, v => v.length, d => d.prediction);
+
+      const predictionResults = d3.rollup(
+        g,
+        v =>
+          d3.rollup(
+            v,
+            g => g.length,
+            p => p.prediction === p.label ? "correct" : "incorrect"
+          ),
+        d => d.prediction
+      );
+
+      node['predictionsCount'] = predictionCounts;
+      node['predictionResults'] = predictionResults;
+      node['size'] = g.length;
+    }
+
+    return node;
+  }
+
+  function key(d) {
+    return selectedFeatures
+      .map(f => {
+        const feat = metadata.features[f];
+        if (feat.type === "Q") {
+          return d3.bisect(feat.thresholds, d[f]);
+        } else if (feat.type === "C") {
+          return feat.values.indexOf(feat.valueToGroup[d[f]]);
+        }
+      })
+      .join(",");
+  }
+
+  return d3.rollups(dataset, reducer, key)
+    .map(([key, value]) => {
+    const splits = new Map(d3.zip(selectedFeatures, key.split(',').map(d => +d)));
+    value['splits'] = splits;
+    return value;
+  })
+}
+
+function getDataOld(metadata, selectedFeatures, dataset) {
+  if (metadata === null) {
+    return null;
+  }
+
+  console.log(dataset);
 
   return splitData(dataset, 0, '', '');
 

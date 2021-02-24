@@ -1,5 +1,5 @@
 <script>
-  import { onMount, createEventDispatcher } from 'svelte';
+  import { onMount } from 'svelte';
   import { getMetadata } from '../../DataTransformer.js';
   import { dataset, selectedFeatures, metadata } from '../../stores.js';
   import QuestionBox from '../QuestionBox.svelte';
@@ -78,21 +78,6 @@
     }
   }
 
-  // whether or not the chart should show predicted values
-
-  let showPredictionsCheckBox = false;
-  let predictions = false;
-
-  $: if ($metadata !== null && $metadata.hasPredictions) {
-    showPredictionsCheckBox = true;
-  } else {
-    showPredictionsCheckBox = false;
-    predictions = false;
-  }
-
-  const dispatch = createEventDispatcher();
-  $: dispatch('update', predictions);
-
   const datasetTooltip = `Your dataset must be a CSV file that has a "label" column,
   representing the ground truth class label for each row. Optionally, the dataset
   can also contain a "prediction" column, representing a predicted value for each row.`;
@@ -134,19 +119,9 @@
       {/each}
     </select>
   {/if}
-
-  {#if showPredictionsCheckBox}
-    <label class="sub-label small">
-      <input type="checkbox" bind:checked={predictions}>Show predictions
-    </label>
-  {/if}
 </div>
 
 <style>
-  label {
-    display: inline-block;
-  }
-
   .help-row {
     display: flex;
     align-items: center;

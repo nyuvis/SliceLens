@@ -26,6 +26,7 @@ function matrix() {
 
   function chart(selection) {
     selection.each(function({metadata, data, selectedFeatures}) {
+      console.log(data);
       const root = prepareData();
       const {size, y, incorrectScale, xAxisMargin, yAxisMargin} = getScales();
 

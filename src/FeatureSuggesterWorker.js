@@ -39,10 +39,9 @@ function entropy({selected, metadata, dataset, available}) {
   available.forEach(feature => {
     const sel = [...selected, feature];
     const data = getData(metadata, sel, dataset);
-    const root = d3.hierarchy(data).sum(d => d.value);
 
-    const ent = d3.sum(root.leaves(), square => {
-      const weight = square.value / root.value;
+    const ent = d3.sum(data, square => {
+      const weight = square.size / metadata.size;
       return weight * H(square);
     });
 
@@ -55,8 +54,8 @@ function entropy({selected, metadata, dataset, available}) {
   return suggestion;
 
   function H(square) {
-    return -d3.sum(square.data.counts.values(), v => {
-      const p = v / square.value;
+    return -d3.sum(square.groundTruth.values(), v => {
+      const p = v / square.size;
       return p * Math.log2(p);
     });
   }
@@ -69,9 +68,8 @@ function errorDeviation({selected, metadata, dataset, available}) {
   available.forEach(feature => {
     const sel = [...selected, feature];
     const data = getData(metadata, sel, dataset);
-    const root = d3.hierarchy(data).sum(d => d.value);
 
-    const dev = d3.deviation(root.leaves(), d => getErrorCountForSquare(d) / d.value);
+    const dev = d3.deviation(data, d => getErrorCountForSquare(d) / d.size);
 
     if (dev > maxDeviation) {
       suggestion = feature;
@@ -93,9 +91,8 @@ function errorCount({selected, metadata, dataset, available}) {
   available.forEach(feature => {
     const sel = [...selected, feature];
     const data = getData(metadata, sel, dataset);
-    const root = d3.hierarchy(data).sum(d => d.value);
 
-    const errors = d3.max(root.leaves(), getErrorCountForSquare);
+    const errors = d3.max(data, getErrorCountForSquare);
 
     if (errors > maxError) {
       suggestion = feature;
@@ -117,9 +114,8 @@ function errorPercent({selected, metadata, dataset, available}) {
   available.forEach(feature => {
     const sel = [...selected, feature];
     const data = getData(metadata, sel, dataset);
-    const root = d3.hierarchy(data).sum(d => d.value);
 
-    const errors = d3.max(root.leaves(), d => getErrorCountForSquare(d) / d.value);
+    const errors = d3.max(data, d => getErrorCountForSquare(d) / d.size);
 
     if (errors > maxError) {
       suggestion = feature;
@@ -132,7 +128,7 @@ function errorPercent({selected, metadata, dataset, available}) {
 
 function getErrorCountForSquare(square) {
   // one Map per class
-  const predictionResultsPerClass = Array.from(square.data.predictionResults.values());
+  const predictionResultsPerClass = Array.from(square.predictionResults.values());
   // get sum of incorrect predictions for each class
   const errorCount = d3.sum(predictionResultsPerClass,
     p => p.has('incorrect') ?

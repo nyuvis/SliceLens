@@ -7,9 +7,6 @@
   export let feature;
 
   export function onWindowClose() {
-    console.log('groupToValues', groupToValues);
-    console.log('groups', groups);
-    console.log('object entries', Object.entries(groups));
     feature.valueToGroup = Object.fromEntries(
       groups.map(({name, values}) =>
         // values is a set
