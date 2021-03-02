@@ -1,6 +1,10 @@
 <script>
-  import { data, metadata, selectedFeatures } from '../../stores.js';
-  import * as d3 from 'd3';
+  import Square from "./Square.svelte";
+  import Grid from "./Grid.svelte";
+  import XAxis from "./XAxis.svelte";
+  import YAxis from "./YAxis.svelte";
+  import { data, metadata, selectedFeatures } from "../../stores.js";
+  import * as d3 from "d3";
 
   export let showPredictions;
   export let showSize;
@@ -9,18 +13,17 @@
   let width = 600;
   let height = 600;
   const padding = 5;
+  const axisLineHeight = 20;
 
   function getScales(selectedFeatures, space, reverse) {
-    return selectedFeatures.map(feat => {
+    return selectedFeatures.map((feat) => {
       const domain = d3.range(feat.values.length);
 
       if (reverse) {
         domain.reverse();
       }
 
-      const scale = d3.scaleBand()
-          .domain(domain)
-          .range([0, space]);
+      const scale = d3.scaleBand().domain(domain).range([0, space]);
 
       space = scale.bandwidth();
 
@@ -29,62 +32,115 @@
   }
 
   function getPosition(d, features, scales) {
-    const splits = features.map(feat => d.splits.get(feat.name));
+    const splits = features.map((feat) => d.splits.get(feat.name));
     return d3.sum(d3.zip(scales, splits), ([scale, split]) => scale(split));
   }
 
   $: xFeatures = $selectedFeatures
     .filter((d, i) => i % 2 === 0)
-    .map(feat => $metadata.features[feat]);
+    .map((feat) => $metadata.features[feat]);
 
   $: yFeatures = $selectedFeatures
     .filter((d, i) => i % 2 !== 0)
-    .map(feat => $metadata.features[feat]);
+    .map((feat) => $metadata.features[feat]);
+
+  $: axisSpace = {
+    top: xFeatures.length * axisLineHeight * 2,
+    left: yFeatures.length * axisLineHeight * 2,
+  };
+
+  $: margin = {
+    top: 10 + axisSpace.top,
+    left: 10 + axisSpace.left,
+    bottom: 10,
+    right: 10,
+  };
 
   $: xNumBins = xFeatures
-      .map(feat => feat.values.length)
-      .reduce((acc, cur) => acc *= cur, 1);
+    .map((feat) => feat.values.length)
+    .reduce((acc, cur) => (acc *= cur), 1);
 
   $: yNumBins = yFeatures
-      .map(feat => feat.values.length)
-      .reduce((acc, cur) => acc *= cur, 1);
+    .map((feat) => feat.values.length)
+    .reduce((acc, cur) => (acc *= cur), 1);
 
-  $: maxSize = Math.min(width / xNumBins, height / yNumBins);
-  $: maxSideLength = maxSize - padding;
+  $: maxSize = Math.floor(
+    Math.min(
+      (width - margin.left - margin.right) / xNumBins,
+      (height - margin.top - margin.bottom) / yNumBins
+    )
+  );
 
-  $: xScales = getScales(xFeatures, maxSize * xNumBins, false);
-  $: yScales = getScales(yFeatures, maxSize * yNumBins, true);
+  $: maxSideLength = maxSize - 2 * padding;
+
+  $: matrixHeight = maxSize * yNumBins;
+  $: matrixWidth = maxSize * xNumBins;
+
+  $: console.log(height, matrixHeight);
+
+  $: xScales = getScales(xFeatures, matrixWidth, false);
+  $: yScales = getScales(yFeatures, matrixHeight, true);
+
+  $: sideLength = d3.scaleSqrt()
+    .domain([0, d3.max($data, (d) => d.size)])
+    .range([0, maxSideLength]);
+
+  $: topSpace =
+    margin.top + (height - matrixHeight - margin.top - margin.bottom) / 2;
+  $: leftSpace =
+    margin.left + (width - matrixWidth - margin.left - margin.right) / 2;
 </script>
 
 <div id="chart" bind:clientWidth={width} bind:clientHeight={height}>
   <svg>
     <!-- https://stackoverflow.com/questions/13069446/simple-fill-pattern-in-svg-diagonal-hatching -->
-    <pattern id="stripes" width="3" height="3" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+    <pattern
+      id="stripes"
+      width="3"
+      height="3"
+      patternTransform="rotate(45 0 0)"
+      patternUnits="userSpaceOnUse"
+    >
       <line x1="0" y1="0" x2="0" y2="3" style="stroke:white; stroke-width:3" />
     </pattern>
+    <g transform="translate({leftSpace},{topSpace})">
+      <g class="squares">
+        {#each $data as d}
+          <Square
+            x={getPosition(d, xFeatures, xScales)}
+            y={getPosition(d, yFeatures, yScales)}
+            sideLength={showSize ? sideLength(d.size) : maxSideLength}
+            {color}
+            {showPredictions}
+            {d}
+            padding={showSize
+              ? padding + (maxSideLength - sideLength(d.size)) / 2
+              : padding}
+          />
+        {/each}
+      </g>
 
-    <g>
-      {#each $data as d}
-        <rect
-          x={getPosition(d, xFeatures, xScales)}
-          y={getPosition(d, yFeatures, yScales)}
-          width={maxSideLength}
-          height={maxSideLength}
-          fill="red">
-        </rect>
-      {/each}
+      <Grid {matrixHeight} {matrixWidth} {xScales} {yScales} />
+
+      <g transform="translate(0,{-axisSpace.top})">
+        <XAxis {xScales} {xFeatures} width={matrixWidth} {axisLineHeight} />
+      </g>
+
+      <g transform="translate({-axisSpace.left},0)">
+        <YAxis {yScales} {yFeatures} height={matrixHeight} {axisLineHeight} />
+      </g>
     </g>
   </svg>
 </div>
 
 <style>
-    #chart {
-      flex: 1;
-    }
+  #chart {
+    flex: 1;
+  }
 
-    svg {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
 </style>

@@ -1,68 +1,53 @@
 <script>
-  import { onMount, tick } from 'svelte';
-  import { dataset, data, metadata, selectedFeatures } from '../../stores.js';
-  import ColorLegend from './ColorLegend.svelte';
   import * as d3 from 'd3';
 
   export let showPredictions;
-  export let showSize;
   export let color;
+  export let sideLength;
+  export let padding;
+  export let x;
+  export let y;
+  export let d;
 
+  $: height = d3.scaleLinear()
+      .domain([0, d.size])
+      .range([0, sideLength]);
 
-  function getScales(selectedFeatures, metadata, space) {
-    const scales = [];
+  $: stack = d3.stack()
+      .keys(color.domain())
+      .value((d, key) => d.get(key));
 
-    for (let i = 0; i < selectedFeatures.length; i += 1) {
-      const feat = metadata.features[selectedFeatures[i]];
+  $: counts = showPredictions ?
+      d.predictionCounts :
+      d.groundTruth;
 
-      const scale = d3.scaleBand()
-          .domain(d3.range(feat.values.length))
-          .range([0, space]);
+  $: stacked = stack([counts]);
 
-      scales.push(scale);
+  $: segments = stacked.map(b => {
+    const label = b.key;
+    const pos = b[0];
 
-      space = scale.bandwidth();
+    const rect = {
+      height: height(pos[1]) - height(pos[0]),
+      y: height(pos[0]),
+      label: label,
+    };
+
+    if (showPredictions) {
+      const predictionResults = node.data.predictionResults.get(label);
+      if (predictionResults !== undefined && predictionResults.has('incorrect')) {
+        rect.incorrect = predictionResults.get('incorrect');
+      } else {
+        rect.incorrect = 0;
+      }
     }
-  }
 
-  function getPosition(d, features, scales) {
-    const splits = features.map(feat => d.splits.get(feat));
-    return d3.sum(d3.zip(scales, splits), ([split, scale]) => scale(split));
-  }
-
-  $: xFeatures = $selectedFeatures.filter((d, i) => i === 0);
-  $: yFeatures = $selectedFeatures.filter((d, i) => i !== 0);
-
-  $: xScales = getScales(xFeatures, $metadata, width);
-  $: yScales = getScales(yFeatures, $metadata, height);
-
-  let width;
-  let height;
+    return rect;
+  });
 </script>
 
-<div id="chart" bind:clientWidth={width} bind:clientHeight={height}>
-  <svg>
-    <!-- https://stackoverflow.com/questions/13069446/simple-fill-pattern-in-svg-diagonal-hatching -->
-    <pattern id="stripes" width="3" height="3" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-      <line x1="0" y1="0" x2="0" y2="3" style="stroke:white; stroke-width:3" />
-    </pattern>
-
-    <g>
-      {#each $data as d}
-        <rect x={getPosition(d, xFeatures, xScales)} y={getPosition(d, yFeatures, yScales)} width="100" height="100" fill="red"></rect>
-      {/each}
-    </g>
-  </svg>
-</div>
-
-<style>
-    #chart {
-      flex: 1;
-    }
-
-    svg {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-</style>
+<g transform='translate({x + padding},{y + padding})'>
+  {#each segments as {height, y, label}}
+    <rect {y} {height} width={sideLength} fill={color(label)}></rect>
+  {/each}
+</g>

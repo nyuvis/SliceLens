@@ -152,9 +152,8 @@ function getData(metadata, selectedFeatures, dataset) {
 
       node['predictionsCount'] = predictionCounts;
       node['predictionResults'] = predictionResults;
-      node['size'] = g.length;
     }
-
+    node['size'] = g.length;
     return node;
   }
 
