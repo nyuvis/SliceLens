@@ -31,14 +31,18 @@
       height: height(pos[1]) - height(pos[0]),
       y: height(pos[0]),
       label: label,
+      incorrectHeight: 0,
     };
 
     if (showPredictions) {
-      const predictionResults = node.data.predictionResults.get(label);
+      const predictionResults = d.predictionResults.get(label);
+
       if (predictionResults !== undefined && predictionResults.has('incorrect')) {
-        rect.incorrect = predictionResults.get('incorrect');
-      } else {
-        rect.incorrect = 0;
+        const incorrect = d3.scaleLinear()
+          .domain([0, counts.get(label)])
+          .range([0, rect.height]);
+
+        rect.incorrectHeight = incorrect(predictionResults.get('incorrect'));
       }
     }
 
@@ -47,7 +51,12 @@
 </script>
 
 <g transform='translate({x + padding},{y + padding})'>
-  {#each segments as {height, y, label}}
-    <rect {y} {height} width={sideLength} fill={color(label)}></rect>
+  {#each segments as {height, y, label, incorrectHeight}}
+    <g transform="translate(0,{y})">
+      <rect {height} width={sideLength} fill={color(label)}></rect>
+      {#if showPredictions}
+        <rect height={incorrectHeight} width={sideLength} fill="url(#stripes)"></rect>
+      {/if}
+    </g>
   {/each}
 </g>

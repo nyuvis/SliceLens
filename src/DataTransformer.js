@@ -150,7 +150,7 @@ function getData(metadata, selectedFeatures, dataset) {
         d => d.prediction
       );
 
-      node['predictionsCount'] = predictionCounts;
+      node['predictionCounts'] = predictionCounts;
       node['predictionResults'] = predictionResults;
     }
     node['size'] = g.length;
