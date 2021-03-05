@@ -50,12 +50,12 @@
   });
 </script>
 
-<g transform='translate({x + padding},{y + padding})'>
+<g transform='translate({x + padding},{y + padding})' on:mousemove on:mouseleave>
   {#each segments as {height, y, label, incorrectHeight}}
     <g transform="translate(0,{y})">
-      <rect {height} width={sideLength} fill={color(label)}></rect>
+      <rect {height} width={sideLength} fill={color(label)}/>
       {#if showPredictions}
-        <rect height={incorrectHeight} width={sideLength} fill="url(#stripes)"></rect>
+        <rect height={incorrectHeight} width={sideLength} fill="url(#stripes)"/>
       {/if}
     </g>
   {/each}

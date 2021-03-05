@@ -3,6 +3,7 @@
   import Grid from "./Grid.svelte";
   import XAxis from "./XAxis.svelte";
   import YAxis from "./YAxis.svelte";
+  import Tooltip from "./Tooltip.svelte";
   import { data, metadata, selectedFeatures } from "../../stores.js";
   import * as d3 from "d3";
 
@@ -50,10 +51,10 @@
   };
 
   $: margin = {
-    top: 10 + axisSpace.top,
-    left: 10 + axisSpace.left,
-    bottom: 10,
-    right: 10,
+    top: 20 + axisSpace.top,
+    left: 20 + axisSpace.left,
+    bottom: 20,
+    right: 20,
   };
 
   $: xNumBins = xFeatures
@@ -76,8 +77,6 @@
   $: matrixHeight = maxSize * yNumBins;
   $: matrixWidth = maxSize * xNumBins;
 
-  $: console.log(height, matrixHeight);
-
   $: xScales = getScales(xFeatures, matrixWidth, false);
   $: yScales = getScales(yFeatures, matrixHeight, true);
 
@@ -89,6 +88,26 @@
     margin.top + (height - matrixHeight - margin.top - margin.bottom) / 2;
   $: leftSpace =
     margin.left + (width - matrixWidth - margin.left - margin.right) / 2;
+
+  // tooltip
+
+  let tooltipData = null;
+  let mouse = { x: 0, y: 0};
+
+  function handleMousemove(event, d) {
+    // https://stackoverflow.com/questions/3234256/find-mouse-position-relative-to-element
+    // square -> squares' group -> translated group -> svg
+    const bounds = event.currentTarget.parentNode.parentNode.parentNode.getBoundingClientRect();
+
+    mouse.x = event.clientX - bounds.x - leftSpace;
+    mouse.y = event.clientY - bounds.y - topSpace;
+
+    tooltipData = d;
+  }
+
+  function handleMouseleave(event) {
+    tooltipData = null;
+  }
 </script>
 
 <div id="chart" bind:clientWidth={width} bind:clientHeight={height}>
@@ -104,6 +123,16 @@
       <line x1="0" y1="0" x2="0" y2="3" style="stroke:white; stroke-width:3" />
     </pattern>
     <g transform="translate({leftSpace},{topSpace})">
+      <Grid {matrixHeight} {matrixWidth} {xScales} {yScales}/>
+
+      <g transform="translate(0,{-axisSpace.top})">
+        <XAxis {xScales} {xFeatures} width={matrixWidth} {axisLineHeight} />
+      </g>
+
+      <g transform="translate({-axisSpace.left},0)">
+        <YAxis {yScales} {yFeatures} height={matrixHeight} {axisLineHeight} />
+      </g>
+
       <g class="squares">
         {#each $data as d}
           <Square
@@ -116,19 +145,15 @@
             padding={showSize
               ? padding + (maxSideLength - sideLength(d.size)) / 2
               : padding}
+            on:mousemove={event => handleMousemove(event, d)}
+            on:mouseleave={handleMouseleave}
           />
         {/each}
       </g>
 
-      <Grid {matrixHeight} {matrixWidth} {xScales} {yScales} />
-
-      <g transform="translate(0,{-axisSpace.top})">
-        <XAxis {xScales} {xFeatures} width={matrixWidth} {axisLineHeight} />
-      </g>
-
-      <g transform="translate({-axisSpace.left},0)">
-        <YAxis {yScales} {yFeatures} height={matrixHeight} {axisLineHeight} />
-      </g>
+      {#if tooltipData}
+        <Tooltip {...mouse}  {showPredictions} d={tooltipData}/>
+      {/if}
     </g>
   </svg>
 </div>
