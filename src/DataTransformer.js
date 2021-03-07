@@ -37,6 +37,7 @@ function cloneMetadata(md) {
     featureNames: [...md.featureNames],
     labelValues: [...md.labelValues],
     hasPredictions: md.hasPredictions,
+    size: md.size,
   };
 }
 
@@ -59,8 +60,10 @@ function equalIntervalThresholds([min, max], numBins) {
 }
 
 function quantileThresholds(values, numBins) {
-  return d3.range(1, numBins)
-      .map(d => d3.quantile(values, d / numBins));
+  return d3.scaleQuantile()
+    .domain(values)
+    .range(d3.range(numBins))
+    .quantiles();
 }
 
 function getMetadata(dataset) {
@@ -121,7 +124,7 @@ function getMetadata(dataset) {
     featureNames: featureNames,
     labelValues: labelValues,
     hasPredictions: hasPredictions,
-    size: dataset.length
+    size: dataset.length,
   }
 }
 
@@ -175,69 +178,5 @@ function getData(metadata, selectedFeatures, dataset) {
     const splits = new Map(d3.zip(selectedFeatures, key.split(',').map(d => +d)));
     value['splits'] = splits;
     return value;
-  })
-}
-
-function getDataOld(metadata, selectedFeatures, dataset) {
-  if (metadata === null) {
-    return null;
-  }
-
-  console.log(dataset);
-
-  return splitData(dataset, 0, '', '');
-
-  function splitData(data, index, splitFeature, splitLabel) {
-    // count number of instances for each ground truth label
-    const counts = d3.rollup(data, v => v.length, d => d.label);
-
-    const node = {counts, splitFeature, splitLabel};
-
-    if (metadata.hasPredictions) {
-      // if the dataset has model predictions, also count the number of each prediction
-      // and the amount correct and incorrect
-      const predictionCounts = d3.rollup(data, v => v.length, d => d.prediction);
-
-      const predictionResults = d3.rollup(data,
-        v => d3.rollup(v, g => g.length, p => {
-          if (p.prediction === p.label) {
-            return 'correct';
-          } else {
-            return 'incorrect';
-          }
-        }),
-        d => d.prediction);
-
-      node.predictionCounts = predictionCounts;
-      node.predictionResults = predictionResults;
-    }
-
-    // if there are more features to split on
-    if (index < selectedFeatures.length) {
-      const nextFeatureName = selectedFeatures[index];
-      const nextFeature = metadata.features[nextFeatureName];
-      let splits;
-
-      if (nextFeature.type === 'Q') {
-        const bin = d3.bin()
-            .value(d => d[nextFeatureName])
-            .domain(nextFeature.extent)
-            .thresholds(nextFeature.thresholds);
-        const bins = bin(data);
-        splits = d3.zip(nextFeature.values, bins);
-      } else if (nextFeature.type === 'C') {
-        const groups = d3.group(data, d => nextFeature.valueToGroup[d[nextFeatureName]]);
-        splits = nextFeature.values.map(d => [d, groups.get(d)])
-          .filter(([value, group]) => group !== undefined && group !== null && group.length !== 0);
-      }
-
-      node.children = splits
-          .map(([label, d]) => splitData(d, index + 1, nextFeatureName, label))
-          .filter(d => d !== undefined);
-    } else {
-      node.value = data.length;
-    }
-
-    return node;
-  }
+  });
 }

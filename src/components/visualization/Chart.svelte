@@ -7,7 +7,7 @@
   export let showPredictions;
   export let showSize;
 
-  let color = d3.scaleOrdinal()
+  $: color = d3.scaleOrdinal()
       .domain($metadata.labelValues)
       .range(d3.schemeCategory10);
 </script>

@@ -1,5 +1,4 @@
 <script>
-  import { dataset, metadata } from "../../stores.js";
   import { flip } from "svelte/animate";
 
   import * as d3 from "d3";

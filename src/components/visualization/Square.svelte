@@ -1,5 +1,6 @@
 <script>
   import * as d3 from 'd3';
+  import { metadata } from "../../stores.js";
 
   export let showPredictions;
   export let color;
@@ -15,9 +16,9 @@
 
   $: stack = d3.stack()
       .keys(color.domain())
-      .value((d, key) => d.get(key));
+      .value((d, key) => d.has(key) ? d.get(key) : 0);
 
-  $: counts = showPredictions ?
+  $: counts = showPredictions && $metadata.hasPredictions ?
       d.predictionCounts :
       d.groundTruth;
 
@@ -34,7 +35,7 @@
       incorrectHeight: 0,
     };
 
-    if (showPredictions) {
+    if (showPredictions && $metadata.hasPredictions) {
       const predictionResults = d.predictionResults.get(label);
 
       if (predictionResults !== undefined && predictionResults.has('incorrect')) {

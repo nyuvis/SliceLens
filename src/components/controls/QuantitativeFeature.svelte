@@ -1,6 +1,6 @@
 <script>
   import { onMount, createEventDispatcher } from "svelte";
-  import { dataset, metadata } from "../../stores.js";
+  import { dataset } from "../../stores.js";
   import { equalIntervalThresholds, quantileThresholds, getBinLabels } from "../../DataTransformer.js";
 
   import * as d3 from "d3";
@@ -89,6 +89,7 @@
       .thresholds(feature.thresholds);
     const bins = bin(datasetValues);
     feature.values = getBinLabels(bins, format);
+    feature.thresholds = bin.thresholds()();
   }
 </script>
 

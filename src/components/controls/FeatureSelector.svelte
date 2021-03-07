@@ -9,7 +9,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   import QuestionBox from '../QuestionBox.svelte';
   import FeatureEditor from './FeatureEditor.svelte';
   import { dataset, metadata, selectedFeatures } from '../../stores.js';
-  import { get } from 'svelte/store';
 
   let features = [];
   $: if ($metadata !== null) {

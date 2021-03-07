@@ -105,7 +105,7 @@
     tooltipData = d;
   }
 
-  function handleMouseleave(event) {
+  function handleMouseleave() {
     tooltipData = null;
   }
 </script>
@@ -122,14 +122,14 @@
     >
       <line x1="0" y1="0" x2="0" y2="3" style="stroke:white; stroke-width:3" />
     </pattern>
-    <g transform="translate({leftSpace},{topSpace})">
+    <g class="margins" transform="translate({leftSpace},{topSpace})">
       <Grid {matrixHeight} {matrixWidth} {xScales} {yScales}/>
 
-      <g transform="translate(0,{-axisSpace.top})">
+      <g class="x-axis" transform="translate(0,{-axisSpace.top})">
         <XAxis {xScales} {xFeatures} width={matrixWidth} {axisLineHeight} />
       </g>
 
-      <g transform="translate({-axisSpace.left},0)">
+      <g class="y-axis" transform="translate({-axisSpace.left},0)">
         <YAxis {yScales} {yFeatures} height={matrixHeight} {axisLineHeight} />
       </g>
 
@@ -152,7 +152,7 @@
       </g>
 
       {#if tooltipData}
-        <Tooltip {...mouse}  {showPredictions} d={tooltipData}/>
+        <Tooltip {...mouse} {showPredictions} d={tooltipData}/>
       {/if}
     </g>
   </svg>

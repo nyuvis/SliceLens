@@ -20,7 +20,7 @@
           return `${featureName}: ${split}`;
         });
 
-  $: countLines = showPredictions
+  $: countLines = showPredictions && $metadata.hasPredictions
     ? Array.from(d.predictionResults, ([label, counts]) => {
         return Array.from(counts, ([correct, count]) => {
           const prefix = correct === "correct" ? "true" : "false";
@@ -30,7 +30,7 @@
     : Array.from(d.groundTruth, ([key, val]) => `${key}: ${val}`);
 </script>
 
-<g transform="translate({x},{y + padding * 3})">
+<g class="tooltip" transform="translate({x},{y + padding * 3})">
   <rect
     fill="white"
     stroke="black"

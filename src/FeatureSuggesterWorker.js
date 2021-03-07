@@ -8,7 +8,7 @@ onmessage = e => {
   const suggestion = getSuggestedFeature(e.data);
   const t1 = performance.now();
   const [d, features, rows] = e.data.dataset.name.split('.')[0].split('-');
-  console.log(`${features},${rows},${e.data.selected.length},${e.data.criterion},${(t1 - t0).toFixed(2)}`);
+  // console.log(`${features},${rows},${e.data.selected.length},${e.data.criterion},${(t1 - t0).toFixed(2)}`);
   postMessage(suggestion);
 }
 

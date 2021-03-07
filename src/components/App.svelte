@@ -34,7 +34,7 @@
   </div>
 
   {#if $metadata !== null}
-    <Chart showPredictions={showPredictions && $metadata.hasPredictions} {showSize} />
+    <Chart showPredictions={showPredictions} {showSize} />
   {/if}
 
   <div id="notes" class="sidebar">
