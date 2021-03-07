@@ -4,6 +4,7 @@
   import XAxis from "./XAxis.svelte";
   import YAxis from "./YAxis.svelte";
   import Tooltip from "./Tooltip.svelte";
+  import SizeLegend from "./SizeLegend.svelte";
   import { data, metadata, selectedFeatures } from "../../stores.js";
   import * as d3 from "d3";
 
@@ -53,7 +54,7 @@
   $: margin = {
     top: 20 + axisSpace.top,
     left: 20 + axisSpace.left,
-    bottom: 20,
+    bottom: 30,
     right: 20,
   };
 
@@ -155,6 +156,12 @@
         <Tooltip {...mouse} {showPredictions} d={tooltipData}/>
       {/if}
     </g>
+
+    {#if showSize}
+      <g class="size-legend" transform="translate({leftSpace + padding},{height - margin.bottom})">
+        <SizeLegend scale={sideLength}/>
+      </g>
+    {/if}
   </svg>
 </div>
 
