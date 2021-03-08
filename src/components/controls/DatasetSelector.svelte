@@ -38,7 +38,8 @@
   }
 
   onMount(async () => {
-    d3.csv('../datasets/datasets.csv').then(d => {
+    // DATASETS_FILE is set in rollup.config.js
+    d3.csv(DATASETS_FILE).then(d => {
       datasets = d;
       selectedDemoDataset = datasets[0];
       load(selectedDemoDataset);

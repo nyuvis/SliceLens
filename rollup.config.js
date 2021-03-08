@@ -4,6 +4,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
 import webWorkerLoader from 'rollup-plugin-web-worker-loader';
+import replace from "@rollup/plugin-replace";
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -16,6 +17,15 @@ export default {
 		file: 'public/build/bundle.js'
 	},
 	plugins: [
+    replace({
+      preventAssignment: true,
+      values: {
+        DATASETS_FILE: production ?
+          JSON.stringify('../datasets/datasets.csv') :
+          JSON.stringify('../datasets/datasets-test.csv'),
+      }
+    }),
+
 		svelte({
 			// enable run-time checks when not in production
 			dev: !production,
@@ -48,7 +58,7 @@ export default {
 		// If we're building for production (npm run build
 		// instead of npm run dev), minify
     production && terser(),
-    
+
     webWorkerLoader()
 	],
 	watch: {

@@ -8,3 +8,5 @@
 /models/*.csv
 
 /scratch
+
+/public/datasets/test

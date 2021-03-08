@@ -1,0 +1,25 @@
+name,path
+Heart Disease,/datasets/heart-disease-with-predictions.csv
+Census Income,https://gist.githubusercontent.com/DanielKerrigan/93e040a90b78a22a5f1d1a322ccb907f/raw/de377ba83f1b93dee693e83de6a1180acc0bce27/census-income.csv
+Broward County COMPAS,https://gist.githubusercontent.com/DanielKerrigan/77224a5ed741e4ae30a7277778918821/raw/af798d4d7a2108a04344382ac2af8374825a86bd/broward-compas.csv
+Heart Disease (no predictions),/datasets/test/heart-disease-no-predictions.csv
+UI Test,/datasets/test/ui-test.csv
+data-10-10000.csv,/datasets/test/data-10-10000.csv
+data-100-10000.csv,/datasets/test/data-100-10000.csv
+data-20-10000.csv,/datasets/test/data-20-10000.csv
+data-20-100000.csv,/datasets/test/data-20-100000.csv
+data-20-20000.csv,/datasets/test/data-20-20000.csv
+data-20-30000.csv,/datasets/test/data-20-30000.csv
+data-20-40000.csv,/datasets/test/data-20-40000.csv
+data-20-50000.csv,/datasets/test/data-20-50000.csv
+data-20-60000.csv,/datasets/test/data-20-60000.csv
+data-20-70000.csv,/datasets/test/data-20-70000.csv
+data-20-80000.csv,/datasets/test/data-20-80000.csv
+data-20-90000.csv,/datasets/test/data-20-90000.csv
+data-30-10000.csv,/datasets/test/data-30-10000.csv
+data-40-10000.csv,/datasets/test/data-40-10000.csv
+data-50-10000.csv,/datasets/test/data-50-10000.csv
+data-60-10000.csv,/datasets/test/data-60-10000.csv
+data-70-10000.csv,/datasets/test/data-70-10000.csv
+data-80-10000.csv,/datasets/test/data-80-10000.csv
+data-90-10000.csv,/datasets/test/data-90-10000.csv
