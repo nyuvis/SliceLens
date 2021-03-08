@@ -136,6 +136,13 @@
     >
       <line x1="0" y1="0" x2="0" y2="3" style="stroke:white; stroke-width:3" />
     </pattern>
+
+    {#if showSize}
+      <g class="size-legend" transform="translate({leftSpace + padding},{height - margin.bottom})">
+        <SizeLegend scale={sideLength}/>
+      </g>
+    {/if}
+
     <g class="margins" transform="translate({leftSpace},{topSpace})">
       <Grid {matrixHeight} {matrixWidth} {xScales} {yScales}/>
 
@@ -169,12 +176,6 @@
         <Tooltip {...mouse} {showPredictions} d={tooltipData}/>
       {/if}
     </g>
-
-    {#if showSize}
-      <g class="size-legend" transform="translate({leftSpace + padding},{height - margin.bottom})">
-        <SizeLegend scale={sideLength}/>
-      </g>
-    {/if}
   </svg>
 </div>
 
