@@ -6,11 +6,14 @@
   import Tooltip from "./Tooltip.svelte";
   import SizeLegend from "./SizeLegend.svelte";
   import { data, metadata, selectedFeatures } from "../../stores.js";
+  import { onMount } from 'svelte';
   import * as d3 from "d3";
 
   export let showPredictions;
   export let showSize;
   export let color;
+
+  let svg;
 
   let width = 600;
   let height = 600;
@@ -109,10 +112,20 @@
   function handleMouseleave() {
     tooltipData = null;
   }
+
+  // window resizing
+
+  onMount(resize);
+
+	function resize() {
+		({ width, height } = svg.getBoundingClientRect());
+	}
 </script>
 
-<div id="chart" bind:clientWidth={width} bind:clientHeight={height}>
-  <svg>
+<svelte:window on:resize={resize}/>
+
+<div id="chart">
+  <svg bind:this={svg}>
     <!-- https://stackoverflow.com/questions/13069446/simple-fill-pattern-in-svg-diagonal-hatching -->
     <pattern
       id="stripes"
