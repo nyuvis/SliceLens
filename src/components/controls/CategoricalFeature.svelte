@@ -1,5 +1,4 @@
 <script>
-  import { dataset, metadata } from "../../stores.js";
   import { flip } from "svelte/animate";
 
   import * as d3 from "d3";
@@ -7,9 +6,6 @@
   export let feature;
 
   export function onWindowClose() {
-    console.log('groupToValues', groupToValues);
-    console.log('groups', groups);
-    console.log('object entries', Object.entries(groups));
     feature.valueToGroup = Object.fromEntries(
       groups.map(({name, values}) =>
         // values is a set

@@ -6,11 +6,8 @@ https://www.w3schools.com/howto/howto_css_modals.asp
 <script>
   import CategoricalFeature from "./CategoricalFeature.svelte";
   import QuantitativeFeature from "./QuantitativeFeature.svelte";
-  import { dataset, metadata } from "../../stores.js";
-  import { onMount, createEventDispatcher } from "svelte";
-  import { flip } from "svelte/animate";
-
-  import * as d3 from "d3";
+  import { metadata } from "../../stores.js";
+  import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
 

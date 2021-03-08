@@ -1,14 +1,16 @@
 <script>
-  import { onMount, createEventDispatcher } from 'svelte';
-  import { getMetadata } from '../../DataTransformer.js';
-  import { dataset, selectedFeatures, metadata } from '../../stores.js';
-  import QuestionBox from '../QuestionBox.svelte';
-  import * as d3 from "d3";
+  import { metadata } from '../../stores.js';
 
-  let showSize = true;
-  const dispatch = createEventDispatcher();
-  $: dispatch('update', showSize);
-  dispatch('update', showSize);
+  export let showSize = true;
+  let showPredictionsCheckBox = false;
+  export let showPredictions = false;
+
+  $: if ($metadata !== null && $metadata.hasPredictions) {
+    showPredictionsCheckBox = true;
+  } else {
+    showPredictionsCheckBox = false;
+    showPredictions = false;
+  }
 </script>
 
 <div>
@@ -16,6 +18,12 @@
   <label class="sub-label small">
       <input type="checkbox" bind:checked={showSize}>Scale by num. instances
   </label>
+
+  {#if showPredictionsCheckBox}
+    <label class="sub-label small">
+      <input type="checkbox" bind:checked={showPredictions}>Show predictions
+    </label>
+  {/if}
 </div>
 
 <style>
