@@ -7,6 +7,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 <script>
   import FeatureSuggesterWorker from 'web-worker:../../FeatureSuggesterWorker';
   import QuestionBox from '../QuestionBox.svelte';
+  import FeatureRow from './FeatureRow.svelte';
   import FeatureEditor from './FeatureEditor.svelte';
   import { dataset, metadata, selectedFeatures } from '../../stores.js';
 
@@ -148,52 +149,23 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 </div>
 <div id="selected-features" class="feature-box" class:dragInProgress>
   {#each $selectedFeatures as feature, i (feature)}
-    <div class="feature selected"
-      id={feature}
-      draggable=true
-      ondragover="return false"
-      on:drop|preventDefault={e => dropHandler(e, i)}
+    <FeatureRow
+      {feature}
+      {suggestion}
+      {canAddFeatures}
+      isSelected={true}
+      draggingOver={draggingOverFeature === feature}
+      on:drop={e => dropHandler(e, i)}
       on:dragstart={startHandler}
       on:dragend={endHandler}
       on:dragenter={() => draggingOverFeature = feature}
       on:dragleave={() => draggingOverFeature = null}
-      class:draggingOverFeature={draggingOverFeature === feature}
-    >
-      <!-- trash can icon -->
-      <svg xmlns="http://www.w3.org/2000/svg"
-        class="icon icon-tabler icon-tabler-trash"
-        width="24" height="24" viewBox="0 0 24 24"
-        stroke-width="2" stroke="currentColor" fill="none"
-        stroke-linecap="round" stroke-linejoin="round"
-        on:click={() => trashClickHandler(feature)}
-      >
-        <path stroke="none" d="M0 0h24v24H0z"/>
-        <line x1="4" y1="7" x2="20" y2="7" />
-        <line x1="10" y1="11" x2="10" y2="17" />
-        <line x1="14" y1="11" x2="14" y2="17" />
-        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
-        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
-      </svg>
-      <p class="feature-name cutoff">{feature}</p>
-
-      <div class="gap"></div>
-
-      <!-- edit icon -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-edit"
-        width="24" height="24" viewBox="0 0 24 24"
-        stroke-width="2" stroke="currentColor" fill="none"
-        stroke-linecap="round" stroke-linejoin="round"
-        on:click={() => {
-          featureToEdit = feature;
-          showFeatureEditor = true;
-        }}
-      >
-        <path stroke="none" d="M0 0h24v24H0z"/>
-        <path d="M9 7 h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-3" />
-        <path d="M9 15h3l8.5 -8.5a1.5 1.5 0 0 0 -3 -3l-8.5 8.5v3" />
-        <line x1="16" y1="5" x2="19" y2="8" />
-      </svg>
-    </div>
+      on:remove={() => trashClickHandler(feature)}
+      on:edit={() => {
+        featureToEdit = feature;
+        showFeatureEditor = true;
+      }}
+    />
   {/each}
   {#if canAddFeatures}
     <div class="place-holder"
@@ -216,62 +188,20 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 <div class="all-features">
   <div class="feature-box">
     {#each features as feature, i  (feature)}
-      <div class="feature all"
-        class:no-pointer-event="{!canAddFeatures}"
-        id={feature}
-        draggable=true
+      <FeatureRow
+        {feature}
+        {suggestion}
+        {canAddFeatures}
+        isSelected={false}
+        draggingOver={draggingOverFeature === feature}
         on:dragstart={startHandler}
         on:dragend={endHandler}
-      >
-        <!-- plus icon -->
-        <svg xmlns="http://www.w3.org/2000/svg"
-          class="icon icon-tabler icon-tabler-plus"
-          width="24" height="24" viewBox="0 0 24 24"
-          stroke-width="2" stroke="currentColor" fill="none"
-          stroke-linecap="round" stroke-linejoin="round"
-          on:click={() => plusClickHandler(feature)}
-        >
-          <path stroke="none" d="M0 0h24v24H0z"/>
-          <line x1="12" y1="5" x2="12" y2="19" />
-          <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-
-        <p class="feature-name cutoff">
-          {feature}
-        </p>
-        {#if feature === suggestion && canAddFeatures}
-          <!-- light bulb icon -->
-          <svg xmlns="http://www.w3.org/2000/svg"
-            class="icon icon-tabler icon-tabler-bulb"
-            width="24" height="24" viewBox="0 0 24 24"
-            stroke-width="2" stroke="currentColor" fill="none"
-            stroke-linecap="round" stroke-linejoin="round"
-          >
-            <path stroke="none" d="M0 0h24v24H0z"/>
-            <path d="M3 12h1M12 3v1M20 12h1M5.6 5.6l.7 .7M18.4 5.6l-.7 .7" />
-            <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
-            <line x1="9.7" y1="17" x2="14.3" y2="17" />
-          </svg>
-        {/if}
-
-        <div class="gap"></div>
-
-        <!-- edit icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-edit"
-          width="24" height="24" viewBox="0 0 24 24"
-          stroke-width="2" stroke="currentColor" fill="none"
-          stroke-linecap="round" stroke-linejoin="round"
-          on:click={() => {
-            featureToEdit = feature;
-            showFeatureEditor = true;
-          }}
-        >
-          <path stroke="none" d="M0 0h24v24H0z"/>
-          <path d="M9 7 h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-3" />
-          <path d="M9 15h3l8.5 -8.5a1.5 1.5 0 0 0 -3 -3l-8.5 8.5v3" />
-          <line x1="16" y1="5" x2="19" y2="8" />
-        </svg>
-      </div>
+        on:add={() => plusClickHandler(feature)}
+        on:edit={() => {
+          featureToEdit = feature;
+          showFeatureEditor = true;
+        }}
+      />
     {/each}
   </div>
 </div>
@@ -290,30 +220,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     overflow-y: scroll;
   }
 
-  .feature-name {
-    max-width: 85%;
-  }
-
-  .feature {
-    display: flex;
-    cursor: move;
-    /* if features are right next to eachother then
-    highlighting drop placement doesn't work */
-    margin-bottom: 3px;
-    font-size: 0.875em;
-    align-items: center;
-  }
-
-  .feature:hover {
-    font-weight: 500;
-  }
-
-  .feature p {
-    margin: 0;
-    padding: 0;
-    pointer-events: none;
-  }
-
   .instruction {
     padding-left: 1em;
   }
@@ -328,57 +234,13 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     align-items: center;
   }
 
-  .no-pointer-event {
-    pointer-events: none;
-  }
-
   .hidden {
     visibility: hidden;
   }
 
   /* dragging */
 
-  .draggingOverFeature {
-    font-weight: 500;
-  }
-
-  .draggingOverFeature * {
-    pointer-events: none;
-  }
-
   .dragInProgress {
     border: 1px solid black;
-  }
-
-  /* icons */
-
-  .icon-tabler-trash, .icon-tabler-plus, .icon-tabler-edit {
-    visibility: hidden;
-    cursor: pointer;
-  }
-
-  .selected:hover .icon-tabler-edit,
-  .selected:hover .icon-tabler-trash,
-  .all:hover .icon-tabler-plus,
-  .all:hover .icon-tabler-edit {
-    visibility: visible;
-    color: black;
-  }
-
-  .selected:hover .icon-tabler-trash:hover {
-    color: red;
-  }
-
-  .all:hover .icon-tabler-plus:hover {
-    color: rgb(0, 99, 206);;
-  }
-
-  .icon-tabler-bulb {
-    color: green;
-  }
-
-  .selected:hover .icon-tabler-edit:hover,
-  .all:hover .icon-tabler-edit:hover {
-    color: rgb(0, 99, 206);
   }
 </style>
