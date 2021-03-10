@@ -114,8 +114,8 @@
   }
 
   // window resizing
-
-  onMount(resize);
+  // without the delay, the div will occasionally not be at full height yet
+  onMount(() => setTimeout(resize, 200));
 
 	function resize() {
 		({ width, height } = div.getBoundingClientRect());

@@ -10,13 +10,13 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 	const dispatch = createEventDispatcher();
 
   export let feature;
-  export let isSelected;
   export let canAddFeatures;
-  export let suggestion;
-  export let draggingOver;
+  export let isSelected;
+  export let relevance = 0;
+  export let draggingOver = false;
 </script>
 
-<div class="feature"
+<div class="feature small"
   class:draggingOver
   class:selected={isSelected}
   class:all={!isSelected}
@@ -60,23 +60,13 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       <line x1="5" y1="12" x2="19" y2="12" />
     </svg>
   {/if}
-  <p class="feature-name cutoff">{feature}</p>
-  {#if feature === suggestion && canAddFeatures}
-    <!-- light bulb icon -->
-    <svg xmlns="http://www.w3.org/2000/svg"
-      class="icon icon-tabler icon-tabler-bulb"
-      width="24" height="24" viewBox="0 0 24 24"
-      stroke-width="2" stroke="currentColor" fill="none"
-      stroke-linecap="round" stroke-linejoin="round"
-    >
-      <path stroke="none" d="M0 0h24v24H0z"/>
-      <path d="M3 12h1M12 3v1M20 12h1M5.6 5.6l.7 .7M18.4 5.6l-.7 .7" />
-      <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
-      <line x1="9.7" y1="17" x2="14.3" y2="17" />
-    </svg>
-  {/if}
 
-  <div class="gap"></div>
+  <div class="gap feature-name-container">
+    {#if relevance !== 0}
+      <div class="bar" style="width: {relevance * 100}%;"></div>
+    {/if}
+    <p class="cutoff feature-name">{feature}</p>
+  </div>
 
   <!-- edit icon -->
   <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-edit"
@@ -94,17 +84,12 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
 
 <style>
-  .feature-name {
-    max-width: 85%;
-  }
-
   .feature {
     display: flex;
     cursor: move;
     /* if features are right next to eachother then
     highlighting drop placement doesn't work */
     margin-bottom: 3px;
-    font-size: 0.875em;
     align-items: center;
   }
 
@@ -120,6 +105,26 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   .no-pointer-event {
     pointer-events: none;
+  }
+
+  .feature-name-container {
+    max-width: 85%;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .feature-name {
+    position: relative;
+    z-index: 2;
+  }
+
+  .bar {
+    height: 1em;
+    position: absolute;
+    background-color: #ebebeb;
+;
+    z-index: 1;
   }
 
   /* icons */
@@ -143,10 +148,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   .all:hover .icon-tabler-plus:hover {
     color: rgb(0, 99, 206);;
-  }
-
-  .icon-tabler-bulb {
-    color: green;
   }
 
   .selected:hover .icon-tabler-edit:hover,

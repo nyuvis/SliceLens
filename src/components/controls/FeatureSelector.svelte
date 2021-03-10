@@ -16,6 +16,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     features = $metadata.featureNames;
   }
 
+  // suggestion criteria
+
   const criteria = [
     {
       title: 'Ground truth metrics',
@@ -49,10 +51,12 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   const maxFeatures = 4;
   $: canAddFeatures = $selectedFeatures.length < maxFeatures;
 
-  let suggestion = '';
+  // web worker for feature suggestions
+
+  let featureToRelevance = null;
 
   const worker = new FeatureSuggesterWorker();
-  worker.onmessage = e => suggestion = e.data;
+  worker.onmessage = e => featureToRelevance = e.data;
 
   $: if ($dataset && $metadata !== null && canAddFeatures) {
     worker.postMessage({
@@ -62,6 +66,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       dataset: $dataset
     });
   }
+
+  // drag and drop
 
   let dragInProgress = false;
   let draggingOverFeature = null;
@@ -84,6 +90,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     draggingOverFeature = null;
   }
 
+  // adding and removing features
+
   function plusClickHandler(feature) {
     if (!$selectedFeatures.includes(feature)) {
       $selectedFeatures = [...$selectedFeatures, feature];
@@ -94,14 +102,21 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     $selectedFeatures = $selectedFeatures.filter(d => d !== feature);
   }
 
+  // editing features
+
+  let showFeatureEditor = false;
+  let featureToEdit = null;
+
+  // tooltips
+
   const suggestionTooltip = `Choose the metric that is used to
-  suggest which feature to explore next. A lightbulb icon is next to
-  the name of the suggested feature. "Purity" suggests the feature
-  that results in the subsets with the lowest weighted average entropy.
-  "Error deviation" suggests the feature that leads to the subsets with
-  highest standard deviation of percent error. "Error count"
-  and "Error percent" suggest the feature that leads to the individual
-  subset that has the highest number or percent of errors, respectively.`;
+  suggest which feature to explore next. The longer the gray bar underneath
+  the feature, the more relevant the feature is according to the metric.
+  "Purity" gives higher relevance to features that result in the subsets
+  with lower weighted average entropy. "Error deviation" gives higher relevance
+  to features that lead to subsets with higher standard deviation of percent error.
+  "Error count" and "Error percent" give higher relevance to features that lead
+  to subsets with higher max number or percent of errors, respectively.`;
 
   const selectFeatureTooltip = `You can select features by dragging
   and dropping from below or by clicking on the plus icon that appears
@@ -110,10 +125,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   const featureTooltip = `Click the edit icon that appears when you hover
   over a feature to change how that feature is split.`;
-
-  let showFeatureEditor = false;
-  let featureToEdit = null;
-
 </script>
 
 {#if showFeatureEditor}
@@ -147,11 +158,11 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   <p class="bold">Selected</p>
   <QuestionBox text={selectFeatureTooltip}/>
 </div>
+
 <div id="selected-features" class="feature-box" class:dragInProgress>
   {#each $selectedFeatures as feature, i (feature)}
     <FeatureRow
       {feature}
-      {suggestion}
       {canAddFeatures}
       isSelected={true}
       draggingOver={draggingOverFeature === feature}
@@ -185,15 +196,15 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   <p class="bold">Features</p>
   <QuestionBox text={featureTooltip}/>
 </div>
+
 <div class="all-features">
   <div class="feature-box">
     {#each features as feature, i  (feature)}
       <FeatureRow
         {feature}
-        {suggestion}
         {canAddFeatures}
         isSelected={false}
-        draggingOver={draggingOverFeature === feature}
+        relevance={featureToRelevance && featureToRelevance.has(feature) ? featureToRelevance.get(feature) : 0}
         on:dragstart={startHandler}
         on:dragend={endHandler}
         on:add={() => plusClickHandler(feature)}

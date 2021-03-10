@@ -5,11 +5,11 @@ import * as d3 from "d3";
 
 onmessage = e => {
   const t0 = performance.now();
-  const suggestion = getSuggestedFeature(e.data);
+  const featureToRelevance = getSuggestedFeature(e.data);
   const t1 = performance.now();
   const [d, features, rows] = e.data.dataset.name.split('.')[0].split('-');
   // console.log(`${features},${rows},${e.data.selected.length},${e.data.criterion},${(t1 - t0).toFixed(2)}`);
-  postMessage(suggestion);
+  postMessage(featureToRelevance);
 }
 
 function getSuggestedFeature({criterion, selected, metadata, dataset}) {
@@ -19,17 +19,29 @@ function getSuggestedFeature({criterion, selected, metadata, dataset}) {
 
   const available = metadata.featureNames.filter(d => !selected.includes(d));
 
+  let ratings = [];
+
   if (criterion === 'entropy') {
-    return entropy({selected, metadata, dataset, available});
+    ratings = entropy({selected, metadata, dataset, available});
   } else if (criterion === 'errorCount') {
-    return errorCount({selected, metadata, dataset, available});
+    ratings = errorCount({selected, metadata, dataset, available});
   } else if (criterion === 'errorPercent') {
-    return errorPercent({selected, metadata, dataset, available});
+    ratings = errorPercent({selected, metadata, dataset, available});
   } else if (criterion === 'errorDeviation') {
-    return errorDeviation({selected, metadata, dataset, available})
-  } else {
-    return '';
+    ratings = errorDeviation({selected, metadata, dataset, available})
   }
+
+  return normalize(ratings);
+}
+
+// normalize values between 0 and 1
+function normalize(ratings) {
+  if (!ratings) return null;
+
+  const [min, max] = d3.extent(ratings, d => d.value);
+  const diff = max - min;
+
+  return new Map(ratings.map(({feature, value}) => [feature, (value - min) / diff]));
 }
 
 /*
@@ -37,24 +49,18 @@ function getSuggestedFeature({criterion, selected, metadata, dataset}) {
   lowest average entropy.
 */
 function entropy({selected, metadata, dataset, available}) {
-  let suggestion = '';
-  let minEntropy = Number.POSITIVE_INFINITY;
-
-  available.forEach(feature => {
+  return available.map(feature => {
     const sel = [...selected, feature];
     const data = getData(metadata, sel, dataset);
-    const ent = d3.sum(data, square => {
+
+    // give higher rating to lower entropy, so negate it
+    const value = -d3.sum(data, square => {
       const weight = square.size / metadata.size;
       return weight * H(square);
     });
 
-    if (ent < minEntropy) {
-      suggestion = feature;
-      minEntropy = ent;
-    }
+    return {feature, value};
   });
-
-  return suggestion;
 
   function H(square) {
     return -d3.sum(square.groundTruth.values(), v => {
@@ -64,69 +70,49 @@ function entropy({selected, metadata, dataset, available}) {
   }
 }
 
+/*
+  Give a higher rating to features that result in the
+  subsets with higher standard deviations of percent error
+*/
 function errorDeviation({selected, metadata, dataset, available}) {
-  let suggestion = '';
-  let maxDeviation = 0;
-
-  available.forEach(feature => {
+  return available.map(feature => {
     const sel = [...selected, feature];
     const data = getData(metadata, sel, dataset);
 
-    const dev = d3.deviation(data, d => getErrorCountForSquare(d) / d.size);
+    const value = -d3.deviation(data, d => getErrorCountForSquare(d) / d.size);
 
-    if (dev > maxDeviation) {
-      suggestion = feature;
-      maxDeviation = dev;
-    }
+    return {feature, value};
   });
-
-  return suggestion;
 }
 
 /*
-  Return the feature that results in the single node that has
-  the highest number of errors.
+  Give a higher rating to features that result in the
+  single nodes that have the higher number of errors
 */
 function errorCount({selected, metadata, dataset, available}) {
-  let suggestion = '';
-  let maxError = 0;
-
-  available.forEach(feature => {
+  return available.map(feature => {
     const sel = [...selected, feature];
     const data = getData(metadata, sel, dataset);
 
-    const errors = d3.max(data, getErrorCountForSquare);
+    const value = d3.max(data, getErrorCountForSquare);
 
-    if (errors > maxError) {
-      suggestion = feature;
-      maxError = errors;
-    }
+    return {feature, value};
   });
-
-  return suggestion;
 }
 
 /*
-  Return the feature that results in the single node that has
-  the highest percent of errors.
+  Give a higher rating to features that result in the
+  single nodes that have the higher percent of errors
 */
 function errorPercent({selected, metadata, dataset, available}) {
-  let suggestion = '';
-  let maxError = 0;
-
-  available.forEach(feature => {
+  return available.map(feature => {
     const sel = [...selected, feature];
     const data = getData(metadata, sel, dataset);
 
-    const errors = d3.max(data, d => getErrorCountForSquare(d) / d.size);
+    const value = d3.max(data, d => getErrorCountForSquare(d) / d.size);
 
-    if (errors > maxError) {
-      suggestion = feature;
-      maxError = errors;
-    }
+    return {feature, value};
   });
-
-  return suggestion;
 }
 
 function getErrorCountForSquare(square) {

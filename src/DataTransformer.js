@@ -73,7 +73,7 @@ function getMetadata(dataset) {
 
   const cols = dataset.columns;
 
-  const labelValues = Array.from(new Set(dataset.map(d => d['label'])));
+  const labelValues = Array.from(new Set(dataset.map(d => d['label']))).sort();
 
   const featureNames = cols.filter(d => d !== 'label' && d !== 'prediction');
   const hasPredictions = cols.includes('prediction');
