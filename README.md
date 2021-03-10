@@ -45,3 +45,5 @@ Your dataset must be a CSV file that has a "label" column, representing the grou
 * [Broward County COMPAS](https://doi.org/10.1126/sciadv.aao5580)
   * Dressel, Julia, and Hany Farid. “The Accuracy, Fairness, and Limits of Predicting Recidivism.” Science Advances, vol. 4, no. 1, 17 Jan. 2018, doi:10.1126/sciadv.aao5580.
   * Based on `BROWARD_CLEAN.csv` from the above article's [data and material](https://farid.berkeley.edu/downloads/publications/scienceadvances17/).
+* [Student Performance](https://archive.ics.uci.edu/ml/datasets/Student+Performance)
+  * P. Cortez and A. Silva. Using Data Mining to Predict Secondary School Student Performance. In A. Brito and J. Teixeira Eds., Proceedings of 5th FUture BUsiness TEChnology Conference (FUBUTEC 2008) pp. 5-12, Porto, Portugal, April, 2008, EUROSIS, ISBN 978-9077381-39-7.

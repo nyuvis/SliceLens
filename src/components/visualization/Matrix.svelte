@@ -13,7 +13,7 @@
   export let showSize;
   export let color;
 
-  let svg;
+  let div;
 
   let width = 600;
   let height = 600;
@@ -118,14 +118,14 @@
   onMount(resize);
 
 	function resize() {
-		({ width, height } = svg.getBoundingClientRect());
+		({ width, height } = div.getBoundingClientRect());
 	}
 </script>
 
 <svelte:window on:resize={resize}/>
 
-<div id="chart">
-  <svg bind:this={svg}>
+<div id="chart" bind:this={div}>
+  <svg>
     <!-- https://stackoverflow.com/questions/13069446/simple-fill-pattern-in-svg-diagonal-hatching -->
     <pattern
       id="stripes"
