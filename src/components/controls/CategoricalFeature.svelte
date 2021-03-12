@@ -136,6 +136,7 @@
 </div>
 
 <div class="controls">
+  <p class="sub-label">Groups</p>
   <p class="link" on:click={onClickNewGroup}>
     New Group
   </p>
