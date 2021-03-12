@@ -2,7 +2,7 @@
   import DatasetSelector from './controls/DatasetSelector.svelte';
   import FeatureSelector from './controls/FeatureSelector.svelte';
   import VisualizationSettings from './controls/VisualizationSettings.svelte';
-  import Chart from './visualization/Chart.svelte';
+  import Chart from './visualization/matrix/Chart.svelte';
   import NotesSidebar from './notes/NotesSidebar.svelte';
   import { metadata } from '../stores';
 

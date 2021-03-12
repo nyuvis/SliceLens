@@ -1,5 +1,5 @@
 <script>
-  import { metadata } from '../../stores.js';
+  import { metadata } from '../../../stores.js';
   import ColorLegend from './ColorLegend.svelte';
   import Matrix from './Matrix.svelte';
   import * as d3 from 'd3';

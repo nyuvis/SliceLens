@@ -1,5 +1,6 @@
 <script>
   import { flip } from "svelte/animate";
+  import Barchart from '../visualization/barchart/Barchart.svelte';
 
   import * as d3 from "d3";
 
@@ -129,6 +130,11 @@
   }
 </script>
 
+<div class="chart">
+  <p class="sub-label">Distribution</p>
+  <Barchart feature={feature.name}/>
+</div>
+
 <div class="controls">
   <p class="link" on:click={onClickNewGroup}>
     New Group
@@ -210,6 +216,11 @@
 </div>
 
 <style>
+  .chart {
+    align-self: flex-start;
+    width: 100%;
+  }
+
   .controls {
     margin: 0.5em 0;
     align-self: start;

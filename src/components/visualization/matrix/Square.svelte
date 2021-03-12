@@ -1,6 +1,6 @@
 <script>
   import * as d3 from 'd3';
-  import { metadata } from "../../stores.js";
+  import { metadata } from "../../../stores.js";
 
   export let showPredictions;
   export let color;

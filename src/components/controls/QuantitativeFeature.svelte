@@ -2,6 +2,7 @@
   import { onMount, createEventDispatcher } from "svelte";
   import { dataset } from "../../stores.js";
   import { equalIntervalThresholds, quantileThresholds, getBinLabels } from "../../DataTransformer.js";
+  import Histogram from '../visualization/histogram/Histogram.svelte';
 
   import * as d3 from "d3";
 
@@ -94,6 +95,11 @@
 </script>
 
 <div class="section">
+  <p class="sub-label">Distribution</p>
+  <Histogram feature={feature.name}/>
+</div>
+
+<div class="section">
   <p class="sub-label">Format</p>
   <p class="sub-label small info">
     This value can be any valid <a href="https://github.com/d3/d3-format#locale_format" target="_blank" rel="noopener noreferrer">d3-format specifier</a>.
@@ -177,6 +183,7 @@
   .section {
     align-self: flex-start;
     margin: 0.5em 0;
+    width: 100%;
   }
 
   .align-right {

@@ -1,5 +1,5 @@
 <script>
-  import { metadata } from "../../stores.js";
+  import { metadata } from "../../../stores.js";
 
   export let showPredictions;
   export let d;

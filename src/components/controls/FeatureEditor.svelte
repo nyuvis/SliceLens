@@ -89,7 +89,7 @@ https://www.w3schools.com/howto/howto_css_modals.asp
 <style>
   .modal-background {
     position: fixed;
-    z-index: 1;
+    z-index: 3;
     left: 0;
     top: 0;
     width: 100%;
@@ -104,8 +104,10 @@ https://www.w3schools.com/howto/howto_css_modals.asp
   .modal-content {
     background-color: white;
 
-    max-width: 80%;
-    max-height: 80%;
+    max-width: 90%;
+    max-height: 90%;
+
+    width: 50em;
 
     border-radius: 5px;
 
@@ -113,6 +115,8 @@ https://www.w3schools.com/howto/howto_css_modals.asp
 
     display: flex;
     flex-direction: column;
+
+    overflow-x: auto;
   }
 
   .header {

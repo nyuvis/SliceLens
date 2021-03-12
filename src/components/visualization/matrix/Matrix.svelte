@@ -5,7 +5,7 @@
   import YAxis from "./YAxis.svelte";
   import Tooltip from "./Tooltip.svelte";
   import SizeLegend from "./SizeLegend.svelte";
-  import { data, metadata, selectedFeatures } from "../../stores.js";
+  import { data, metadata, selectedFeatures } from "../../../stores.js";
   import { onMount } from 'svelte';
   import * as d3 from "d3";
 
