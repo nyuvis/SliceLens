@@ -10,6 +10,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   import FeatureRow from './FeatureRow.svelte';
   import FeatureEditor from './FeatureEditor.svelte';
   import { dataset, metadata, selectedFeatures } from '../../stores.js';
+  import * as d3 from 'd3';
 
   let features = [];
   $: if ($metadata !== null) {
@@ -53,7 +54,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   // web worker for feature suggestions
 
-  let featureToRelevance = null;
+  let featureToRelevance = new Map();
 
   const worker = new FeatureSuggesterWorker();
   worker.onmessage = e => featureToRelevance = e.data;
@@ -101,6 +102,25 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   function trashClickHandler(feature) {
     $selectedFeatures = $selectedFeatures.filter(d => d !== feature);
   }
+
+  // sorting features
+
+  let sortByRating = false;
+
+  $: if (criterion.value === 'none') {
+    sortByRating = false;
+  }
+
+  $: sortedFeatures = sortByRating
+    ? features
+        .slice()
+        .sort((a, b) =>
+          d3.descending(
+            featureToRelevance.get(a) || 0,
+            featureToRelevance.get(b) || 0
+          )
+        )
+    : features;
 
   // editing features
 
@@ -195,16 +215,36 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 <div class="label help-row">
   <p class="bold">Features</p>
   <QuestionBox text={featureTooltip}/>
+  <div class="gap"></div>
+  {#if featureToRelevance.size}
+    <!-- sort icon -->
+    <svg xmlns="http://www.w3.org/2000/svg"
+      class="icon icon-tabler icon-tabler-arrows-sort"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      stroke-width="2"
+      stroke="currentColor"
+      fill="none"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      on:click={() => sortByRating = !sortByRating}
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+      <path d="M3 9l4 -4l4 4m-4 -4v14"></path>
+      <path d="M21 15l-4 4l-4 -4m4 4v-14"></path>
+    </svg>
+  {/if}
 </div>
 
 <div class="all-features">
   <div class="feature-box">
-    {#each features as feature, i  (feature)}
+    {#each sortedFeatures as feature, i  (feature)}
       <FeatureRow
         {feature}
         {canAddFeatures}
         isSelected={false}
-        relevance={featureToRelevance && featureToRelevance.has(feature) ? featureToRelevance.get(feature) : 0}
+        relevance={featureToRelevance.get(feature) || 0}
         on:dragstart={startHandler}
         on:dragend={endHandler}
         on:add={() => plusClickHandler(feature)}
@@ -247,6 +287,10 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   .hidden {
     visibility: hidden;
+  }
+
+  .icon-tabler-arrows-sort:hover {
+    color: rgb(0, 99, 206);;
   }
 
   /* dragging */

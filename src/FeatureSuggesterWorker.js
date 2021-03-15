@@ -5,16 +5,16 @@ import * as d3 from "d3";
 
 onmessage = e => {
   const t0 = performance.now();
-  const featureToRelevance = getSuggestedFeature(e.data);
+  const featureToRelevance = getFeatureRatings(e.data);
   const t1 = performance.now();
   const [d, features, rows] = e.data.dataset.name.split('.')[0].split('-');
   // console.log(`${features},${rows},${e.data.selected.length},${e.data.criterion},${(t1 - t0).toFixed(2)}`);
   postMessage(featureToRelevance);
 }
 
-function getSuggestedFeature({criterion, selected, metadata, dataset}) {
+function getFeatureRatings({criterion, selected, metadata, dataset}) {
   if (criterion === 'none') {
-    return '';
+    return new Map();
   }
 
   const available = metadata.featureNames.filter(d => !selected.includes(d));
@@ -36,7 +36,7 @@ function getSuggestedFeature({criterion, selected, metadata, dataset}) {
 
 // normalize values between 0 and 1
 function normalize(ratings) {
-  if (!ratings) return null;
+  if (!ratings) return new Map();
 
   const [min, max] = d3.extent(ratings, d => d.value);
   const diff = max - min;
