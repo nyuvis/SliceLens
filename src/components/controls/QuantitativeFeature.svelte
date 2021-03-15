@@ -96,7 +96,8 @@
 
 <div class="section">
   <p class="sub-label">Distribution</p>
-  <Histogram feature={feature.name}/>
+  <p class="sub-label small info">The red ticks show the current bin thresholds.</p>
+  <Histogram feature={feature.name} thresholds={feature.thresholds}/>
 </div>
 
 <div class="section">

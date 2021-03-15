@@ -4,6 +4,7 @@
   import * as d3 from 'd3';
 
   export let feature;
+  export let thresholds;
 
   const margin = { top: 20, left: 50, right: 50, bottom: 20};
   const numBins = 20;
@@ -57,6 +58,17 @@
             <line y2=5 stroke="black"/>
             <text y=7>{xFormat(tick)}</text>
           </g>
+        {/each}
+
+        {#each thresholds as threshold}
+          <line
+            x1={xScale(threshold) + 0.5}
+            x2={xScale(threshold) + 0.5}
+            y1={visHeight + 0.5}
+            y2={visHeight + 5.5}
+            stroke-width={2}
+            stroke="red"
+          />
         {/each}
       </g>
 
