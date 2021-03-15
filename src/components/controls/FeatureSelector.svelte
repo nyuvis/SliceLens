@@ -11,6 +11,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   import FeatureEditor from './FeatureEditor.svelte';
   import { dataset, metadata, selectedFeatures } from '../../stores.js';
   import * as d3 from 'd3';
+  import { flip } from "svelte/animate";
 
   let features = [];
   $: if ($metadata !== null) {
@@ -239,20 +240,22 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
 <div class="all-features">
   <div class="feature-box">
-    {#each sortedFeatures as feature, i  (feature)}
-      <FeatureRow
-        {feature}
-        {canAddFeatures}
-        isSelected={false}
-        relevance={featureToRelevance.get(feature) || 0}
-        on:dragstart={startHandler}
-        on:dragend={endHandler}
-        on:add={() => plusClickHandler(feature)}
-        on:edit={() => {
-          featureToEdit = feature;
-          showFeatureEditor = true;
-        }}
-      />
+    {#each sortedFeatures as feature  (feature)}
+      <div animate:flip={{ duration: 300 }}>
+        <FeatureRow
+          {feature}
+          {canAddFeatures}
+          isSelected={false}
+          relevance={featureToRelevance.get(feature) || 0}
+          on:dragstart={startHandler}
+          on:dragend={endHandler}
+          on:add={() => plusClickHandler(feature)}
+          on:edit={() => {
+            featureToEdit = feature;
+            showFeatureEditor = true;
+          }}
+        />
+      </div>
     {/each}
   </div>
 </div>
