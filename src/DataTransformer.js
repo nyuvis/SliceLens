@@ -108,8 +108,10 @@ function getMetadata(dataset) {
       feature.format = formatSpecifier;
       feature.type = 'Q';
     } else {
+      // values are the names of the groups
       feature.values = uniqueValues;
       feature.categories = uniqueValues;
+      // by default, each value is in its own group
       feature.valueToGroup = Object.fromEntries(d3.zip(uniqueValues, uniqueValues));
       feature.type = 'C';
     }

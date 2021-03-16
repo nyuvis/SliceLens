@@ -1,5 +1,5 @@
 <script>
-  import { onMount, createEventDispatcher } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
   import { selectedFeatures, metadata } from '../../stores.js';
   import { cloneMetadata } from '../../DataTransformer.js';
   import marked from 'marked';

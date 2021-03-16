@@ -1,7 +1,8 @@
 <script>
-  import Exporter from './Exporter.svelte';
-  import Importer from './Importer.svelte';
-  import Viewer from './Viewer.svelte';
+  import NotesExporter from './NotesExporter.svelte';
+  import NotesImporter from './NotesImporter.svelte';
+  import NotesViewer from './NotesViewer.svelte';
+  import LogExporter from './LogExporter.svelte';
   import { selectedFeatures, metadata, dataset } from '../../stores.js';
   import { cloneMetadata } from '../../DataTransformer.js';
 
@@ -82,8 +83,8 @@
 <div class="header sub-label">
   <p class="link small" on:click={newNote}>New Note</p>
   <div class="gap"></div>
-  <Importer on:upload={e => notes = e.detail}/>
-  <Exporter {notes}/>
+  <NotesImporter on:upload={e => notes = e.detail}/>
+  <NotesExporter {notes}/>
 </div>
 
 <div class="list small">
@@ -99,7 +100,7 @@
   {/if}
 </div>
 
-<Viewer
+<NotesViewer
   note={selectedNote}
   edit={edit}
   on:close={closeNote}
@@ -107,6 +108,11 @@
   on:save={saveNote}
   on:edit={editNote}
 />
+
+<div class="header sub-label logs">
+  <div class="gap"></div>
+  <LogExporter/>
+</div>
 
 <style>
   .header {
@@ -131,5 +137,9 @@
 
   .list div:hover {
     font-weight: 500;
+  }
+
+  .logs {
+    margin-top: auto;
   }
 </style>

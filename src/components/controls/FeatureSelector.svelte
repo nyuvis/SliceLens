@@ -9,7 +9,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   import QuestionBox from '../QuestionBox.svelte';
   import FeatureRow from './FeatureRow.svelte';
   import FeatureEditor from './FeatureEditor.svelte';
-  import { dataset, metadata, selectedFeatures } from '../../stores.js';
+  import { dataset, metadata, selectedFeatures, logs } from '../../stores.js';
   import * as d3 from 'd3';
   import { flip } from "svelte/animate";
 
@@ -50,6 +50,13 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     criterion = defaultCriterion;
   }
 
+  function criterionChanged() {
+    logs.add({
+      event: 'criterion-change',
+      criterion: criterion.value,
+    });
+  }
+
   const maxFeatures = 4;
   $: canAddFeatures = $selectedFeatures.length < maxFeatures;
 
@@ -77,6 +84,23 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   function dropHandler(event, i) {
     const item = JSON.parse(event.dataTransfer.getData("text"));
     const filtered = $selectedFeatures.filter(d => d !== item.id);
+
+    if (filtered.length === $selectedFeatures.length) {
+      logs.add({
+        event: 'feature-add',
+        feature: item.id,
+        selected: $selectedFeatures,
+        criterion: criterion.value,
+        rank: featuresSortedByRating.indexOf(item.id) + 1
+      });
+    } else {
+      logs.add({
+        event: 'feature-reorder',
+        feature: item.id,
+        selected: $selectedFeatures
+      });
+    }
+
     filtered.splice(i, 0, item.id);
     $selectedFeatures = filtered;
   }
@@ -96,11 +120,25 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   function plusClickHandler(feature) {
     if (!$selectedFeatures.includes(feature)) {
+      logs.add({
+        event: 'feature-add',
+        feature,
+        selected: $selectedFeatures,
+        criterion: criterion.value,
+        rank: featuresSortedByRating.indexOf(feature) + 1
+      });
+
       $selectedFeatures = [...$selectedFeatures, feature];
     }
   }
 
   function trashClickHandler(feature) {
+    logs.add({
+      event: 'feature-remove',
+      feature,
+      selected: $selectedFeatures
+    });
+
     $selectedFeatures = $selectedFeatures.filter(d => d !== feature);
   }
 
@@ -112,21 +150,32 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     sortByRating = false;
   }
 
-  $: sortedFeatures = sortByRating
-    ? features
-        .slice()
-        .sort((a, b) =>
-          d3.descending(
-            featureToRelevance.get(a) || 0,
-            featureToRelevance.get(b) || 0
-          )
+  $: featuresSortedByRating = features
+      .slice()
+      .sort((a, b) =>
+        d3.descending(
+          featureToRelevance.get(a) || 0,
+          featureToRelevance.get(b) || 0
         )
-    : features;
+      );
+
+  $: featuresToShow = sortByRating ? featuresSortedByRating : features;
 
   // editing features
 
   let showFeatureEditor = false;
   let featureToEdit = null;
+
+  function onFeatureEdit(feature) {
+    featureToEdit = feature;
+    showFeatureEditor = true;
+
+    logs.add({
+      event: 'feature-edit',
+      phase: 'open',
+      feature: $metadata.features[feature]
+    });
+  }
 
   // tooltips
 
@@ -164,7 +213,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 </div>
 
 <div>
-  <select bind:value={criterion}>
+  <select bind:value={criterion} on:blur={criterionChanged}>
     {#each criteria.filter(d => (hasPredictions || !d.requiresPredictions)) as group}
       <optgroup label={group.title}>
         {#each group.options.filter(d => (hasPredictions || !d.requiresPredictions)) as opt}
@@ -193,10 +242,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       on:dragenter={() => draggingOverFeature = feature}
       on:dragleave={() => draggingOverFeature = null}
       on:remove={() => trashClickHandler(feature)}
-      on:edit={() => {
-        featureToEdit = feature;
-        showFeatureEditor = true;
-      }}
+      on:edit={() => onFeatureEdit(feature)}
     />
   {/each}
   {#if canAddFeatures}
@@ -240,7 +286,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
 <div class="all-features">
   <div class="feature-box">
-    {#each sortedFeatures as feature  (feature)}
+    {#each featuresToShow as feature  (feature)}
       <div animate:flip={{ duration: 300 }}>
         <FeatureRow
           {feature}
@@ -250,10 +296,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
           on:dragstart={startHandler}
           on:dragend={endHandler}
           on:add={() => plusClickHandler(feature)}
-          on:edit={() => {
-            featureToEdit = feature;
-            showFeatureEditor = true;
-          }}
+          on:edit={() => onFeatureEdit(feature)}
         />
       </div>
     {/each}

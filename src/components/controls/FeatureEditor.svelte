@@ -6,7 +6,7 @@ https://www.w3schools.com/howto/howto_css_modals.asp
 <script>
   import CategoricalFeature from "./CategoricalFeature.svelte";
   import QuantitativeFeature from "./QuantitativeFeature.svelte";
-  import { metadata } from "../../stores.js";
+  import { metadata, logs } from "../../stores.js";
   import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
@@ -30,6 +30,8 @@ https://www.w3schools.com/howto/howto_css_modals.asp
     } else if (quantitativeComponent) {
       quantitativeComponent.onWindowClose();
     }
+
+    logs.add({ event: 'feature-edit', phase: 'close', feature });
 
     $metadata = $metadata;
     dispatch("close");
