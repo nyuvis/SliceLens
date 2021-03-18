@@ -1,15 +1,34 @@
 <script>
+  import Label from './Label.svelte';
+
   export let height;
   export let yScales;
   export let yFeatures;
   export let axisLineHeight;
+  export let maxSideLength;
 </script>
 
 {#if yScales.length > 0}
-  <g class="y-axis small">
-    <text class="bold" transform="translate(0,{height / 2}) rotate(270)">{yFeatures[0].name}</text>
+  <g class="y-axis">
+    <Label
+      x={0}
+      y={0}
+      height={axisLineHeight}
+      width={height}
+      bold={true}
+      rotate={true}
+      label={yFeatures[0].name}
+    />
+
     {#each yScales[0].domain() as d}
-      <text transform="translate({axisLineHeight},{yScales[0](d) + yScales[0].bandwidth() / 2}) rotate(270)">{yFeatures[0].values[+d]}</text>
+      <Label
+        x={axisLineHeight}
+        y={yScales[0](d) + (yScales[0].bandwidth() / 2) - (maxSideLength / 2) }
+        height={axisLineHeight}
+        width={maxSideLength}
+        rotate={true}
+        label={yFeatures[0].values[+d]}
+      />
 
       <g transform="translate({axisLineHeight * 2},{yScales[0](d)})">
         <svelte:self
@@ -17,15 +36,9 @@
           yScales={yScales.slice(1)}
           yFeatures={yFeatures.slice(1)}
           {axisLineHeight}
+          {maxSideLength}
         />
       </g>
     {/each}
   </g>
 {/if}
-
-<style>
-  .y-axis {
-    dominant-baseline: hanging;
-    text-anchor: middle;
-  }
-</style>

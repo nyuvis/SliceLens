@@ -147,11 +147,11 @@
       <Grid {matrixHeight} {matrixWidth} {xScales} {yScales}/>
 
       <g class="x-axis" transform="translate(0,{-axisSpace.top})">
-        <XAxis {xScales} {xFeatures} width={matrixWidth} {axisLineHeight} />
+        <XAxis {xScales} {xFeatures} width={matrixWidth} {maxSideLength} {axisLineHeight} />
       </g>
 
       <g class="y-axis" transform="translate({-axisSpace.left},0)">
-        <YAxis {yScales} {yFeatures} height={matrixHeight} {axisLineHeight} />
+        <YAxis {yScales} {yFeatures} height={matrixHeight} {maxSideLength} {axisLineHeight} />
       </g>
 
       <g class="squares">

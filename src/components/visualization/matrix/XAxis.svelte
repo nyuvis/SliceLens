@@ -1,15 +1,32 @@
 <script>
+  import Label from './Label.svelte';
+
   export let width;
   export let xScales;
   export let xFeatures;
   export let axisLineHeight;
+  export let maxSideLength;
 </script>
 
 {#if xScales.length > 0}
-  <g class="x-axis small">
-    <text class="bold" x={width / 2}>{xFeatures[0].name}</text>
+  <g class="x-axis">
+    <Label
+      x={0}
+      y={0}
+      {width}
+      height={axisLineHeight}
+      label={xFeatures[0].name}
+      bold={true}
+    />
+
     {#each xScales[0].domain() as d}
-      <text y={axisLineHeight} x={xScales[0](d) + xScales[0].bandwidth() / 2}>{xFeatures[0].values[+d]}</text>
+      <Label
+        x={xScales[0](d) + (xScales[0].bandwidth() / 2) - (maxSideLength / 2)}
+        y={axisLineHeight}
+        width={maxSideLength}
+        height={axisLineHeight}
+        label={xFeatures[0].values[+d]}
+      />
 
       <g transform="translate({xScales[0](d)},{axisLineHeight * 2})">
         <svelte:self
@@ -17,15 +34,9 @@
           xScales={xScales.slice(1)}
           xFeatures={xFeatures.slice(1)}
           {axisLineHeight}
+          {maxSideLength}
         />
       </g>
     {/each}
   </g>
 {/if}
-
-<style>
-  .x-axis {
-    dominant-baseline: hanging;
-    text-anchor: middle;
-  }
-</style>
