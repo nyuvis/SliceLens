@@ -1,12 +1,18 @@
 <script>
   import { flip } from "svelte/animate";
   import Barchart from '../visualization/barchart/Barchart.svelte';
+  import { dataset, metadata } from "../../stores.js";
+  import { getData } from "../../DataTransformer.js";
 
   import * as d3 from "d3";
 
   export let feature;
 
   export function onWindowClose() {
+    updateFeature();
+  }
+
+  function updateFeature() {
     feature.valueToGroup = Object.fromEntries(
       groups.map(({name, values}) =>
         // values is a set
@@ -42,6 +48,25 @@
     };
     groups = [group, ...groups];
     editingGroupName = 0;
+  }
+
+  // sorting
+
+  function onClickSortCount() {
+    updateFeature();
+
+    const data = getData($metadata, [feature.name], $dataset);
+
+    const valueToCount = new Map(data.map(d => {
+      const valueIndex = d.splits.get(feature.name);
+      const value = feature.values[valueIndex];
+      return [value, d.size];
+    }));
+
+    groups = groups.sort((a, b) => d3.descending(
+      valueToCount.get(a.name) || 0,
+      valueToCount.get(b.name) || 0
+    ));
   }
 
   // dragging
@@ -131,15 +156,23 @@
 </script>
 
 <div class="chart">
-  <p class="sub-label">Distribution</p>
+  <p class="label large">Distribution</p>
   <Barchart feature={feature.name}/>
 </div>
 
+<p class="label large">Groups</p>
+
 <div class="controls">
-  <p class="sub-label">Groups</p>
-  <p class="link" on:click={onClickNewGroup}>
+
+  <div class="link gap" on:click={onClickNewGroup}>
     New Group
-  </p>
+  </div>
+
+  <div class="sorting">
+    <p class="sorting-label">Sort by:</p>
+    <p class="link" on:click={onClickSortCount}>Count</p>
+  </div>
+
 </div>
 
 <div class="groups">
@@ -225,6 +258,8 @@
   .controls {
     margin: 0.5em 0;
     align-self: start;
+    display: flex;
+    width: 100%;
   }
 
   .group-name {
@@ -313,5 +348,13 @@
 
   .value:hover {
     border: 1px solid black;
+  }
+
+  .sorting {
+    display: flex;
+  }
+
+  .sorting-label {
+    margin-right: 5px;
   }
 </style>
