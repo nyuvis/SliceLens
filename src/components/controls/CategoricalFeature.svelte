@@ -6,6 +6,8 @@
 
   import * as d3 from "d3";
 
+  // feature transformation
+
   export let feature;
 
   export function onWindowClose() {
@@ -38,7 +40,17 @@
     id: uid++
   }));
 
+  // feature editing
+
   let editingGroupName = null;
+
+  function onEditName(i) {
+    editingGroupName = i;
+  }
+
+  function onSaveName() {
+    editingGroupName = null;
+  }
 
   function onClickNewGroup() {
     const group = {
@@ -221,15 +233,30 @@
               <div class="gap"></div>
               <div
                 class="link edit-name"
-                on:click={() => (editingGroupName = i)}>
+                on:click={() => onEditName(i)}>
                 Edit name
               </div>
             {:else}
-              <input class="bold group-name-input" bind:value={name} size={Math.max(name.length, 1)}/>
+              <!-- If someone presses "Edit name", then their intention
+                is to start editing the text in the input, so I think
+                having autofocus on the input is appropriate.-->
+              <!-- svelte-ignore a11y-autofocus -->
+              <input
+                class="bold group-name-input"
+                bind:value={name}
+                size={Math.max(name.length, 1)}
+                on:keydown={(e) => {
+                  if (e.key === 'Enter') {
+                    onSaveName();
+                  }
+                }}
+                autofocus
+              />
               <div class="gap"></div>
               <div
                 class="link edit-name"
-                on:click={() => (editingGroupName = null)}>
+                on:click={onSaveName}
+              >
                 Save name
               </div>
             {/if}
