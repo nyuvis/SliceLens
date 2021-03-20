@@ -105,7 +105,7 @@
     }
   }
 
-  function onValueDragStart(groupIndex, value) {
+  function onValueDragStart(event, groupIndex, value) {
     valueDragInProgress = true;
 
     const item = {
@@ -121,7 +121,7 @@
     groupBeneath = null;
   }
 
-  function onGroupDragStart(groupIndex) {
+  function onGroupDragStart(event, groupIndex) {
     groupDragInProgress = true;
     groupBeingDragged = groupIndex;
     const item = {
@@ -186,7 +186,7 @@
       <div
         class="group"
         draggable="{groupHandleHover === i}"
-        on:dragstart={() => onGroupDragStart(i)}
+        on:dragstart={(event) => onGroupDragStart(event, i)}
         on:dragend={onGroupDragEnd}
         class:highlightGroup={(groupBeneath === i && valueDragInProgress) || groupHandleHover === i}>
         <div class="handle">
@@ -238,7 +238,7 @@
             <div
               class="value small"
               draggable="true"
-              on:dragstart|stopPropagation={() => onValueDragStart(i, value)}
+              on:dragstart|stopPropagation={(event) => onValueDragStart(event, i, value)}
               on:dragend={onValueDragEnd}>
               {value}
             </div>
