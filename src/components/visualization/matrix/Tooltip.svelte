@@ -5,6 +5,7 @@
   export let d;
   export let x;
   export let y;
+  export let bounds;
 
   const padding = 5;
 
@@ -28,18 +29,25 @@
         }).sort();
       }).flat()
     : Array.from(d.groundTruth, ([key, val]) => `${key}: ${val}`);
+
+  // keep the tool tip on the screen
+
+  $: minX = dimensions.width / 2 + padding;
+  $: maxX = bounds.x - dimensions.width / 2 - padding;
+  $: maxY = bounds.y - dimensions.height - padding * 2;
+  $: gx = Math.min(Math.max(minX, x), maxX);
+  $: gy = Math.min(y, maxY) + padding * 2;
 </script>
 
-<g class="tooltip" transform="translate({x},{y + padding * 3})">
+<g class="tooltip" transform="translate({gx},{gy})">
   <rect
     fill="white"
     stroke="black"
     x={(-dimensions.width / 2) - padding}
-    y={-padding}
     width={dimensions.width + 2 * padding}
     height={dimensions.height + 2 * padding}
   />
-  <text bind:this={text} transform="translate({-dimensions.width / 2},0)">
+  <text bind:this={text} transform="translate({-dimensions.width / 2},{padding})">
     <tspan class="bold" x="0">Split</tspan>
 
     {#each splitLines as line, i}

@@ -97,14 +97,20 @@
 
   let tooltipData = null;
   let mouse = { x: 0, y: 0};
+  let bounds = { x: 0, y: 0};
 
   function handleMousemove(event, d) {
     // https://stackoverflow.com/questions/3234256/find-mouse-position-relative-to-element
-    // square -> squares' group -> translated group -> svg
-    const bounds = event.currentTarget.parentNode.parentNode.parentNode.getBoundingClientRect();
+    // square -> squares' group -> main group -> svg
+    const svg = event.currentTarget.parentNode.parentNode.parentNode.getBoundingClientRect();
 
-    mouse.x = event.clientX - bounds.x - leftSpace;
-    mouse.y = event.clientY - bounds.y - topSpace;
+    // put in coordinates of main group
+    mouse.x = event.clientX - svg.x - leftSpace;
+    mouse.y = event.clientY - svg.y - topSpace;
+
+    // right and bottom of svg in coordinates of main group
+    bounds.x = svg.width - leftSpace;
+    bounds.y = svg.height - topSpace;
 
     tooltipData = d;
   }
@@ -173,7 +179,12 @@
       </g>
 
       {#if tooltipData}
-        <Tooltip {...mouse} {showPredictions} d={tooltipData}/>
+        <Tooltip
+          {...mouse}
+          {bounds}
+          {showPredictions}
+          d={tooltipData}
+        />
       {/if}
     </g>
   </svg>
