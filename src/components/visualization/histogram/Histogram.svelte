@@ -45,7 +45,7 @@
               y={yScale(bin.count)}
               width={xScale(bin.x1) - xScale(bin.x0) - 1}
               height={visHeight - yScale(bin.count)}
-              fill="steelblue"
+              fill="#555555"
             />
           {/if}
         {/each}

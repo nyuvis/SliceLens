@@ -41,7 +41,7 @@
             y={yScale(d.count)}
             width={xScale.bandwidth()}
             height={visHeight - yScale(d.count)}
-            fill="steelblue"
+            fill="#555555"
           />
         {/each}
       </g>
