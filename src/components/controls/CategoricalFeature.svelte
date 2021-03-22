@@ -324,8 +324,8 @@
     padding: 0.25em 0.25em 0.25em 0;
 
     border-radius: 5px;
-    border: 1px solid #e5e5e5;
-    background-color: #e5e5e5;
+    border: 1px solid var(--medium-gray);
+    background-color: var(--medium-gray);
 
     display: flex;
   }

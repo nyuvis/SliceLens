@@ -23,8 +23,9 @@
   .content {
     position: absolute;
     border-radius: 5px;
-    border: 1px solid #e5e5e5;
+    border: 1px solid var(--dark-gray);
     background-color: white;
     z-index: 1;
+    margin: 2px;
   }
 </style>

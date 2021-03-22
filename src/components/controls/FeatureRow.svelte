@@ -122,7 +122,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   .bar {
     height: 1em;
     position: absolute;
-    background-color: #eeeeee;
+    background-color: var(--light-gray);
 ;
     z-index: 1;
   }

@@ -41,7 +41,6 @@
             y={yScale(d.count)}
             width={xScale.bandwidth()}
             height={visHeight - yScale(d.count)}
-            fill="#555555"
           />
         {/each}
       </g>
@@ -98,5 +97,9 @@
       dominant-baseline: middle;
       text-anchor: end;
       font-size: 10px;
+    }
+
+    .bars {
+      fill: var(--dark-gray);
     }
 </style>

@@ -15,33 +15,22 @@
   let edit = false;
 
   function selectNote(note, i) {
-    if (selectedNote !== null && edit) {
-      // save opened note before opening a different one
-      setNoteState();
-    }
-
     edit = false;
     selectedIndex = i;
     selectedNote = note;
+    notes = notes;
   }
 
   function newNote() {
-    if (selectedNote !== null && edit) {
-      // save opened note before creating a new note
-      setNoteState();
-    }
-
     selectedIndex = notes.length;
-    selectedNote = { title: 'New Note', body: '', linked: true, state: null };
+    selectedNote = { title: 'New Note', body: '', state: null };
     notes.push(selectedNote);
     notes = notes;
     edit = true;
+    linkNote();
   }
 
   function closeNote() {
-    if (edit) {
-      setNoteState();
-    }
     selectedIndex = -1;
     selectedNote = null;
     edit = false;
@@ -56,8 +45,7 @@
     notes = notes;
   }
 
-  function saveNote() {
-    setNoteState();
+  function viewNote() {
     edit = false;
     notes = notes;
   }
@@ -66,16 +54,12 @@
     edit = true;
   }
 
-  function setNoteState() {
-    if (selectedNote.linked) {
-      selectedNote.state = {
-        selectedFeatures: [...$selectedFeatures],
-        metadata: cloneMetadata($metadata),
-        dataset: $dataset.name
-      };
-    } else {
-      selectedNote.state = null;
-    }
+  function linkNote() {
+    selectedNote.state = {
+      selectedFeatures: [...$selectedFeatures],
+      metadata: cloneMetadata($metadata),
+      dataset: $dataset.name
+    };
   }
 </script>
 
@@ -105,11 +89,12 @@
   edit={edit}
   on:close={closeNote}
   on:delete={deleteNote}
-  on:save={saveNote}
+  on:view={viewNote}
   on:edit={editNote}
+  on:link={linkNote}
 />
 
-<div class="header sub-label logs">
+<div class="header logs">
   <div class="gap"></div>
   <LogExporter/>
 </div>
@@ -141,5 +126,6 @@
 
   .logs {
     margin-top: auto;
+    padding-top: 0.25em;
   }
 </style>

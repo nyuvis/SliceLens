@@ -16,10 +16,9 @@
     -webkit-user-select: none;
 
     padding: 5px;
-
     min-height: 1em;
-
     overflow: hidden;
+    border-radius: 5px;
   }
 
   div:hover {

@@ -61,7 +61,7 @@
   }
 
   .sidebar {
-    background-color: #E5E5E5;
+    background-color: var(--medium-gray);
     padding: 0px 1em 1em 1em;
 
     display: flex;

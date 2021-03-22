@@ -13,6 +13,10 @@ body, p {
 
 :root {
   --blue: rgb(0, 99, 206);
+  --dark-blue: rgb(1, 51, 104);
+  --light-gray: #EEEEEE;
+  --medium-gray: #E5E5E5;
+  --dark-gray: #555555;
 }
 
 a {
@@ -30,14 +34,19 @@ button {
   background-color: transparent;
   text-align: center;
   cursor: pointer;
-  margin-top: 0;
-  margin-bottom: 0;
+  margin: 0 2px;
   font-size: 1em;
   padding: 1px 6px;
 }
 
 button:hover {
-  background-color:  var(--blue);
+  background-color: var(--blue);
+  color: white;
+}
+
+button:active {
+  border: 1px solid var(--dark-blue);
+  background-color: var(--dark-blue);
   color: white;
 }
 

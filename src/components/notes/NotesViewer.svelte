@@ -19,21 +19,15 @@
 {#if note !== null}
   <div class="header sub-label">
     {#if edit}
-      {#if note.linked}
-        <button class="small" on:click={() => note.linked = false}>Unlink from current state</button>
-      {:else}
-        <button class="small" on:click={() => note.linked = true}>Link to current state</button>
-      {/if}
+      <button class="small" on:click={() => dispatch('link')}>Link to state</button>
     {:else}
-      {#if note.linked}
-        <button class="small" on:click={gotoState}>Go to state</button>
-      {/if}
+      <button class="small" on:click={gotoState}>Go to state</button>
     {/if}
 
     <div class="gap"></div>
 
     {#if edit}
-      <button class="small" on:click={() => dispatch('save')}>View</button>
+      <button class="small" on:click={() => dispatch('view')}>View</button>
     {:else}
       <button class="small" on:click={() => dispatch('edit')}>Edit</button>
     {/if}
