@@ -79,7 +79,7 @@ function errorDeviation({selected, metadata, dataset, available}) {
     const sel = [...selected, feature];
     const data = getData(metadata, sel, dataset);
 
-    const value = -d3.deviation(data, d => getErrorCountForSquare(d) / d.size);
+    const value = d3.deviation(data, d => getErrorCountForSquare(d) / d.size);
 
     return {feature, value};
   });
