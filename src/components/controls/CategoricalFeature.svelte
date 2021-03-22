@@ -64,6 +64,21 @@
     editingGroupName = 0;
   }
 
+  function onClickDeleteGroup(i) {
+    if (i < groups.length) {
+      groups.splice(i, 1);
+      groups = groups;
+    }
+  }
+
+  function onClickMergeGroups() {
+    groups = [{
+      name: "All values",
+      id: uid++,
+      values: new Set(Object.keys(feature.valueToGroup))
+    }];
+  }
+
   // sorting
 
   function onClickSortCount() {
@@ -189,6 +204,8 @@
   </Dropdown>
 
   <div class="gap"></div>
+
+  <button on:click={onClickMergeGroups}>Merge All Groups</button>
 </div>
 
 <div class="groups">
@@ -235,7 +252,12 @@
             {#if editingGroupName !== i}
               <div class="bold group-name">{name}</div>
               <div class="gap"></div>
-              <button class="edit-name small" on:click={() => onEditName(i)}>
+              {#if values.size === 0}
+                <button class="show-on-hover small" on:click={() => onClickDeleteGroup(i)}>
+                  Delete group
+                </button>
+              {/if}
+              <button class="show-on-hover small" on:click={() => onEditName(i)}>
                 Edit name
               </button>
             {:else}
@@ -255,7 +277,12 @@
                 autofocus
               />
               <div class="gap"></div>
-              <button class="edit-name small" on:click={onSaveName}>
+              {#if values.size === 0}
+                <button class="show-on-hover small" on:click={() => onClickDeleteGroup(i)}>
+                  Delete group
+                </button>
+              {/if}
+              <button class="show-on-hover small" on:click={onSaveName}>
                 Save name
               </button>
             {/if}
@@ -345,11 +372,11 @@
     cursor: move;
   }
 
-  .edit-name, .icon-tabler-grip-vertical {
+  .show-on-hover, .icon-tabler-grip-vertical {
     visibility: hidden;
   }
 
-  .group:hover .edit-name,
+  .group:hover .show-on-hover,
   .group:hover .icon-tabler-grip-vertical {
     visibility: visible;
   }
