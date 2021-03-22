@@ -11,12 +11,42 @@ body, p {
   margin: 0;
 }
 
+:root {
+  --blue: rgb(0, 99, 206);
+}
+
+a {
+  color: var(--blue);
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+button {
+  border: 1px solid var(--blue);
+  border-radius: 5px;
+  color: var(--blue);
+  background-color: transparent;
+  text-align: center;
+  cursor: pointer;
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: 1em;
+  padding: 1px 6px;
+}
+
+button:hover {
+  background-color:  var(--blue);
+  color: white;
+}
+
 .large {
-  font-size: 1.125em;
+  font-size: 1.125rem;
 }
 
 .small {
-  font-size: 0.875em;
+  font-size: 0.875rem;
 }
 
 .bold {
@@ -24,7 +54,6 @@ body, p {
 }
 
 .label {
-  font-size: 1em;
   margin-top: 1em;
   margin-bottom: 0.25em;
 }
@@ -32,21 +61,6 @@ body, p {
 .sub-label {
   margin-top: 0.25em;
   margin-bottom: 0.25em;
-}
-
-.link {
-  cursor: pointer;
-  padding-right: 5px;
-  color: rgb(0, 99, 206);
-  text-decoration: underline;
-}
-
-a {
-  color: rgb(0, 99, 206);
-}
-
-a:hover, .link:hover {
-  text-decoration: none;
 }
 
 .gap {

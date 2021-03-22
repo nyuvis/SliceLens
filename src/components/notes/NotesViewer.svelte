@@ -20,27 +20,27 @@
   <div class="header sub-label">
     {#if edit}
       {#if note.linked}
-        <p class="link small" on:click={() => note.linked = false}>Unlink from current state</p>
+        <button class="small" on:click={() => note.linked = false}>Unlink from current state</button>
       {:else}
-        <p class="link small" on:click={() => note.linked = true}>Link to current state</p>
+        <button class="small" on:click={() => note.linked = true}>Link to current state</button>
       {/if}
     {:else}
       {#if note.linked}
-        <p class="link small" on:click={gotoState}>Go to state</p>
+        <button class="small" on:click={gotoState}>Go to state</button>
       {/if}
     {/if}
 
     <div class="gap"></div>
 
     {#if edit}
-      <p class="link small" on:click={() => dispatch('save')}>View</p>
+      <button class="small" on:click={() => dispatch('save')}>View</button>
     {:else}
-      <p class="link small" on:click={() => dispatch('edit')}>Edit</p>
+      <button class="small" on:click={() => dispatch('edit')}>Edit</button>
     {/if}
 
-    <p class="link small" on:click={() => dispatch('delete')}>Delete</p>
+    <button class="small" on:click={() => dispatch('delete')}>Delete</button>
 
-    <p class="link small" on:click={() => dispatch('close')}>Close</p>
+    <button class="small" on:click={() => dispatch('close')}>Close</button>
   </div>
 
   {#if edit}

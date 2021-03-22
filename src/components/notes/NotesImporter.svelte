@@ -32,4 +32,4 @@
 </script>
 
 <input bind:this={fileInput} type="file" accept=".json" style="display:none" on:change={onchange}>
-<p on:click={onclick} class="link small">Import</p>
+<button on:click={onclick} class="small">Import</button>

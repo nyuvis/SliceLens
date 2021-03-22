@@ -1,6 +1,8 @@
 <script>
   import { flip } from "svelte/animate";
   import Barchart from '../visualization/barchart/Barchart.svelte';
+  import Dropdown from './Dropdown.svelte';
+  import MenuItem from './MenuItem.svelte';
   import { dataset, metadata } from "../../stores.js";
   import { getData } from "../../DataTransformer.js";
 
@@ -79,6 +81,10 @@
       valueToCount.get(a.name) || 0,
       valueToCount.get(b.name) || 0
     ));
+  }
+
+  function onClickSortName() {
+    groups = groups.sort((a, b) => d3.ascending(a.name, b.name));
   }
 
   // dragging
@@ -175,16 +181,14 @@
 <p class="label large">Groups</p>
 
 <div class="controls">
+  <button on:click={onClickNewGroup}>New Group</button>
 
-  <div class="link gap" on:click={onClickNewGroup}>
-    New Group
-  </div>
+  <Dropdown>
+    <MenuItem on:click={onClickSortCount} name={'Count'}/>
+    <MenuItem on:click={onClickSortName} name={'Name'}/>
+  </Dropdown>
 
-  <div class="sorting">
-    <p class="sorting-label">Sort by:</p>
-    <p class="link" on:click={onClickSortCount}>Count</p>
-  </div>
-
+  <div class="gap"></div>
 </div>
 
 <div class="groups">
@@ -231,11 +235,9 @@
             {#if editingGroupName !== i}
               <div class="bold group-name">{name}</div>
               <div class="gap"></div>
-              <div
-                class="link edit-name"
-                on:click={() => onEditName(i)}>
+              <button class="edit-name small" on:click={() => onEditName(i)}>
                 Edit name
-              </div>
+              </button>
             {:else}
               <!-- If someone presses "Edit name", then their intention
                 is to start editing the text in the input, so I think
@@ -253,12 +255,9 @@
                 autofocus
               />
               <div class="gap"></div>
-              <div
-                class="link edit-name"
-                on:click={onSaveName}
-              >
+              <button class="edit-name small" on:click={onSaveName}>
                 Save name
-              </div>
+              </button>
             {/if}
           </div>
           {#each [...values] as value}
@@ -287,6 +286,7 @@
     align-self: start;
     display: flex;
     width: 100%;
+    align-items: center;
   }
 
   .group-name {
@@ -321,7 +321,7 @@
   }
 
   .group {
-    padding: 0.5em 0.5em 0.5em 0;
+    padding: 0.25em 0.25em 0.25em 0;
 
     border-radius: 5px;
     border: 1px solid #e5e5e5;
@@ -375,10 +375,6 @@
 
   .value:hover {
     border: 1px solid black;
-  }
-
-  .sorting {
-    display: flex;
   }
 
   .sorting-label {

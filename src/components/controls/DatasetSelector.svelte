@@ -87,13 +87,13 @@
 <div>
   <p class="label bold">Dataset</p>
 
-  <p class="link small sub-label" on:click={switchDemoOrCustom}>
+  <button class="small sub-label" on:click={switchDemoOrCustom}>
     {
       useCustomDataset ?
         "Use demo dataset" :
         "Use my own dataset"
     }
-  </p>
+  </button>
 
   {#if useCustomDataset}
     <input
@@ -105,7 +105,7 @@
     >
 
     <div class="help-row">
-      <p on:click={onUploadclick} id="selectFile" class="link small">Select File</p>
+      <button on:click={onUploadclick} id="selectFile" class="small">Select File</button>
       <QuestionBox text={datasetTooltip}/>
     </div>
 
@@ -126,9 +126,5 @@
   .help-row {
     display: flex;
     align-items: center;
-  }
-
-  #selectFile {
-    padding-right: 0;
   }
 </style>

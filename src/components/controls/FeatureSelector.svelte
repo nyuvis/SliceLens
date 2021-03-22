@@ -336,7 +336,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   }
 
   .icon-tabler-arrows-sort:hover {
-    color: rgb(0, 99, 206);;
+    color: var(--blue);
   }
 
   /* dragging */

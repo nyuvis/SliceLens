@@ -122,7 +122,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   .bar {
     height: 1em;
     position: absolute;
-    background-color: #ebebeb;
+    background-color: #eeeeee;
 ;
     z-index: 1;
   }
@@ -147,11 +147,11 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   }
 
   .all:hover .icon-tabler-plus:hover {
-    color: rgb(0, 99, 206);;
+    color: var(--blue);
   }
 
   .selected:hover .icon-tabler-edit:hover,
   .all:hover .icon-tabler-edit:hover {
-    color: rgb(0, 99, 206);
+    color: var(--blue);
   }
 </style>

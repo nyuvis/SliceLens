@@ -81,7 +81,7 @@
 
 <p class="label bold">Notes</p>
 <div class="header sub-label">
-  <p class="link small" on:click={newNote}>New Note</p>
+  <button class="small" on:click={newNote}>New Note</button>
   <div class="gap"></div>
   <NotesImporter on:upload={e => notes = e.detail}/>
   <NotesExporter {notes}/>

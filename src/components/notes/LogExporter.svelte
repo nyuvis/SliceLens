@@ -21,7 +21,7 @@
   }
 </script>
 
-<p on:click={onclick} class="link small">Logs</p>
+<button on:click={onclick} class="small">Logs</button>
 
 <a href="." download="logs.json" bind:this={download}>Download</a>
 
