@@ -189,7 +189,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 {/if}
 
 <div class="label help-row">
-  <p class="bold">Suggestion Metric</p>
+  <p class="bold">Rating Metric</p>
   <QuestionBox>
     Choose the metric that is used to guide which features to explore.
     The length of the bar underneath a feature encodes the metric's rating for

@@ -10,14 +10,13 @@ Try out the [online demo](https://slicelens.vercel.app/).
 
 Watch the [demo video](https://vimeo.com/440767670).
 
-## Suggestion Criteria
+## Rating Metrics
 
-SliceLens can use several criteria to suggest the next feature for the user to add:
+SliceLens can use several metrics to assign a rating to each feature. These ratings can help guide the user in determining which features they should explore. The ratings are visualized in gray bars behind the feature names.
 
-- **Purity** suggests the feature that results in the subsets with the lowest weighted average entropy.
-- **Error deviation** suggests the feature that leads to the subsets with highest standard deviation of percent error.
-- **Error count** suggests the feature that leads to the individual subset that has the highest number of errors.
-- **Error percent** suggests the feature that leads to the individual subset that has the highest percent of errors.
+- **Purity** gives higher rating to features that result in the subsets with lower weighted average entropy.
+- **Error deviation** gives higher rating to features that lead to subsets with higher standard deviation of percent error.
+- **Error count** and **Error percent** give higher ratings to features that lead to subsets with higher max number or percent of errors, respectively.
 
 ## How to run
 
