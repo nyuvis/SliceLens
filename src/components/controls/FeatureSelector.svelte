@@ -192,7 +192,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   <p class="bold">Rating Metric</p>
   <QuestionBox>
     Choose the metric that is used to guide which features to explore.
-    The length of the bar underneath a feature encodes the metric's rating for
+    The length of the bar behind a feature encodes the metric's rating for
     that feature.
 
     <ul>
@@ -206,7 +206,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       </li>
       <li>
         <b>Error count</b> and <b>Error percent</b> give higher
-        rating to features that lead to subsets with higher
+        ratings to features that lead to subsets with higher
         max number or percent of errors, respectively.
       </li>
     </ul>
