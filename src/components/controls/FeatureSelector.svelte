@@ -176,25 +176,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       feature: $metadata.features[feature]
     });
   }
-
-  // tooltips
-
-  const suggestionTooltip = `Choose the metric that is used to
-  suggest which feature to explore next. The longer the gray bar underneath
-  the feature, the more relevant the feature is according to the metric.
-  "Purity" gives higher relevance to features that result in the subsets
-  with lower weighted average entropy. "Error deviation" gives higher relevance
-  to features that lead to subsets with higher standard deviation of percent error.
-  "Error count" and "Error percent" give higher relevance to features that lead
-  to subsets with higher max number or percent of errors, respectively.`;
-
-  const selectFeatureTooltip = `You can select features by dragging
-  and dropping from below or by clicking on the plus icon that appears
-  when you hover over the name of a feature. You can reorder selected
-  features by dragging and dropping. You can select at most four features.`;
-
-  const featureTooltip = `Click the edit icon that appears when you hover
-  over a feature to change how that feature is split.`;
 </script>
 
 {#if showFeatureEditor}
@@ -208,8 +189,28 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 {/if}
 
 <div class="label help-row">
-  <p class="bold">Suggestion Criteria</p>
-  <QuestionBox text={suggestionTooltip}/>
+  <p class="bold">Suggestion Metric</p>
+  <QuestionBox>
+    Choose the metric that is used to guide which features to explore.
+    The length of the bar underneath a feature encodes the metric's rating for
+    that feature.
+
+    <ul>
+      <li>
+        <b>Purity</b> gives higher rating to features that result in the
+        subsets with lower weighted average entropy.
+      </li>
+      <li>
+        <b>Error deviation</b> gives higher rating to features that lead to subsets
+        with higher standard deviation of percent error.
+      </li>
+      <li>
+        <b>Error count</b> and <b>Error percent</b> give higher
+        rating to features that lead to subsets with higher
+        max number or percent of errors, respectively.
+      </li>
+    </ul>
+  </QuestionBox>
 </div>
 
 <div>
@@ -226,7 +227,12 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
 <div class="label help-row">
   <p class="bold">Selected</p>
-  <QuestionBox text={selectFeatureTooltip}/>
+  <QuestionBox>
+    You can select features by dragging and dropping from below or
+    by clicking on the plus icon that appears when you hover over
+    the name of a feature. You can reorder selected features by
+    dragging and dropping. You can select at most four features.
+  </QuestionBox>
 </div>
 
 <div id="selected-features" class="feature-box" class:dragInProgress>
@@ -261,7 +267,10 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
 <div class="label help-row">
   <p class="bold">Features</p>
-  <QuestionBox text={featureTooltip}/>
+  <QuestionBox>
+    Click the edit icon that appears when you hover
+    over a feature to change how that feature is split.
+  </QuestionBox>
   <div class="gap"></div>
   {#if featureToRelevance.size}
     <!-- sort icon -->

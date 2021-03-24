@@ -3,6 +3,7 @@
   import Barchart from '../visualization/barchart/Barchart.svelte';
   import Dropdown from './Dropdown.svelte';
   import MenuItem from './MenuItem.svelte';
+  import QuestionBox from "../QuestionBox.svelte";
   import { dataset, metadata } from "../../stores.js";
   import { getData } from "../../DataTransformer.js";
 
@@ -193,7 +194,13 @@
   <Barchart feature={feature.name}/>
 </div>
 
-<p class="label large">Groups</p>
+<div class="group-question">
+  <p class="large">Groups</p>
+  <QuestionBox>
+    You can drag the gray boxes to reorder the groups.
+    You can drag the white boxes to move feature values from one group to another.
+  </QuestionBox>
+</div>
 
 <div class="controls">
   <button on:click={onClickNewGroup}>New Group</button>
@@ -332,6 +339,11 @@
   .group-container {
     border: 1px solid white;
     padding: 0.25em 0;
+  }
+
+  .group-question {
+    display: flex;
+    align-items: center;
   }
 
   /* the border stays gray without !important */

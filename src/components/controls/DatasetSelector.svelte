@@ -79,9 +79,7 @@
     }
   }
 
-  const datasetTooltip = `Your dataset must be a CSV file that has a "label" column,
-  representing the ground truth class label for each row. Optionally, the dataset
-  can also contain a "prediction" column, representing a predicted value for each row.`;
+  const datasetTooltip = ``;
 </script>
 
 <div>
@@ -106,7 +104,12 @@
 
     <div class="help-row">
       <button on:click={onUploadclick} id="selectFile" class="small">Select File</button>
-      <QuestionBox text={datasetTooltip}/>
+      <QuestionBox>
+        Your dataset must be a CSV file that has a "label" column,
+        representing the ground truth class label for each row.
+        Optionally, the dataset can also contain a "prediction"
+        column, representing a predicted value for each row.
+      </QuestionBox>
     </div>
 
     {#if uploadedDatasetName !== null}
