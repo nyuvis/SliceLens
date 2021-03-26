@@ -199,7 +199,7 @@ python-language-server @ file:///opt/concourse/worker/volumes/live/b528bc67-8964
 python-slugify==4.0.1
 pytz==2020.1
 PyWavelets==1.1.1
-PyYAML==5.3.1
+PyYAML==5.4
 pyzmq==22.0.3
 QDarkStyle==2.8.1
 QtAwesome==0.7.2
