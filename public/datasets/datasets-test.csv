@@ -3,6 +3,7 @@ Heart Disease,/datasets/heart-disease-with-predictions.csv
 Census Income,https://gist.githubusercontent.com/DanielKerrigan/93e040a90b78a22a5f1d1a322ccb907f/raw/de377ba83f1b93dee693e83de6a1180acc0bce27/census-income.csv
 Broward County COMPAS,https://gist.githubusercontent.com/DanielKerrigan/77224a5ed741e4ae30a7277778918821/raw/af798d4d7a2108a04344382ac2af8374825a86bd/broward-compas.csv
 Student Performance,https://gist.githubusercontent.com/DanielKerrigan/aafad257c58ea03fad41211149ca4ccd/raw/3481b52c4c6613a92794598d270f4d11805bcbc3/student-performance.csv
+Spam,https://gist.githubusercontent.com/DanielKerrigan/e1743a948ec77e83592d21ec3bf88029/raw/5518dd14bb6535d6d3c5c9449c09f6ef9174e59d/spam.csv
 Heart Disease (no predictions),/datasets/test/heart-disease-no-predictions.csv
 UI Test,/datasets/test/ui-test.csv
 data-10-10000.csv,/datasets/test/data-10-10000.csv
