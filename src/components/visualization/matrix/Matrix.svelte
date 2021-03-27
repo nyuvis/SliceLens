@@ -96,8 +96,8 @@
   // tooltip
 
   let tooltipData = null;
-  let mouse = { x: 0, y: 0};
-  let bounds = { x: 0, y: 0};
+  let mouse = { x: 0, y: 0 };
+  let bounds = { x: 0, y: 0 };
 
   function handleMousemove(event, d) {
     // https://stackoverflow.com/questions/3234256/find-mouse-position-relative-to-element
@@ -153,11 +153,11 @@
       <Grid {matrixHeight} {matrixWidth} {xScales} {yScales}/>
 
       <g class="x-axis" transform="translate(0,{-axisSpace.top})">
-        <XAxis {xScales} {xFeatures} width={matrixWidth} {maxSideLength} {axisLineHeight} />
+        <XAxis {xScales} {xFeatures} width={matrixWidth} {axisLineHeight} />
       </g>
 
       <g class="y-axis" transform="translate({-axisSpace.left},0)">
-        <YAxis {yScales} {yFeatures} height={matrixHeight} {maxSideLength} {axisLineHeight} />
+        <YAxis {yScales} {yFeatures} height={matrixHeight} {axisLineHeight} />
       </g>
 
       <g class="squares">

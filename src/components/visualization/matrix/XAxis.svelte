@@ -5,7 +5,6 @@
   export let xScales;
   export let xFeatures;
   export let axisLineHeight;
-  export let maxSideLength;
 </script>
 
 {#if xScales.length > 0}
@@ -21,9 +20,9 @@
 
     {#each xScales[0].domain() as d}
       <Label
-        x={xScales[0](d) + (xScales[0].bandwidth() / 2) - (maxSideLength / 2)}
+        x={xScales[0](d)}
         y={axisLineHeight}
-        width={maxSideLength}
+        width={xScales[0].bandwidth()}
         height={axisLineHeight}
         label={xFeatures[0].values[+d]}
       />
@@ -34,7 +33,6 @@
           xScales={xScales.slice(1)}
           xFeatures={xFeatures.slice(1)}
           {axisLineHeight}
-          {maxSideLength}
         />
       </g>
     {/each}

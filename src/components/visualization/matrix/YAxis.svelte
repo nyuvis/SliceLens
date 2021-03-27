@@ -5,7 +5,6 @@
   export let yScales;
   export let yFeatures;
   export let axisLineHeight;
-  export let maxSideLength;
 </script>
 
 {#if yScales.length > 0}
@@ -23,9 +22,9 @@
     {#each yScales[0].domain() as d}
       <Label
         x={axisLineHeight}
-        y={yScales[0](d) + (yScales[0].bandwidth() / 2) - (maxSideLength / 2) }
+        y={yScales[0](d)}
         height={axisLineHeight}
-        width={maxSideLength}
+        width={yScales[0].bandwidth()}
         rotate={true}
         label={yFeatures[0].values[+d]}
       />
@@ -36,7 +35,6 @@
           yScales={yScales.slice(1)}
           yFeatures={yFeatures.slice(1)}
           {axisLineHeight}
-          {maxSideLength}
         />
       </g>
     {/each}
