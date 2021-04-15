@@ -1,13 +1,15 @@
 <script>
   import DatasetSelector from './controls/DatasetSelector.svelte';
   import FeatureSelector from './controls/FeatureSelector.svelte';
+  import FilteringButton from './controls/FilteringButton.svelte';
   import VisualizationSettings from './controls/VisualizationSettings.svelte';
   import Chart from './visualization/matrix/Chart.svelte';
   import NotesSidebar from './notes/NotesSidebar.svelte';
-  import { metadata } from '../stores';
+  import { metadata } from '../stores.js';
 
   let showPredictions = false;
   let showSize = true;
+  let featureExtents = {};
 </script>
 
 <div id="container">
@@ -28,13 +30,14 @@
         </svg>
       </a>
     </div>
-    <DatasetSelector/>
+    <DatasetSelector on:load={({detail}) => featureExtents = detail}/>
+    <FilteringButton {featureExtents}/>
     <VisualizationSettings bind:showSize bind:showPredictions/>
     <FeatureSelector/>
   </div>
 
   {#if $metadata !== null}
-    <Chart showPredictions={showPredictions} {showSize} />
+    <Chart {showPredictions} {showSize} />
   {/if}
 
   <div id="notes" class="sidebar">

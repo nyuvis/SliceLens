@@ -4,8 +4,8 @@ https://www.w3schools.com/howto/howto_css_modals.asp
 -->
 
 <script>
-  import CategoricalFeature from "./CategoricalFeature.svelte";
-  import QuantitativeFeature from "./QuantitativeFeature.svelte";
+  import CategoricalFeatureEditor from "./CategoricalFeatureEditor.svelte";
+  import QuantitativeFeatureEditor from "./QuantitativeFeatureEditor.svelte";
   import { metadata, logs } from "../../stores.js";
   import { createEventDispatcher } from "svelte";
 
@@ -76,11 +76,11 @@ https://www.w3schools.com/howto/howto_css_modals.asp
     </div>
 
     {#if feature.type === 'C'}
-      <CategoricalFeature
+      <CategoricalFeatureEditor
         {feature}
         bind:this={categoricalComponent} />
     {:else}
-      <QuantitativeFeature
+      <QuantitativeFeatureEditor
         {feature}
         on:validate={ev => valid = ev.detail}
         bind:this={quantitativeComponent} />

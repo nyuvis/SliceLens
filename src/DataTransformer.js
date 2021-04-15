@@ -1,44 +1,94 @@
 import * as d3 from "d3";
 
 export {
-  cloneMetadata,
+  cloneSelectedFeaturesMetadata,
   equalIntervalThresholds,
   quantileThresholds,
   getMetadata,
   getData,
   getBinLabels,
+  getFilteredDataset,
+  isNumeric,
+  getWholeDatasetFeatureExtents,
+  cloneFilters,
+  addSelectedSetToFilters,
 };
 
-function cloneMetadata(md) {
-  const features = Object.entries(md.features)
-    .map(([name, feature]) => {
+function cloneSelectedFeaturesMetadata(features, selectedFeatures) {
+  const copyOfFeatures = {};
+
+  selectedFeatures.forEach(featureName => {
+    const feature = features[featureName];
+
+    const copy = {
+      name: feature.name,
+      type: feature.type,
+      values: [...feature.values],
+    };
+
+    if (feature.type === 'Q') {
+      copy.extent = [...feature.extent];
+      copy.splitType = feature.splitType;
+      copy.numBins = feature.numBins;
+      copy.thresholds = [...feature.thresholds];
+      copy.format = feature.format;
+    } else {
+      copy.categories = [...feature.categories];
+      copy.valueToGroup = Object.assign({}, feature.valueToGroup);
+    }
+
+    copyOfFeatures[featureName] = copy;
+  });
+
+  return copyOfFeatures;
+}
+
+function cloneFilters(filters) {
+  return filters.map(filter => {
+    const copy = {
+      feature: filter.feature,
+      type: filter.type,
+      valid: filter.valid,
+    };
+
+    if (filter.type === 'Q') {
+      copy.min = filter.min;
+      copy.max = filter.max;
+      copy.rightInclusive = filter.rightInclusive;
+    } else {
+      copy.selected = [...filter.selected];
+    }
+
+    return copy;
+  });
+}
+
+function addSelectedSetToFilters(filters) {
+  filters.forEach(filter => {
+    if (filter.type === 'C') {
+      filter.selectedSet = new Set(filter.selected);
+    }
+  });
+
+  return filters;
+}
+
+function getWholeDatasetFeatureExtents(md) {
+  return Object.fromEntries(
+    Object.entries(md.features).map(([name, feature]) => {
       const copy = {
-        name: feature.name,
         type: feature.type,
-        values: feature.values,
       };
 
-      if (feature.type === 'Q') {
+      if (feature.type === "Q") {
         copy.extent = [...feature.extent];
-        copy.splitType = feature.splitType;
-        copy.numBins = feature.numBins;
-        copy.thresholds = [...feature.thresholds];
-        copy.format = feature.format;
       } else {
         copy.categories = [...feature.categories];
-        copy.valueToGroup = Object.assign({}, feature.valueToGroup);
       }
 
       return [name, copy];
-    });
-
-  return {
-    features: Object.fromEntries(features),
-    featureNames: [...md.featureNames],
-    labelValues: [...md.labelValues],
-    hasPredictions: md.hasPredictions,
-    size: md.size,
-  };
+    })
+  );
 }
 
 function getBinLabels(bins, format) {
@@ -181,4 +231,47 @@ function getData(metadata, selectedFeatures, dataset) {
     value['splits'] = splits;
     return value;
   });
+}
+
+// https://stackoverflow.com/questions/175739/built-in-way-in-javascript-to-check-if-a-string-is-a-valid-number
+function isNumeric(str) {
+  return !isNaN(str) && !isNaN(parseFloat(str));
+}
+
+function getFilteredDataset(dataset, filters) {
+  if (filters.length === 0) {
+    return dataset;
+  }
+
+  const filtered = dataset.filter(row => {
+    for (let i = 0; i < filters.length; i++) {
+      const filt = filters[i];
+      const value = row[filt.feature];
+
+      if (filt.type === 'Q') {
+        if (value < filt.min) {
+          return false;
+        }
+
+        if (filt.rightInclusive) {
+          if (value > filt.max) {
+            return false;
+          }
+        } else {
+          if (value >= filt.max) {
+            return false;
+          }
+        }
+      } else if (!filt.selectedSet.has(value)) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  filtered.columns = dataset.columns;
+  filtered.name = dataset.name;
+
+  return filtered;
 }

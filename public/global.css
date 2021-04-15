@@ -37,17 +37,24 @@ button {
   margin: 0 2px;
   font-size: 1em;
   padding: 1px 6px;
+  font-family : inherit;
 }
 
-button:hover {
+button:hover:enabled {
   background-color: var(--blue);
   color: white;
 }
 
-button:active {
-  border: 1px solid var(--dark-blue);
+button:active:enabled {
+  border-color: var(--dark-blue);
   background-color: var(--dark-blue);
   color: white;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  color: var(--dark-gray);
+  border-color: var(--dark-gray);
 }
 
 .large {

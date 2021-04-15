@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher } from 'svelte';
-  import { selectedFeatures, metadata } from '../../stores.js';
-  import { cloneMetadata } from '../../DataTransformer.js';
+  import { selectedFeatures, metadata, filters, fullDataset, dataset } from '../../stores.js';
+  import { cloneSelectedFeaturesMetadata, addSelectedSetToFilters, cloneFilters, getMetadata, getFilteredDataset } from '../../DataTransformer.js';
   import marked from 'marked';
   import DOMPurify from 'dompurify';
 
@@ -11,8 +11,23 @@
   const dispatch = createEventDispatcher();
 
   function gotoState() {
-    $selectedFeatures = [...note.state.selectedFeatures];
-    $metadata = cloneMetadata(note.state.metadata);
+    const selected = [...note.state.selectedFeatures];
+    const filts = addSelectedSetToFilters(cloneFilters(note.state.filters));
+    const features = cloneSelectedFeaturesMetadata(note.state.selectedFeaturesMetadata, selected);
+
+    if(filts.length === 0 && $filters.length === 0) {
+      $metadata.features = Object.assign($metadata.features, features);
+      $metadata = $metadata;
+    } else {
+      const data = getFilteredDataset($fullDataset, filts);
+      const md = getMetadata(data);
+      md.features = Object.assign(md.features, features)
+      $dataset = data;
+      $metadata = md;
+    }
+
+    $selectedFeatures = selected;
+    $filters = filts;
   }
 </script>
 
@@ -87,10 +102,6 @@
     display: flex;
     margin-top: 1em;
     flex: 0 0 auto;
-  }
-
-  .header > p {
-    padding-right: 7px;
   }
 
   .content-container {

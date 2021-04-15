@@ -1,7 +1,11 @@
 import { writable, derived } from 'svelte/store';
 import { getData } from './DataTransformer.js';
 
+export const fullDataset = writable([]);
+
 export const dataset = writable([]);
+
+export const filters = writable([]);
 
 export const selectedFeatures = writable([]);
 

@@ -1,9 +1,12 @@
 <script>
   import { onMount } from 'svelte';
-  import { getMetadata } from '../../DataTransformer.js';
-  import { dataset, selectedFeatures, metadata } from '../../stores.js';
+  import { getMetadata, getWholeDatasetFeatureExtents } from '../../DataTransformer.js';
+  import { dataset, fullDataset, selectedFeatures, metadata, filters } from '../../stores.js';
   import QuestionBox from '../QuestionBox.svelte';
   import * as d3 from "d3";
+  import { createEventDispatcher } from 'svelte';
+
+  const dispatch = createEventDispatcher();
 
   let selectedDemoDataset = null;
   let uploadedDatasetName = null;
@@ -26,9 +29,14 @@
   function load({path, name}) {
     d3.csv(path, d3.autoType).then(data => {
       data.name = name;
+      $filters = [];
       const md = getMetadata(data);
+
+      dispatch('load', getWholeDatasetFeatureExtents(md));
+
       $selectedFeatures = [];
       $dataset = data;
+      $fullDataset = data;
       $metadata = md;
     });
   }
@@ -64,9 +72,15 @@
       data.name = file.name;
       uploadedDatasetName = file.name;
 
+      $filters = [];
+
       const md = getMetadata(data);
+
+      dispatch('load', getWholeDatasetFeatureExtents(md));
+
       $selectedFeatures = [];
       $dataset = data;
+      $fullDataset = data;
       $metadata = md;
     }
 
@@ -78,8 +92,6 @@
       fileInput.click();
     }
   }
-
-  const datasetTooltip = ``;
 </script>
 
 <div>

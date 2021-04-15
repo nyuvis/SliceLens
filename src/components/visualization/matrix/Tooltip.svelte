@@ -15,7 +15,7 @@
 
   $: splitLines =
     d.splits.size === 0
-      ? ["Entire dataset"]
+      ? ["None"]
       : Array.from(d.splits).map(([featureName, splitIndex]) => {
           const split = $metadata.features[featureName].values[splitIndex];
           return `${featureName}: ${split}`;
