@@ -62,7 +62,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   {/if}
 
   <div class="gap feature-name-container">
-    {#if relevance !== 0 && canAddFeatures}
+    {#if relevance >= 0 && canAddFeatures}
       <div class="bar" style="width: {relevance * 100}%;"></div>
     {/if}
     <p class="cutoff feature-name">{feature}</p>
@@ -142,7 +142,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   }
 
   .selected:hover .icon-tabler-trash:hover {
-    color: red;
+    color: var(--red);
   }
 
   .all:hover .icon-tabler-plus:hover {

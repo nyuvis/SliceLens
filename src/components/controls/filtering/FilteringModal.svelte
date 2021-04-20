@@ -7,9 +7,10 @@ refactored into a Modal.svelte.
 -->
 
 <script>
+  import QuantitativeFilter from './QuantitativeFilter.svelte';
   import CategoricalFilter from './CategoricalFilter.svelte';
-  import { filters, fullDataset, dataset, metadata } from '../../stores.js';
-  import { getMetadata, getFilteredDataset, isNumeric } from '../../DataTransformer.js';
+  import { filters, fullDataset, dataset, metadata } from '../../../stores.js';
+  import { getMetadata, getFilteredDataset } from '../../../DataTransformer.js';
   import { createEventDispatcher } from "svelte";
 
   export let featureExtents;
@@ -85,26 +86,6 @@ refactored into a Modal.svelte.
 
     $filters[i] = filter;
   }
-
-  // changing filter for numeric feature
-  function onNumberChange(filter) {
-    const [minValue, maxValue] = featureExtents[filter.feature].extent;
-
-    filter.valid =
-      isNumeric(filter.min) &&
-      isNumeric(filter.max) &&
-      +filter.min >= minValue &&
-      +filter.max <= maxValue &&
-      +filter.min < +filter.max;
-
-    if (filter.valid) {
-      filter.min = +filter.min;
-      filter.max = +filter.max;
-      filter.rightInclusive = filter.max === maxValue;
-    }
-
-    $filters = $filters;
-  }
 </script>
 
 <svelte:window on:keydown={onkeydown}/>
@@ -171,26 +152,13 @@ refactored into a Modal.svelte.
 
           <div class="filter-content">
             {#if filter.type === 'Q'}
-
-              {#if !filter.valid}
-                <p class="error-message">
-                  Values must be numbers in the range {featureExtents[filter.feature].extent.join(' - ')},
-                  with the first value less than the second.
-                </p>
-              {/if}
-              <div>
-                Range:
-                [<input size=6 bind:value={filter.min} on:change={() => onNumberChange(filter)}>
-                ,
-                <input size=6 bind:value={filter.max} on:change={() => onNumberChange(filter)}>)
-              </div>
-
+              <QuantitativeFilter extent={featureExtents[filter.feature].extent} {filter} />
             {:else if filter.type === 'C'}
               <CategoricalFilter categories={featureExtents[filter.feature].categories} {filter}/>
             {:else}
 
               {#if !filter.valid}
-                <p class="error-message">
+                <p class="error">
                   Select a feature to filter.
                 </p>
               {/if}
@@ -245,7 +213,7 @@ refactored into a Modal.svelte.
   }
 
   .icon-tabler-x:hover {
-    color: red;
+    color: var(--red);
   }
 
   .filters {
@@ -284,10 +252,6 @@ refactored into a Modal.svelte.
 
   .filter:hover .icon-tabler-x {
     visibility: visible;
-  }
-
-  .error-message {
-    color: red;
   }
 </style>
 

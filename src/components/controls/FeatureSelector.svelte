@@ -62,18 +62,31 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   // web worker for feature suggestions
 
+  let workersInProgress = 0;
+
+  const incrementWorkersInProgress = () => workersInProgress++;
+
   let featureToRelevance = new Map();
 
   const worker = new FeatureSuggesterWorker();
-  worker.onmessage = e => featureToRelevance = e.data;
+
+  worker.onmessage = e => {
+    featureToRelevance = e.data;
+    workersInProgress--;
+    logs.add({event: 'worker-done'});
+  }
 
   $: if ($dataset && $metadata !== null && canAddFeatures) {
+    // we don't want to have an explicit dependency on workersInProgress, otherwise
+    // this will re-run every time workersInProgress is decremented above
+    incrementWorkersInProgress();
     worker.postMessage({
       criterion: criterion.value,
       selected: $selectedFeatures,
       metadata: $metadata,
       dataset: $dataset
     });
+    logs.add({event: 'worker-start'});
   }
 
   // drag and drop
@@ -91,7 +104,9 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         feature: item.id,
         selected: $selectedFeatures,
         criterion: criterion.value,
-        rank: featuresSortedByRating.indexOf(item.id) + 1
+        rank: featuresSortedByRating.indexOf(item.id) + 1,
+        choices: features.length - $selectedFeatures.length,
+        workersInProgress,
       });
     } else {
       logs.add({
@@ -125,7 +140,9 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         feature,
         selected: $selectedFeatures,
         criterion: criterion.value,
-        rank: featuresSortedByRating.indexOf(feature) + 1
+        rank: featuresSortedByRating.indexOf(feature) + 1,
+        choices: features.length - $selectedFeatures.length,
+        workersInProgress,
       });
 
       $selectedFeatures = [...$selectedFeatures, feature];
@@ -149,13 +166,14 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   $: if (criterion.value === 'none') {
     sortByRating = false;
   }
-
+  // should this go in worker.onmessage?
   $: featuresSortedByRating = features
       .slice()
       .sort((a, b) =>
         d3.descending(
-          featureToRelevance.get(a) || 0,
-          featureToRelevance.get(b) || 0
+          // features already added should appear last
+          featureToRelevance.has(a) ? featureToRelevance.get(a) : -1,
+          featureToRelevance.has(b) ? featureToRelevance.get(b) : -1
         )
       );
 

@@ -132,6 +132,6 @@ https://www.w3schools.com/howto/howto_css_modals.asp
   }
 
   .icon-tabler-x:hover {
-    color: red;
+    color: var(--red);
   }
 </style>

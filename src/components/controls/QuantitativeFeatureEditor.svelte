@@ -192,7 +192,7 @@
   }
 
   .invalid {
-    color: red;
+    color: var(--red);
   }
 
   .info {

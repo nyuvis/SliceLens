@@ -1,7 +1,7 @@
 <script>
   import DatasetSelector from './controls/DatasetSelector.svelte';
   import FeatureSelector from './controls/FeatureSelector.svelte';
-  import FilteringButton from './controls/FilteringButton.svelte';
+  import FilteringButton from './controls/filtering/FilteringButton.svelte';
   import VisualizationSettings from './controls/VisualizationSettings.svelte';
   import Chart from './visualization/matrix/Chart.svelte';
   import NotesSidebar from './notes/NotesSidebar.svelte';

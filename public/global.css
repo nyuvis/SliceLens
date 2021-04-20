@@ -17,6 +17,7 @@ body, p {
   --light-gray: #EEEEEE;
   --medium-gray: #E5E5E5;
   --dark-gray: #555555;
+  --red: red;
 }
 
 a {
@@ -55,6 +56,10 @@ button:disabled {
   cursor: not-allowed;
   color: var(--dark-gray);
   border-color: var(--dark-gray);
+}
+
+.error {
+  color: var(--red);
 }
 
 .large {

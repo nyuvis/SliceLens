@@ -24,7 +24,7 @@ function createLog() {
     add: message => {
       message.time = Date.now();
       return update(logs => {
-        logs.push(message);
+        logs.push(JSON.stringify(message));
         return logs;
       });
     }

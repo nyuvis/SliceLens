@@ -1,10 +1,8 @@
 <script>
-  import { slide } from "svelte/transition";
-
   export let name;
 </script>
 
-<div on:click transition:slide={{duration: 150}}>{name}</div>
+<div on:click>{name}</div>
 
 <style>
   div {

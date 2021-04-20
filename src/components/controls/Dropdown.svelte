@@ -1,12 +1,25 @@
 <script>
   let expanded = false;
+
+  // https://stackoverflow.com/questions/152975/how-do-i-detect-a-click-outside-an-element/3028037#3028037
+  function bodyClick(event) {
+    if (!event.target.closest('#dropdown-container') && expanded) {
+      expanded = false;
+    }
+  }
+
+  function buttonClick() {
+    expanded = !expanded;
+  }
 </script>
 
-<div class="container">
-  <button class="head" on:click={() => expanded = !expanded}>Sorting</button>
+<svelte:body on:click={bodyClick}/>
+
+<div id="dropdown-container">
+  <button on:click={buttonClick}>Sorting</button>
   {#if expanded}
     <div>
-      <div class="content">
+      <div id="dropdown-content">
         <slot></slot>
       </div>
     </div>
@@ -14,13 +27,13 @@
 </div>
 
 <style>
-  .container {
+  #dropdown-container {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
   }
 
-  .content {
+  #dropdown-content {
     position: absolute;
     border-radius: 5px;
     border: 1px solid var(--dark-gray);

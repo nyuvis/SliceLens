@@ -1,5 +1,5 @@
 <script>
-  import { filters } from '../../stores.js';
+  import { filters } from '../../../stores.js';
 
   export let filter;
   export let categories;
@@ -17,11 +17,27 @@
 
     $filters = $filters;
   }
+
+  function selectAll() {
+    filter.selected = categories;
+    onCheckboxSelectionChange();
+  }
+
+  function deselectAll() {
+    filter.selected = [];
+    onCheckboxSelectionChange();
+  }
 </script>
 
 {#if !filter.valid}
-    <p>At least one value must be selected</p>
+    <p class="error">At least one value must be selected</p>
 {/if}
+
+<div>
+  <button class="small" on:click={selectAll}>Select All</button>
+  <button class="small" on:click={deselectAll}>Deselect All</button>
+</div>
+
 <div class="grid">
   {#each categories as category}
     <label>
@@ -37,10 +53,6 @@
 </div>
 
 <style>
-  p {
-    color: red;
-  }
-
   .grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
