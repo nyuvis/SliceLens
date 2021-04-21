@@ -39,11 +39,27 @@ Your dataset must be a CSV file that has a "label" column, representing the grou
 
 ## Demo Datasets
 
+### UCI Machine Learning Repository
+
+Dua, D. and Graff, C. (2019). UCI Machine Learning Repository [http://archive.ics.uci.edu/ml]. Irvine, CA: University of California, School of Information and Computer Science.
+
 * [Heart Disease](http://archive.ics.uci.edu/ml/datasets/Heart+Disease)
 * [Census Income](http://archive.ics.uci.edu/ml/datasets/Census+Income)
-* [Broward County COMPAS](https://doi.org/10.1126/sciadv.aao5580)
-  * Dressel, Julia, and Hany Farid. “The Accuracy, Fairness, and Limits of Predicting Recidivism.” Science Advances, vol. 4, no. 1, 17 Jan. 2018, doi:10.1126/sciadv.aao5580.
-  * Based on `BROWARD_CLEAN.csv` from the above article's [data and material](https://farid.berkeley.edu/downloads/publications/scienceadvances17/).
 * [Student Performance](https://archive.ics.uci.edu/ml/datasets/Student+Performance)
   * P. Cortez and A. Silva. Using Data Mining to Predict Secondary School Student Performance. In A. Brito and J. Teixeira Eds., Proceedings of 5th FUture BUsiness TEChnology Conference (FUBUTEC 2008) pp. 5-12, Porto, Portugal, April, 2008, EUROSIS, ISBN 978-9077381-39-7.
 * [Spam](https://archive.ics.uci.edu/ml/datasets/spambase)
+* [Bank Marketing Data Set](https://archive.ics.uci.edu/ml/datasets/Bank+Marketing)
+  * S. Moro, P. Cortez and P. Rita. A Data-Driven Approach to Predict the Success of Bank Telemarketing. Decision Support Systems, Elsevier, 62:22-31, June 2014
+
+### Penn Machine Learning Benchmarks
+
+Le, Trang T., William La Cava, Joseph D. Romano, John T. Gregg, Daniel J. Goldberg, Praneel Chakraborty, Natasha L. Ray, Daniel Himmelstein, Weixuan Fu, and Jason H. Moore. PMLB v1. 0: an open source dataset collection for benchmarking machine learning methods. arXiv preprint arXiv:2012.00058 (2020).
+
+* [tokyo1](https://epistasislab.github.io/pmlb/profile/tokyo1.html)
+* [churn](https://epistasislab.github.io/pmlb/profile/churn.html)
+
+### Other
+
+* [Broward County COMPAS](https://doi.org/10.1126/sciadv.aao5580)
+  * Dressel, Julia, and Hany Farid. “The Accuracy, Fairness, and Limits of Predicting Recidivism.” Science Advances, vol. 4, no. 1, 17 Jan. 2018, doi:10.1126/sciadv.aao5580.
+  * Based on `BROWARD_CLEAN.csv` from the above article's [data and material](https://farid.berkeley.edu/downloads/publications/scienceadvances17/).
