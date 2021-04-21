@@ -32,6 +32,10 @@
       $filters = [];
       const md = getMetadata(data);
 
+      // get the extent of quantitatve features
+      // and unique values of categorical features
+      // on the whole dataset with no filters.
+      // this is used to bound the features that can be set
       dispatch('load', getWholeDatasetFeatureExtents(md));
 
       $selectedFeatures = [];

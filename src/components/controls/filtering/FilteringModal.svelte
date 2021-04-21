@@ -21,6 +21,8 @@ refactored into a Modal.svelte.
   let emptyDataset = false;
 
   $: filteredFeatureNames = new Set($filters.map(f => f.feature));
+  // [].every(f => f.valid) returns true, so allFiltersValid is true
+  // when there are no filters
   $: allFiltersValid = $filters.every(f => f.valid);
 
   function onkeydown(ev) {
@@ -30,12 +32,14 @@ refactored into a Modal.svelte.
   }
 
   function onCloseWindow() {
+    // don't allow the window to close unless all features are valid
     if (!allFiltersValid) {
       return false;
     }
 
     const data = getFilteredDataset($fullDataset, $filters);
 
+    // don't allow the window to close if the filtered dataset is empty
     if (data.length === 0) {
       emptyDataset = true;
       return;
@@ -51,7 +55,7 @@ refactored into a Modal.svelte.
   }
 
   function addFilter() {
-    $filters = [...$filters, { feature: defaultOption, type: '', valid: false}];
+    $filters = [...$filters, { feature: defaultOption, type: '', valid: false }];
   }
 
   // removing a filter

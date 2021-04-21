@@ -9,6 +9,9 @@
 
   let showPredictions = false;
   let showSize = true;
+  // feature name to feature values for categorical features
+  // feature name to extent for quantitative features
+  // on the whole dataset
   let featureExtents = {};
 </script>
 
