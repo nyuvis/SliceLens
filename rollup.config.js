@@ -45,6 +45,8 @@ export default {
         DATASETS_FILE: production ?
           JSON.stringify('../datasets/datasets.csv') :
           JSON.stringify('../datasets/datasets-test.csv'),
+        FILTERS_ENABLED: true,
+        RATINGS_ENABLED: true,
       }
     }),
 

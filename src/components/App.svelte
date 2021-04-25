@@ -34,7 +34,13 @@
       </a>
     </div>
     <DatasetSelector on:load={({detail}) => featureExtents = detail}/>
-    <FilteringButton {featureExtents}/>
+
+    <!-- defined in rollup.config.js -->
+    <!-- svelte-ignore missing-declaration -->
+    {#if FILTERS_ENABLED}
+      <FilteringButton {featureExtents}/>
+    {/if}
+
     <VisualizationSettings bind:showSize bind:showPredictions/>
     <FeatureSelector/>
   </div>

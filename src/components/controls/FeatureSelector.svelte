@@ -40,7 +40,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     },
   ];
 
-  const defaultCriterion = criteria[0].options[0];
+  // RATINGS_ENABLED is defined in rollup.config.js
+  const defaultCriterion = RATINGS_ENABLED ? criteria[0].options[0] : criteria[0].options[1];
   let criterion = defaultCriterion;
 
   $: hasPredictions = $metadata !== null && $metadata.hasPredictions;
@@ -206,42 +207,46 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   />
 {/if}
 
-<div class="label help-row">
-  <p class="bold">Rating Metric</p>
-  <QuestionBox>
-    Choose the metric that is used to guide which features to explore.
-    The length of the bar behind a feature encodes the metric's rating for
-    that feature.
+<!-- defined in rollup.config.js -->
+<!-- svelte-ignore missing-declaration -->
+{#if RATINGS_ENABLED}
+  <div class="label help-row">
+    <p class="bold">Rating Metric</p>
+    <QuestionBox>
+      Choose the metric that is used to guide which features to explore.
+      The length of the bar behind a feature encodes the metric's rating for
+      that feature.
 
-    <ul>
-      <li>
-        <b>Purity</b> gives higher rating to features that result in the
-        subsets with lower weighted average entropy.
-      </li>
-      <li>
-        <b>Error deviation</b> gives higher rating to features that lead to subsets
-        with higher standard deviation of percent error.
-      </li>
-      <li>
-        <b>Error count</b> and <b>Error percent</b> give higher
-        ratings to features that lead to subsets with higher
-        max number or percent of errors, respectively.
-      </li>
-    </ul>
-  </QuestionBox>
-</div>
+      <ul>
+        <li>
+          <b>Purity</b> gives higher rating to features that result in the
+          subsets with lower weighted average entropy.
+        </li>
+        <li>
+          <b>Error deviation</b> gives higher rating to features that lead to subsets
+          with higher standard deviation of percent error.
+        </li>
+        <li>
+          <b>Error count</b> and <b>Error percent</b> give higher
+          ratings to features that lead to subsets with higher
+          max number or percent of errors, respectively.
+        </li>
+      </ul>
+    </QuestionBox>
+  </div>
 
-<div>
-  <select bind:value={criterion} on:blur={criterionChanged}>
-    {#each criteria.filter(d => (hasPredictions || !d.requiresPredictions)) as group}
-      <optgroup label={group.title}>
-        {#each group.options.filter(d => (hasPredictions || !d.requiresPredictions)) as opt}
-          <option value={opt}>{opt.display}</option>
-        {/each}
-      </optgroup>
-    {/each}
-  </select>
-</div>
+  <div>
+    <select bind:value={criterion} on:blur={criterionChanged}>
+      {#each criteria.filter(d => (hasPredictions || !d.requiresPredictions)) as group}
+        <optgroup label={group.title}>
+          {#each group.options.filter(d => (hasPredictions || !d.requiresPredictions)) as opt}
+            <option value={opt}>{opt.display}</option>
+          {/each}
+        </optgroup>
+      {/each}
+    </select>
+  </div>
+{/if}
 
 <div class="label help-row">
   <p class="bold">Selected</p>
