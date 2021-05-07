@@ -45,7 +45,7 @@
     });
   }
 
-  function onSelectBlur() {
+  function onSelectChange() {
     load(selectedDemoDataset);
   }
 
@@ -133,7 +133,8 @@
     {/if}
 
   {:else}
-    <select bind:value={selectedDemoDataset} on:blur={onSelectBlur}>
+    <!-- svelte-ignore a11y-no-onchange -->
+    <select bind:value={selectedDemoDataset} on:change={onSelectChange}>
       {#each datasets as dataset}
         <option value={dataset}>{dataset.name}</option>
       {/each}

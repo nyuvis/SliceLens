@@ -236,7 +236,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   </div>
 
   <div>
-    <select bind:value={criterion} on:blur={criterionChanged}>
+    <!-- svelte-ignore a11y-no-onchange -->
+    <select bind:value={criterion} on:change={criterionChanged}>
       {#each criteria.filter(d => (hasPredictions || !d.requiresPredictions)) as group}
         <optgroup label={group.title}>
           {#each group.options.filter(d => (hasPredictions || !d.requiresPredictions)) as opt}

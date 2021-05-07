@@ -47,7 +47,7 @@
     }
   }
 
-  function onSelectBlur() {
+  function onSelectChange() {
     if (feature.splitType === 'interval') {
       validThresholds = true;
       feature.thresholds = equalIntervalThresholds(extent, feature.numBins);
@@ -124,7 +124,8 @@
 
 <div class="section">
   <p class="sub-label">Number of bins</p>
-  <select bind:value={feature.numBins} on:blur={onSelectBlur}>
+  <!-- svelte-ignore a11y-no-onchange -->
+  <select bind:value={feature.numBins} on:change={onSelectChange}>
     {#each bins as bin}
       <option {bin}>{bin}</option>
     {/each}
@@ -133,7 +134,8 @@
 
 <div class="section">
   <p class="sub-label">Split type</p>
-  <select bind:value={feature.splitType} on:blur={onSelectBlur}>
+  <!-- svelte-ignore a11y-no-onchange -->
+  <select bind:value={feature.splitType} on:change={onSelectChange}>
     {#each splits as {value, display}}
       <option {value}>{display}</option>
     {/each}
