@@ -317,23 +317,21 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   {/if}
 </div>
 
-<div class="all-features">
-  <div class="feature-box">
-    {#each featuresToShow as feature  (feature)}
-      <div animate:flip={{ duration: 300 }}>
-        <FeatureRow
-          {feature}
-          {canAddFeatures}
-          isSelected={false}
-          relevance={featureToRelevance.get(feature) || 0}
-          on:dragstart={startHandler}
-          on:dragend={endHandler}
-          on:add={() => plusClickHandler(feature)}
-          on:edit={() => onFeatureEdit(feature)}
-        />
-      </div>
-    {/each}
-  </div>
+<div class="all-features feature-box">
+  {#each featuresToShow as feature  (feature)}
+    <div animate:flip={{ duration: 300 }}>
+      <FeatureRow
+        {feature}
+        {canAddFeatures}
+        isSelected={false}
+        relevance={featureToRelevance.get(feature) || 0}
+        on:dragstart={startHandler}
+        on:dragend={endHandler}
+        on:add={() => plusClickHandler(feature)}
+        on:edit={() => onFeatureEdit(feature)}
+      />
+    </div>
+  {/each}
 </div>
 
 <style>
@@ -345,9 +343,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   }
 
   .all-features {
-    border-radius: 5px;
-    flex: 1 1 1px;
-    overflow-y: scroll;
+    overflow-y: auto;
   }
 
   .instruction {

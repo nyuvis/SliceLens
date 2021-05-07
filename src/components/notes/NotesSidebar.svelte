@@ -115,7 +115,7 @@
     line-height: 1.25;
 
     max-height: 150px;
-    overflow-y: scroll;
+    overflow-y: auto;
     flex: 0 0 auto;
   }
 

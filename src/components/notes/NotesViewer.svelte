@@ -66,10 +66,8 @@
       placeholder="This text area supports markdown."
     ></textarea>
   {:else}
-    <div class="content-container">
-      <div class="viewer content small hyphen">
-        {@html DOMPurify.sanitize(marked(note.body))}
-      </div>
+    <div class="viewer content small hyphen">
+      {@html DOMPurify.sanitize(marked(note.body))}
     </div>
   {/if}
 {/if}
@@ -104,16 +102,11 @@
     flex: 0 0 auto;
   }
 
-  .content-container {
-    flex: 1 1 1px;
-    overflow-y: scroll;
-    border-radius: 5px;
-  }
-
   .viewer {
     padding: 5px;
     background: white;
     border-radius: 5px;
+    overflow-y: auto;
   }
 
   .viewer :global(:first-child) {

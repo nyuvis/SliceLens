@@ -68,8 +68,9 @@
   }
 
   #container {
-		display: flex;
-		height: 100%;
+    display: flex;
+    height: 100vh;
+    max-height: 100vh;
   }
 
   .sidebar {
