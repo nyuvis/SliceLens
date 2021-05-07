@@ -13,6 +13,7 @@
   let selectedIndex = -1;
   let selectedNote = null;
   let edit = false;
+  let noteCounter = 0;
 
   function selectNote(note, i) {
     edit = false;
@@ -22,8 +23,9 @@
   }
 
   function newNote() {
+    noteCounter++;
     selectedIndex = notes.length;
-    selectedNote = { title: 'New Note', body: '', state: null };
+    selectedNote = { title: `Note ${noteCounter}`, body: '', state: null };
     notes.push(selectedNote);
     notes = notes;
     edit = true;
