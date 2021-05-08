@@ -15,45 +15,69 @@
 
   let div;
 
+  // size of the div that the matrix is in
   let width = 600;
   let height = 600;
+
+  // space between rows and columns in the matrix
   const padding = 5;
+
+  // height of one line of axis labels
   const axisLineHeight = 20;
 
+  // returns an array of scales for the given features
+  // space is the width or height of the matrix
   function getScales(selectedFeatures, space, reverse) {
     return selectedFeatures.map((feat) => {
       const domain = d3.range(feat.values.length);
 
+      // reverse order for y-axis features
       if (reverse) {
         domain.reverse();
       }
 
+      // range for every scale starts at 0
       const scale = d3.scaleBand().domain(domain).range([0, space]);
 
+      // space for next scale is the band width of the current scale
       space = scale.bandwidth();
 
       return scale;
     });
   }
 
+  // d is the data for a given square
   function getPosition(d, features, scales) {
+    // get the bin index for each feature
+    // d.splits is a map from the name of the selected feature to the subset's bin index
+    // Ex. age -> 1, height -> 2
     const splits = features.map((feat) => d.splits.get(feat.name));
-    return d3.sum(d3.zip(scales, splits), ([scale, split]) => scale(split));
+
+    // adding together the position for each feature gives the position of the square
+    return d3.sum(
+      d3.zip(scales, splits),
+      ([scale, split]) => scale(split)
+    );
   }
 
+  // feature objects that along the x axis
   $: xFeatures = $selectedFeatures
     .filter((d, i) => i % 2 === 0)
     .map((feat) => $metadata.features[feat]);
 
+  // feature objects that are along the y axis
   $: yFeatures = $selectedFeatures
     .filter((d, i) => i % 2 !== 0)
     .map((feat) => $metadata.features[feat]);
 
+  // extra space needed for labels
   $: axisSpace = {
     top: xFeatures.length * axisLineHeight * 2,
     left: yFeatures.length * axisLineHeight * 2,
   };
 
+  // total amount of extra space around matrix
+  // includes space for labels
   $: margin = {
     top: 20 + axisSpace.top,
     left: 20 + axisSpace.left,
@@ -61,14 +85,20 @@
     right: 20,
   };
 
+  // total number of columns in the matrix
+  // if there are two features along the x-axis, each with 3 bins,
+  // then there is a total of 3 * 3 = 9 columns
   $: xNumBins = xFeatures
     .map((feat) => feat.values.length)
     .reduce((acc, cur) => (acc *= cur), 1);
 
+  // total number of rows in the matrix
   $: yNumBins = yFeatures
     .map((feat) => feat.values.length)
     .reduce((acc, cur) => (acc *= cur), 1);
 
+  // the length of the side of one cell in the matrix
+  // put another way, the width of one row or column in the matrix
   $: maxSize = Math.floor(
     Math.min(
       (width - margin.left - margin.right) / xNumBins,
@@ -76,18 +106,24 @@
     )
   );
 
+  // the maximum side length of a square in the matrix
   $: maxSideLength = maxSize - 2 * padding;
 
+  // dimensions of the matrix
   $: matrixHeight = maxSize * yNumBins;
   $: matrixWidth = maxSize * xNumBins;
 
   $: xScales = getScales(xFeatures, matrixWidth, false);
   $: yScales = getScales(yFeatures, matrixHeight, true);
 
+  // number of instances in square to side length
   $: sideLength = d3.scaleSqrt()
     .domain([0, d3.max($data, (d) => d.size)])
     .range([0, maxSideLength]);
 
+  // space between the top (left) of the div and the top (left) of the matrix
+  // this centers the matrix in the div
+  // this includes the space for margins
   $: topSpace =
     margin.top + (height - matrixHeight - margin.top - margin.bottom) / 2;
   $: leftSpace =
@@ -120,6 +156,7 @@
   }
 
   // window resizing
+
   // without the delay, the div will occasionally not be at full height yet
   onMount(() => setTimeout(resize, 200));
 
