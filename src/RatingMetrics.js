@@ -45,7 +45,8 @@ function errorDeviation({selected, metadata, dataset, available}) {
     const sel = [...selected, feature];
     const data = getData(metadata, sel, dataset);
 
-    const value = d3.deviation(data, d => getErrorCountForSquare(d) / d.size);
+    // d3.deviation returns undefined if there are fewer than two numbers
+    const value = data.length < 2 ? 0 : d3.deviation(data, d => getErrorCountForSquare(d) / d.size);
 
     return {feature, value};
   });

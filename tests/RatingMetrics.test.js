@@ -164,6 +164,22 @@ const dataAD = [
   }
 ];
 
+// when the entire dataset is in one bin with a feature selected
+const dataE = [
+  {
+    groundTruth: new d3.InternMap([["no", 100], ["yes", 300]]),
+    size: 400,
+    predictionCounts: new d3.InternMap([["no", 150], ["yes", 250]]),
+    predictionResults: new d3.InternMap([
+      ["no", new d3.InternMap([["incorrect", 50], ["correct", 100]])],
+      ["yes", new d3.InternMap([["incorrect", 50], ["correct", 200]])],
+    ]),
+    splits: new Map([
+      ['e', 0],
+    ])
+  }
+];
+
 const getData = jest.spyOn(dt, 'getData')
     .mockImplementation((metadata, sel, dataset) => {
       const [first, second] = sel;
@@ -174,6 +190,8 @@ const getData = jest.spyOn(dt, 'getData')
         return dataAC;
       } else if (first === 'a' && second === 'd') {
         return dataAD;
+      } else if (first === 'e' && second === undefined) {
+        return dataE;
       } else {
         throw new Error('getData passed wrong selected features');
       }
@@ -217,6 +235,22 @@ test('entropy', () => {
   expect(actual[2].feature).toBe(expected[2].feature);
 });
 
+test('entropy one bin', () => {
+  const expectedValue = -((100 / 400) * Math.log2(100 / 400)) - ((300 / 400) * Math.log2(300 / 400));
+
+  const args = {
+    selected: [],
+    metadata: { size: 400 },
+    dataset: [],
+    available: ['e']
+  };
+
+  const actual = entropy(args);
+
+  expect(actual[0].value).toBeCloseTo(-expectedValue, 5);
+  expect(actual[0].feature).toStrictEqual('e');
+});
+
 // error deviation
 
 test('error deviation', () => {
@@ -245,6 +279,21 @@ test('error deviation', () => {
   expect(actual[2].feature).toBe(expected[2].feature);
 });
 
+test('error deviation one bin', () => {
+  const expected = [ {feature: 'e', value: 0} ];
+
+  const args = {
+    selected: [],
+    metadata: { size: 400 },
+    dataset: [],
+    available: ['e']
+  };
+
+  const actual = errorDeviation(args);
+
+  expect(actual).toStrictEqual(expected);
+});
+
 // error count
 
 test('error count', () => {
@@ -264,6 +313,22 @@ test('error count', () => {
   expect(errorCount(args)).toStrictEqual(expected);
 });
 
+test('error count one bin', () => {
+  const expected = [ {feature: 'e', value: 100} ];
+
+  const args = {
+    selected: [],
+    metadata: { size: 400 },
+    dataset: [],
+    available: ['e']
+  };
+
+  const actual = errorCount(args);
+
+  expect(actual).toStrictEqual(expected);
+
+});
+
 // error percent
 
 test('error percent', () => {
@@ -281,6 +346,21 @@ test('error percent', () => {
   };
 
   expect(errorPercent(args)).toStrictEqual(expected);
+});
+
+test('error percent one bin', () => {
+  const expected = [ {feature: 'e', value: 0.25} ];
+
+  const args = {
+    selected: [],
+    metadata: { size: 400 },
+    dataset: [],
+    available: ['e']
+  };
+
+  const actual = errorPercent(args);
+
+  expect(actual).toStrictEqual(expected);
 });
 
 // get error count for square
