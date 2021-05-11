@@ -35,10 +35,14 @@ button {
   background-color: transparent;
   text-align: center;
   cursor: pointer;
-  margin: 0 2px;
+  margin: 0;
   font-size: 1em;
   padding: 1px 6px;
   font-family : inherit;
+}
+
+button + button {
+  margin-left: 2px;
 }
 
 button:hover:enabled {
@@ -56,6 +60,10 @@ button:disabled {
   cursor: not-allowed;
   color: var(--dark-gray);
   border-color: var(--dark-gray);
+}
+
+select {
+  margin: 0;
 }
 
 .error {

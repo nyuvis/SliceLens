@@ -1,4 +1,5 @@
 <script>
+  import { format, ascending, descending } from 'd3';
   import { metadata } from "../../../stores.js";
 
   export let showPredictions;
@@ -6,68 +7,179 @@
   export let x;
   export let y;
   export let bounds;
+  export let color;
 
-  const padding = 5;
+  const percentFormat = format('.1%');
 
-  let text;
+  const padding = 10;
 
-  $: dimensions = text ? text.getBBox() : {width: 100, height: 100};
+  let width = 100;
+  let height = 100;
 
-  $: splitLines =
+  $: splits =
     d.splits.size === 0
-      ? ["None"]
+      ? []
       : Array.from(d.splits).map(([featureName, splitIndex]) => {
           const split = $metadata.features[featureName].values[splitIndex];
-          return `${featureName}: ${split}`;
+          return {featureName, split};
         });
 
-  $: countLines = showPredictions && $metadata.hasPredictions
-    ? Array.from(d.predictionResults, ([label, counts]) => {
-        return Array.from(counts, ([correct, count]) => {
-          const prefix = correct === "correct" ? "true" : "false";
-          return `${prefix} ${label}: ${count}`;
-        }).sort();
-      }).flat()
-    : Array.from(d.groundTruth, ([key, val]) => `${key}: ${val}`);
+  $: amounts =
+    showPredictions && $metadata.hasPredictions
+      ? Array.from(d.predictionResults)
+        // sort by predicted label
+        .sort((a, b) => ascending(a[0], b[0]))
+        .map(([label, counts]) => {
+          return Array.from(counts, ([correct, count]) => ({
+            label: `${label} (${correct})`,
+            count: count,
+            percent: percentFormat(count / d.size),
+            stripes: correct === 'incorrect',
+            fill: color(label)
+            // put incorrect before correct to match order of layers in square
+          })).sort((a, b) => descending(a.label, b.label))
+        }).flat()
+      : Array.from(d.groundTruth, ([label, count]) => ({
+          label,
+          count,
+          percent: percentFormat(count / d.size),
+          stripes: false,
+          legendLabel: label,
+          fill: color(label),
+        }));
 
   // keep the tool tip on the screen
 
-  $: minX = dimensions.width / 2 + padding;
-  $: maxX = bounds.x - dimensions.width / 2 - padding;
-  $: maxY = bounds.y - dimensions.height - padding * 2;
-  $: gx = Math.min(Math.max(minX, x), maxX);
-  $: gy = Math.min(y, maxY) + padding * 2;
+  $: minX = bounds.left + (width / 2);
+  $: minY = bounds.top;
+  $: maxX = bounds.right - (width / 2);
+  // 2 * padding so that the scrollbar does not appear
+  // when the tooltip is on the bottom of the screen
+  $: maxY = bounds.bottom - height - 2 * padding;
+
+  $: tooltipX = Math.min(Math.max(minX, x), maxX);
+  $: tooltipY = Math.min(Math.max(minY, y), maxY);
 </script>
 
-<g class="tooltip" transform="translate({gx},{gy})">
-  <rect
-    fill="white"
-    stroke="black"
-    x={(-dimensions.width / 2) - padding}
-    width={dimensions.width + 2 * padding}
-    height={dimensions.height + 2 * padding}
-  />
-  <text bind:this={text} transform="translate({-dimensions.width / 2},{padding})">
-    <tspan class="bold" x="0">Split</tspan>
+<div
+  class="tooltip small"
+  bind:clientWidth={width} bind:clientHeight={height}
+  style='left: {tooltipX - (width / 2)}px; top: {tooltipY + padding}px;'
+>
+  {#if splits.length > 0}
+    <table class="splits-table">
+      <thead>
+        <tr>
+          <th class="string">Feature</th>
+          <th class="string">Bin</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#each splits as {featureName, split}}
+          <tr>
+            <td class="string">{featureName}</td>
+            <td class="string">{split}</td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
 
-    {#each splitLines as line, i}
-      <tspan x="0" y="{(i + 1) * 1.1}em">{line}</tspan>
-    {/each}
+    <div class="divider"></div>
+  {/if}
 
-    <tspan class="bold" x="0" y="{(splitLines.length + 1) * 1.1}em">Counts</tspan>
+  <div class="size group">
+    {d.size}/{$metadata.size} instances ({percentFormat(d.size / $metadata.size)})
+  </div>
 
-    {#each [...countLines, `total: ${d.size}`] as line, i}
-      <tspan x="0" y="{(splitLines.length + i + 2) * 1.1}em">{line}</tspan>
-    {/each}
-  </text>
-</g>
+  <div class="divider"></div>
+
+  <table class="counts-table">
+    <thead>
+      <tr>
+        <th></th>
+        <th class="string">Label</th>
+        <th class="number">Count</th>
+        <th class="number">Percent</th>
+      </tr>
+    </thead>
+    <tbody>
+      {#each amounts as {label, count, percent, stripes, fill}}
+        <tr>
+          <td>
+            {#if stripes}
+              <div class="legend-square"
+                style="background: repeating-linear-gradient(135deg, {fill}, {fill} 2px, white 2px, white 4px)">
+              </div>
+            {:else}
+              <div class="legend-square" style="background: {fill}"></div>
+            {/if}
+          </td>
+          <td class="string">{label}</td>
+          <td class="number">{count}</td>
+          <td class="number">{percent}</td>
+        </tr>
+      {/each}
+    </tbody>
+  </table>
+</div>
 
 <style>
-  tspan {
-    dominant-baseline: hanging;
+  .tooltip {
+    padding: 0.5em;
+    position: absolute;
+    background-color: white;
+    border: 1px solid black;
+    pointer-events: none;
+    box-sizing: border-box;
   }
 
-  g > * {
-    pointer-events: none;
+  .divider {
+    width: 100%;
+    height: 2px;
+    margin: 0.25em 0;
+    background-color: var(--medium-gray);
+  }
+
+  .legend-square {
+    min-width: 14px;
+    min-height: 14px;
+  }
+
+  /* table stylings */
+
+  table {
+    border-collapse: collapse;
+  }
+
+  td, th {
+    padding: 0em 0.5em 0.25em 0em;
+    line-height: 1;
+    vertical-align: middle;
+  }
+
+  /* no right padding for last column in table */
+  tr > td:last-of-type, tr > th:last-of-type {
+    padding-right: 0;
+  }
+
+  /* no bottom padding for last row in table */
+  tbody > tr:last-of-type > td {
+    padding-bottom: 0;
+  }
+
+  th {
+    font-weight: 500;
+  }
+
+  .number {
+    text-align: right;
+  }
+
+  td.number {
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  .string {
+    text-align: left;
   }
 </style>

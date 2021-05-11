@@ -19,6 +19,9 @@
   let width = 600;
   let height = 600;
 
+  // bounding box of the div
+  let divBoundingBox = { left: 0, right: 0, top: 0, bottom: 0 };
+
   // space between rows and columns in the matrix
   const padding = 5;
 
@@ -133,21 +136,19 @@
 
   let tooltipData = null;
   let mouse = { x: 0, y: 0 };
-  let bounds = { x: 0, y: 0 };
+
+  // the boundaries that we want to keep the tooltip inside of
+  $: bounds = {
+    // we don't want the tooltip to overlap the labels
+    top: divBoundingBox.top + topSpace,
+    left: divBoundingBox.left + leftSpace,
+    right: divBoundingBox.right,
+    bottom: divBoundingBox.bottom
+  };
 
   function handleMousemove(event, d) {
-    // https://stackoverflow.com/questions/3234256/find-mouse-position-relative-to-element
-    // square -> squares' group -> main group -> svg
-    const svg = event.currentTarget.parentNode.parentNode.parentNode.getBoundingClientRect();
-
-    // put in coordinates of main group
-    mouse.x = event.clientX - svg.x - leftSpace;
-    mouse.y = event.clientY - svg.y - topSpace;
-
-    // right and bottom of svg in coordinates of main group
-    bounds.x = svg.width - leftSpace;
-    bounds.y = svg.height - topSpace;
-
+    mouse.x = event.clientX;
+    mouse.y = event.clientY;
     tooltipData = d;
   }
 
@@ -160,9 +161,10 @@
   // without the delay, the div will occasionally not be at full height yet
   onMount(() => setTimeout(resize, 200));
 
-	function resize() {
-		({ width, height } = div.getBoundingClientRect());
-	}
+  function resize() {
+    divBoundingBox = div.getBoundingClientRect();
+    ({ width, height } = divBoundingBox);
+  }
 </script>
 
 <svelte:window on:resize={resize}/>
@@ -214,17 +216,17 @@
           />
         {/each}
       </g>
-
-      {#if tooltipData}
-        <Tooltip
-          {...mouse}
-          {bounds}
-          {showPredictions}
-          d={tooltipData}
-        />
-      {/if}
     </g>
   </svg>
+  {#if tooltipData}
+    <Tooltip
+      {...mouse}
+      {bounds}
+      {showPredictions}
+      d={tooltipData}
+      {color}
+    />
+  {/if}
 </div>
 
 <style>
