@@ -417,6 +417,6 @@ function getTooltipAmounts(showPredictions, d, percentFormat) {
       percent: percentFormat(count / d.size),
       stripes: false,
       colorLabel: label,
-    }));
+    })).sort((a, b) => d3.ascending(a.label, b.label));
   }
 }

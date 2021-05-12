@@ -1026,9 +1026,92 @@ test('get tooltip amounts with predictions', () => {
   expect(actual).toStrictEqual(expected);
 });
 
+test('get tooltip amounts with predictions sorting', () => {
+  const d = {
+    // change order of elements in maps
+    groundTruth: new d3.InternMap([["yes", 200], ["no", 100]]),
+    size: 300,
+    predictionCounts: new d3.InternMap([["yes", 150], ["no", 150]]),
+    predictionResults: new d3.InternMap([
+      ["no", new d3.InternMap([["incorrect", 150]])],
+      ["yes", new d3.InternMap([["incorrect", 50], ["correct", 100]])],
+    ]),
+    splits: new Map([
+      ['age', 0],
+      ['favoriteNumber', 2]
+    ])
+  };
+
+  const expected = [
+    {
+      label: 'no (incorrect)',
+      count: 150,
+      percent: '50.0%',
+      stripes: true,
+      colorLabel: 'no'
+    },
+    {
+      label: 'yes (incorrect)',
+      count: 50,
+      percent: '16.7%',
+      stripes: true,
+      colorLabel: 'yes'
+    },
+    {
+      label: 'yes (correct)',
+      count: 100,
+      percent: '33.3%',
+      stripes: false,
+      colorLabel: 'yes'
+    }
+  ];
+
+  const actual = getTooltipAmounts(true, d, d3.format('.1%'));
+
+  expect(actual).toStrictEqual(expected);
+});
+
 test('get tooltip amounts no predictions', () => {
   const d = {
     groundTruth: new d3.InternMap([["no", 100], ["yes", 200]]),
+    size: 300,
+    predictionCounts: new d3.InternMap([["no", 150], ["yes", 150]]),
+    predictionResults: new d3.InternMap([
+      ["no", new d3.InternMap([["incorrect", 150]])],
+      ["yes", new d3.InternMap([["correct", 100], ["incorrect", 50]])],
+    ]),
+    splits: new Map([
+      ['age', 0],
+      ['favoriteNumber', 2]
+    ])
+  };
+
+  const expected = [
+    {
+      label: 'no',
+      count: 100,
+      percent: '33.3%',
+      stripes: false,
+      colorLabel: 'no'
+    },
+    {
+      label: 'yes',
+      count: 200,
+      percent: '66.7%',
+      stripes: false,
+      colorLabel: 'yes'
+    }
+  ];
+
+  const actual = getTooltipAmounts(false, d, d3.format('.1%'));
+
+  expect(actual).toStrictEqual(expected);
+});
+
+test('get tooltip amounts no predictions sorting', () => {
+  const d = {
+    // flipped order of yes and no here
+    groundTruth: new d3.InternMap([["yes", 200], ["no", 100]]),
     size: 300,
     predictionCounts: new d3.InternMap([["no", 150], ["yes", 150]]),
     predictionResults: new d3.InternMap([
