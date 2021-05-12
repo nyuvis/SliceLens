@@ -42,7 +42,7 @@ button {
 }
 
 button + button {
-  margin-left: 2px;
+  margin-left: 4px;
 }
 
 button:hover:enabled {

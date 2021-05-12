@@ -203,7 +203,7 @@
 </div>
 
 <div class="controls">
-  <button on:click={onClickNewGroup}>New Group</button>
+  <button id="new-group" on:click={onClickNewGroup}>New Group</button>
 
   <Dropdown>
     <MenuItem on:click={onClickSortCount} name={'Count'}/>
@@ -418,5 +418,9 @@
 
   .sorting-label {
     margin-right: 5px;
+  }
+
+  #new-group {
+    margin-right: 4px;
   }
 </style>
