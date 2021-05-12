@@ -6,6 +6,7 @@
   import Tooltip from "./Tooltip.svelte";
   import SizeLegend from "./SizeLegend.svelte";
   import { data, metadata, selectedFeatures } from "../../../stores.js";
+  import { getScales, getPositionOfSquare } from "../../../DataTransformer.js"
   import { onMount } from 'svelte';
   import * as d3 from "d3";
 
@@ -27,41 +28,6 @@
 
   // height of one line of axis labels
   const axisLineHeight = 20;
-
-  // returns an array of scales for the given features
-  // space is the width or height of the matrix
-  function getScales(selectedFeatures, space, reverse) {
-    return selectedFeatures.map((feat) => {
-      const domain = d3.range(feat.values.length);
-
-      // reverse order for y-axis features
-      if (reverse) {
-        domain.reverse();
-      }
-
-      // range for every scale starts at 0
-      const scale = d3.scaleBand().domain(domain).range([0, space]);
-
-      // space for next scale is the band width of the current scale
-      space = scale.bandwidth();
-
-      return scale;
-    });
-  }
-
-  // d is the data for a given square
-  function getPosition(d, features, scales) {
-    // get the bin index for each feature
-    // d.splits is a map from the name of the selected feature to the subset's bin index
-    // Ex. age -> 1, height -> 2
-    const splits = features.map((feat) => d.splits.get(feat.name));
-
-    // adding together the position for each feature gives the position of the square
-    return d3.sum(
-      d3.zip(scales, splits),
-      ([scale, split]) => scale(split)
-    );
-  }
 
   // feature objects that along the x axis
   $: xFeatures = $selectedFeatures
@@ -202,8 +168,8 @@
       <g class="squares">
         {#each $data as d}
           <Square
-            x={getPosition(d, xFeatures, xScales)}
-            y={getPosition(d, yFeatures, yScales)}
+            x={getPositionOfSquare(d, xFeatures, xScales)}
+            y={getPositionOfSquare(d, yFeatures, yScales)}
             sideLength={showSize ? sideLength(d.size) : maxSideLength}
             {color}
             {showPredictions}

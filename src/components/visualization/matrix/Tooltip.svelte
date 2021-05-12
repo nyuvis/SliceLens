@@ -1,6 +1,7 @@
 <script>
-  import { format, ascending, descending } from 'd3';
+  import { format } from 'd3';
   import { metadata } from "../../../stores.js";
+  import { getTooltipAmounts } from "../../../DataTransformer.js";
 
   export let showPredictions;
   export let d;
@@ -24,29 +25,7 @@
           return {featureName, split};
         });
 
-  $: amounts =
-    showPredictions && $metadata.hasPredictions
-      ? Array.from(d.predictionResults)
-        // sort by predicted label
-        .sort((a, b) => ascending(a[0], b[0]))
-        .map(([label, counts]) => {
-          return Array.from(counts, ([correct, count]) => ({
-            label: `${label} (${correct})`,
-            count: count,
-            percent: percentFormat(count / d.size),
-            stripes: correct === 'incorrect',
-            fill: color(label)
-            // put incorrect before correct to match order of layers in square
-          })).sort((a, b) => descending(a.label, b.label))
-        }).flat()
-      : Array.from(d.groundTruth, ([label, count]) => ({
-          label,
-          count,
-          percent: percentFormat(count / d.size),
-          stripes: false,
-          legendLabel: label,
-          fill: color(label),
-        }));
+  $: amounts = getTooltipAmounts(showPredictions && $metadata.hasPredictions, d, percentFormat);
 
   // keep the tool tip on the screen
 
@@ -103,15 +82,15 @@
       </tr>
     </thead>
     <tbody>
-      {#each amounts as {label, count, percent, stripes, fill}}
+      {#each amounts as {label, count, percent, stripes, colorLabel}}
         <tr>
           <td>
             {#if stripes}
               <div class="legend-square"
-                style="background: repeating-linear-gradient(135deg, {fill}, {fill} 2px, white 2px, white 4px)">
+                style="background: repeating-linear-gradient(135deg, {color(colorLabel)}, {color(colorLabel)} 2px, white 2px, white 4px)">
               </div>
             {:else}
-              <div class="legend-square" style="background: {fill}"></div>
+              <div class="legend-square" style="background: {color(colorLabel)}"></div>
             {/if}
           </td>
           <td class="string">{label}</td>

@@ -10,6 +10,9 @@ import {
   getWholeDatasetFeatureExtents,
   cloneFilters,
   addSelectedSetToFilters,
+  getScales,
+  getPositionOfSquare,
+  getTooltipAmounts,
 } from '../src/DataTransformer.js';
 
 const fs = require('fs');
@@ -836,4 +839,226 @@ test('get filtered dataset - two filters', () => {
     expect(d['job'] === 'student' || d['job'] === 'teacher').toBe(true);
     expect(d['age'] >= 30 && d['age'] <= 40).toBe(true);
   });
+});
+
+// getScales
+
+test('getScales no features', () => {
+  expect(getScales([], 100, false)).toStrictEqual([]);
+});
+
+test('getScales one feature', () => {
+  const md = readJson('metadata-1.json');
+  const features = [md.features['age']];
+  const actual = getScales(features, 300, false);
+  const expected = [
+    d3.scaleBand().domain([0, 1, 2]).range([0, 300]),
+  ];
+
+  expect(actual[0].domain()).toStrictEqual(expected[0].domain());
+  expect(actual[0].range()).toStrictEqual(expected[0].range());
+  expect(actual[0].bandwidth()).toStrictEqual(expected[0].bandwidth());
+});
+
+test('getScales two features', () => {
+  const md = readJson('metadata-1.json');
+  const features = [md.features['age'], md.features['job']];
+  const actual = getScales(features, 300, false);
+  const expected = [
+    d3.scaleBand().domain([0, 1, 2]).range([0, 300]),
+    d3.scaleBand().domain([0, 1, 2, 3, 4]).range([0, 100]),
+  ];
+
+  expect(actual[0].domain()).toStrictEqual(expected[0].domain());
+  expect(actual[0].range()).toStrictEqual(expected[0].range());
+  expect(actual[0].bandwidth()).toStrictEqual(expected[0].bandwidth());
+
+  expect(actual[1].domain()).toStrictEqual(expected[1].domain());
+  expect(actual[1].range()).toStrictEqual(expected[1].range());
+  expect(actual[1].bandwidth()).toStrictEqual(expected[1].bandwidth());
+});
+
+test('getScales two features reverse', () => {
+  const md = readJson('metadata-1.json');
+  const features = [md.features['age'], md.features['job']];
+  const actual = getScales(features, 300, true);
+  const expected = [
+    d3.scaleBand().domain([2, 1, 0]).range([0, 300]),
+    d3.scaleBand().domain([4, 3, 2, 1, 0]).range([0, 100]),
+  ];
+
+  expect(actual[0].domain()).toStrictEqual(expected[0].domain());
+  expect(actual[0].range()).toStrictEqual(expected[0].range());
+  expect(actual[0].bandwidth()).toStrictEqual(expected[0].bandwidth());
+
+  expect(actual[1].domain()).toStrictEqual(expected[1].domain());
+  expect(actual[1].range()).toStrictEqual(expected[1].range());
+  expect(actual[1].bandwidth()).toStrictEqual(expected[1].bandwidth());
+});
+
+// getPositionOfSquare
+
+test('get position of square no features', () => {
+  const d = {
+    groundTruth: new d3.InternMap([["no", 100], ["yes", 200]]),
+    size: 300,
+    predictionCounts: new d3.InternMap([["no", 150], ["yes", 150]]),
+    predictionResults: new d3.InternMap([
+      ["no", new d3.InternMap([["incorrect", 150]])],
+      ["yes", new d3.InternMap([["correct", 100], ["incorrect", 50]])],
+    ]),
+    splits: new Map([
+      ['age', 0],
+      ['job', 2]
+    ])
+  };
+
+  expect(getPositionOfSquare(d, [], [])).toStrictEqual(0);
+});
+
+test('get position of square one feature', () => {
+  const md = readJson('metadata-1.json');
+
+  const d = {
+    groundTruth: new d3.InternMap([["no", 100], ["yes", 200]]),
+    size: 300,
+    predictionCounts: new d3.InternMap([["no", 150], ["yes", 150]]),
+    predictionResults: new d3.InternMap([
+      ["no", new d3.InternMap([["incorrect", 150]])],
+      ["yes", new d3.InternMap([["correct", 100], ["incorrect", 50]])],
+    ]),
+    splits: new Map([
+      ['age', 0],
+      ['job', 2]
+    ])
+  };
+
+  const features = [md.features['age']];
+  const scales = [
+    d3.scaleBand().domain([0, 1, 2]).range([0, 300]),
+  ];
+
+  d.splits.set('age', 0);
+  expect(getPositionOfSquare(d, features, scales)).toStrictEqual(0);
+
+  d.splits.set('age', 1);
+  expect(getPositionOfSquare(d, features, scales)).toStrictEqual(100);
+
+  d.splits.set('age', 2);
+  expect(getPositionOfSquare(d, features, scales)).toStrictEqual(200);
+});
+
+test('get position of square two features', () => {
+  const md = readJson('metadata-1.json');
+
+  const d = {
+    groundTruth: new d3.InternMap([["no", 100], ["yes", 200]]),
+    size: 300,
+    predictionCounts: new d3.InternMap([["no", 150], ["yes", 150]]),
+    predictionResults: new d3.InternMap([
+      ["no", new d3.InternMap([["incorrect", 150]])],
+      ["yes", new d3.InternMap([["correct", 100], ["incorrect", 50]])],
+    ]),
+    splits: new Map([
+      ['age', 0],
+      ['job', 2]
+    ])
+  };
+
+  const features = [md.features['age'], md.features['job']];
+  const scales = [
+    d3.scaleBand().domain([0, 1, 2]).range([0, 300]),
+    d3.scaleBand().domain([0, 1, 2, 3, 4]).range([0, 100]),
+  ];
+
+  for (let age = 0; age < 3; age++) {
+    for (let job = 0; job < 5; job++) {
+      d.splits.set('age', age);
+      d.splits.set('job', job);
+      expect(getPositionOfSquare(d, features, scales)).toStrictEqual(age * 100 + job * 20);
+    }
+  }
+});
+
+// tooltips
+
+test('get tooltip amounts with predictions', () => {
+  const d = {
+    groundTruth: new d3.InternMap([["no", 100], ["yes", 200]]),
+    size: 300,
+    predictionCounts: new d3.InternMap([["no", 150], ["yes", 150]]),
+    predictionResults: new d3.InternMap([
+      ["no", new d3.InternMap([["incorrect", 150]])],
+      ["yes", new d3.InternMap([["correct", 100], ["incorrect", 50]])],
+    ]),
+    splits: new Map([
+      ['age', 0],
+      ['favoriteNumber', 2]
+    ])
+  };
+
+  const expected = [
+    {
+      label: 'no (incorrect)',
+      count: 150,
+      percent: '50.0%',
+      stripes: true,
+      colorLabel: 'no'
+    },
+    {
+      label: 'yes (incorrect)',
+      count: 50,
+      percent: '16.7%',
+      stripes: true,
+      colorLabel: 'yes'
+    },
+    {
+      label: 'yes (correct)',
+      count: 100,
+      percent: '33.3%',
+      stripes: false,
+      colorLabel: 'yes'
+    }
+  ];
+
+  const actual = getTooltipAmounts(true, d, d3.format('.1%'));
+
+  expect(actual).toStrictEqual(expected);
+});
+
+test('get tooltip amounts no predictions', () => {
+  const d = {
+    groundTruth: new d3.InternMap([["no", 100], ["yes", 200]]),
+    size: 300,
+    predictionCounts: new d3.InternMap([["no", 150], ["yes", 150]]),
+    predictionResults: new d3.InternMap([
+      ["no", new d3.InternMap([["incorrect", 150]])],
+      ["yes", new d3.InternMap([["correct", 100], ["incorrect", 50]])],
+    ]),
+    splits: new Map([
+      ['age', 0],
+      ['favoriteNumber', 2]
+    ])
+  };
+
+  const expected = [
+    {
+      label: 'no',
+      count: 100,
+      percent: '33.3%',
+      stripes: false,
+      colorLabel: 'no'
+    },
+    {
+      label: 'yes',
+      count: 200,
+      percent: '66.7%',
+      stripes: false,
+      colorLabel: 'yes'
+    }
+  ];
+
+  const actual = getTooltipAmounts(false, d, d3.format('.1%'));
+
+  expect(actual).toStrictEqual(expected);
 });
