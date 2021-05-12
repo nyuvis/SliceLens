@@ -98,6 +98,12 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   function dropHandler(event, i) {
     const item = JSON.parse(event.dataTransfer.getData("text"));
+
+    /* make sure that a feature is being dragged in */
+    if (!features.includes(item.id)) {
+      return;
+    }
+
     const filtered = $selectedFeatures.filter(d => d !== item.id);
 
     if (filtered.length === $selectedFeatures.length) {
