@@ -15,7 +15,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   let features = [];
   $: if ($metadata !== null) {
-    features = $metadata.featureNames;
+    // sort by alphabetical order
+    features = $metadata.featureNames.slice().sort((a, b) => a.localeCompare(b));
   }
 
   // suggestion criteria
@@ -105,7 +106,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         feature: item.id,
         selected: $selectedFeatures,
         criterion: criterion.value,
-        rank: featuresSortedByRating.indexOf(item.id) + 1,
+        rank: featuresSortedByRatingDescending.indexOf(item.id) + 1,
         choices: features.length - $selectedFeatures.length,
         workersInProgress,
       });
@@ -141,7 +142,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         feature,
         selected: $selectedFeatures,
         criterion: criterion.value,
-        rank: featuresSortedByRating.indexOf(feature) + 1,
+        rank: featuresSortedByRatingDescending.indexOf(feature) + 1,
         choices: features.length - $selectedFeatures.length,
         workersInProgress,
       });
@@ -162,13 +163,14 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   // sorting features
 
-  let sortByRating = false;
+  let sortBy = 'alpha';
 
   $: if (criterion.value === 'none') {
-    sortByRating = false;
+    sortBy = 'alpha';
   }
+
   // should this go in worker.onmessage?
-  $: featuresSortedByRating = features
+  $: featuresSortedByRatingDescending = features
       .slice()
       .sort((a, b) =>
         d3.descending(
@@ -178,7 +180,23 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         )
       );
 
-  $: featuresToShow = sortByRating ? featuresSortedByRating : features;
+  $: featuresSortedByRatingAscending = features
+      .slice()
+      .sort((a, b) =>
+        d3.ascending(
+          // features already added should appear last
+          featureToRelevance.has(a) ? featureToRelevance.get(a) : 2,
+          featureToRelevance.has(b) ? featureToRelevance.get(b) : 2
+        )
+      );
+
+  $: sortingOrders = {
+    'alpha': features,
+    'rating-ascending': featuresSortedByRatingAscending,
+    'rating-descending': featuresSortedByRatingDescending,
+  };
+
+  $: featuresToShow = sortingOrders[sortBy];
 
   // editing features
 
@@ -297,22 +315,68 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   </QuestionBox>
   <div class="gap"></div>
   {#if featureToRelevance.size}
-    <!-- sort icon -->
+    <!-- sort icons -->
+
+    <!-- alphabetical -->
     <svg xmlns="http://www.w3.org/2000/svg"
-      class="icon icon-tabler icon-tabler-arrows-sort"
-      width="24"
-      height="24"
+      class="icon icon-tabler icon-tabler-sort-ascending-letters"
+      width="44"
+      height="44"
       viewBox="0 0 24 24"
-      stroke-width="2"
+      stroke-width="1.5"
       stroke="currentColor"
       fill="none"
       stroke-linecap="round"
       stroke-linejoin="round"
-      on:click={() => sortByRating = !sortByRating}
+      on:click={() => sortBy = 'alpha'}
     >
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-      <path d="M3 9l4 -4l4 4m-4 -4v14"></path>
-      <path d="M21 15l-4 4l-4 -4m4 4v-14"></path>
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <path d="M15 10v-5c0 -1.38 .62 -2 2 -2s2 .62 2 2v5m0 -3h-4" />
+      <path d="M19 21h-4l4 -7h-4" />
+      <path d="M4 15l3 3l3 -3" />
+      <path d="M7 6v12" />
+    </svg>
+
+    <!-- rating-ascending -->
+    <svg xmlns="http://www.w3.org/2000/svg"
+      class="icon icon-tabler icon-tabler-sort-ascending-numbers"
+      width="44"
+      height="44"
+      viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="currentColor"
+      fill="none"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      on:click={() => sortBy = 'rating-ascending'}
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <path d="M4 15l3 3l3 -3" />
+      <path d="M7 6v12" />
+      <path d="M17 3a2 2 0 0 1 2 2v3a2 2 0 1 1 -4 0v-3a2 2 0 0 1 2 -2z" />
+      <circle cx="17" cy="16" r="2" />
+      <path d="M19 16v3a2 2 0 0 1 -2 2h-1.5" />
+    </svg>
+
+    <!-- rating-descending -->
+    <svg xmlns="http://www.w3.org/2000/svg"
+      class="icon icon-tabler icon-tabler-sort-descending-numbers"
+      width="44"
+      height="44"
+      viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="currentColor"
+      fill="none"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      on:click={() => sortBy = 'rating-descending'}
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <path d="M4 15l3 3l3 -3" />
+      <path d="M7 6v12" />
+      <path d="M17 14a2 2 0 0 1 2 2v3a2 2 0 1 1 -4 0v-3a2 2 0 0 1 2 -2z" />
+      <circle cx="17" cy="5" r="2" />
+      <path d="M19 5v3a2 2 0 0 1 -2 2h-1.5" />
     </svg>
   {/if}
 </div>
@@ -364,8 +428,14 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     visibility: hidden;
   }
 
-  .icon-tabler-arrows-sort:hover {
+  .icon-tabler-sort-ascending-letters:hover,
+  .icon-tabler-sort-ascending-numbers:hover,
+  .icon-tabler-sort-descending-numbers:hover {
     color: var(--blue);
+  }
+
+  .icon-tabler + .icon-tabler {
+    margin-left: 0.25em;
   }
 
   /* dragging */
