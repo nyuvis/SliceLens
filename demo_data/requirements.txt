@@ -257,7 +257,7 @@ traitlets==5.0.5
 typing-extensions==3.7.4.3
 ujson==1.35
 unicodecsv==0.14.1
-urllib3==1.25.9
+urllib3==1.26.5
 vega-datasets==0.8.0
 watchdog @ file:///opt/concourse/worker/volumes/live/fe5d349c-1d61-4feb-6b8a-cbc5288b20a8/volume/watchdog_1593447347275/work
 wcwidth @ file:///tmp/build/80754af9/wcwidth_1593447189090/work
