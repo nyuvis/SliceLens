@@ -11,3 +11,5 @@
 /scratch
 
 /public/datasets/test
+
+__pycache__/

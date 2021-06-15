@@ -1,0 +1,56 @@
+[
+    {
+        "body": "",
+        "state": {
+            "selectedFeatures": ["T"]
+        }
+    },
+    {
+        "body": "1",
+        "state": {
+            "selectedFeatures": ["A"]
+        }
+    },
+    {
+        "body": "2",
+        "state": {
+            "selectedFeatures": ["B", "C"]
+        }
+    },
+    {
+        "body": "",
+        "state": {
+            "selectedFeatures": ["T"]
+        }
+    },
+    {
+        "body": "3",
+        "state": {
+            "selectedFeatures": ["E", "A"]
+        }
+    },
+    {
+        "body": "4",
+        "state": {
+            "selectedFeatures": ["D", "H", "G", "F"]
+        }
+    },
+    {
+        "body": "5",
+        "state": {
+            "selectedFeatures": ["A", "E"]
+        }
+    },
+    {
+        "body": "",
+        "state": {
+            "selectedFeatures": ["T"]
+        }
+    },
+    {
+        "body": "6",
+        "state": {
+            "selectedFeatures": []
+        }
+    }
+]
