@@ -24,28 +24,37 @@ COUNTS = {
 
 
 def get_file_paths(path_str):
+    ''' get paths to json files in given directory '''
     return sorted(list(Path(path_str).glob('*.json')))
 
 
 def read_logs(path):
+    ''' read log file into a list of dictionaries '''
     contents = json.loads(path.read_text())
     return [json.loads(entry) for entry in contents]
 
 
 def read_notes(path):
-    # remove notes with empty bodies
+    ''' read note file into a list of dictionaries '''
     return [
         note
         for note in json.loads(path.read_text())
+        # remove notes with empty bodies
         if note['body'].strip()
     ]
 
 
 def read_data(logs_paths, notes_paths):
+    ''' return a list of dictionaries
+        each dictionary represents one data analysis task from the study
+        i refer to each data analysis task as a "run"
+        each participant will have two dictionaries
+    '''
     data = []
     excluded_participants = {'03', '08'}
 
     for log_path, note_path in zip(logs_paths, notes_paths):
+        # make sure that the log and note files have the same name
         assert(log_path.stem == note_path.stem)
 
         [participant, guidance, dataset, order] = log_path.stem.split('-')
@@ -68,8 +77,8 @@ def read_data(logs_paths, notes_paths):
 ''' transforming data  '''
 
 
-# https://docs.python.org/3/library/itertools.html#itertools-recipes
 def pairwise(iterable):
+    ''' https://docs.python.org/3/library/itertools.html#itertools-recipes '''
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
     "[1, 2, 3, 4 ,5] -> (1, 2), (2, 3), (3, 4), (4, 5)"
 
@@ -79,6 +88,9 @@ def pairwise(iterable):
 
 
 def set_visited_features(run, threshold=1000):
+    ''' set statistics related to which
+        combinations of featues the participant visited '''
+
     # get the selected features after each feature add and feature remove event
     # and the timestamp for the event
     states = []
@@ -126,6 +138,8 @@ def set_visited_features(run, threshold=1000):
 
 
 def set_note_stats(run):
+    ''' set statistics related to the notes that the participant took '''
+
     combos = sorted(list({
         tuple(sorted(note['state']['selectedFeatures']))
         for note in run['notes']
@@ -148,6 +162,9 @@ def set_note_stats(run):
 
 
 def nested_groupby(data, key1, key2):
+    ''' group the runs by the specified key
+        the dictionary goes from key1 to key2 to run
+    '''
     groups = defaultdict(dict)
 
     for run in data:
@@ -156,27 +173,43 @@ def nested_groupby(data, key1, key2):
     return groups
 
 
-def compare_ratings(data):
+def compare_ratings(data, stats):
+    ''' for each stat, count the number of participants who had a lower
+        value during their task with ratings than their task without ratings
+    '''
     groups = nested_groupby(data, 'participant', 'ratings')
+    # not using a defaultdict dict here because we want there
+    # to be a key even when the count is 0
+    counts = {key: 0 for key in stats}
 
-    values = [
+    for participant, ratings_to_run in groups.items():
+        run_yes_ratings = ratings_to_run[True]
+        run_no_ratings = ratings_to_run[False]
+
+        for stat in stats:
+            if run_yes_ratings[stat] < run_no_ratings[stat]:
+                counts[stat] += 1
+
+    return counts
+
+
+def compare_participant_runs(data):
+    ''' compare how each participant did in their two runs '''
+
+    # stats to compare
+    stats = [
         'num_states_visited',
         'pct_features_used',
         'num_states_with_notes',
         'pct_features_with_notes',
         'pct_visited_states_with_notes'
     ]
-    counts = defaultdict(int)
 
-    for participant, ratings_to_run in groups.items():
-        run_yes_ratings = ratings_to_run[True]
-        run_no_ratings = ratings_to_run[False]
+    comparisons = {}
 
-        for value in values:
-            if run_yes_ratings[value] < run_no_ratings[value]:
-                counts[value] += 1
+    comparisons['ratings'] = compare_ratings(data, stats)
 
-    return counts
+    return comparisons
 
 
 def transform_data(data):
@@ -191,6 +224,8 @@ def transform_data(data):
 
 
 def output_runs(data):
+    ''' write runs to a file '''
+
     # don't output logs and notes
     copies = []
     for run in data:
@@ -205,9 +240,14 @@ def output_runs(data):
         json.dump(copies, jsonfile, indent=2)
 
 
-def print_comparisons(ratings_comparison):
-    print('Number of participants who have a lower value with ratings:')
-    for key, value in ratings_comparison.items():
+def print_comparisons(comparisons):
+    ''' write comparisons of participant runs to stdout '''
+
+    # ratings
+    print('Number of participants who had a lower value for the statistic',
+          'during their task with ratings than their task without ratings:\n',
+          sep='\n')
+    for key, value in comparisons['ratings'].items():
         print(f'{key} {value}')
 
 
@@ -225,11 +265,10 @@ def main():
     notes_paths = get_file_paths('./notes')
 
     data = process_data(logs_paths, notes_paths)
-
-    ratings_comparison = compare_ratings(data)
+    comparisons = compare_participant_runs(data)
 
     output_runs(data)
-    print_comparisons(ratings_comparison)
+    print_comparisons(comparisons)
 
 
 if __name__ == '__main__':

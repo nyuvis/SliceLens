@@ -1,6 +1,7 @@
 import unittest
 from pathlib import Path
 from copy import deepcopy
+import random
 import analyze as an
 
 
@@ -166,6 +167,83 @@ class TestAnalyze(unittest.TestCase):
         }
     ]
 
+    expected_runs_2 = [
+        {
+            'participant': '01',
+            'ratings': True,
+            'dataset': 'rain',
+            'order': '1st',
+            'num_states_visited': 10,
+            'pct_features_used': 0.3,
+            'num_states_with_notes': 40,
+            'pct_features_with_notes': 0.9,
+            'pct_visited_states_with_notes': 0.33
+        },
+        {
+            'participant': '01',
+            'ratings': False,
+            'dataset': 'bank',
+            'order': '2nd',
+            'num_states_visited': 20,
+            'pct_features_used': 0.4,
+            'num_states_with_notes': 50,
+            'pct_features_with_notes': 0.8,
+            'pct_visited_states_with_notes': 0.33
+        },
+        {
+            'participant': '02',
+            'ratings': True,
+            'dataset': 'bank',
+            'order': '1st',
+            'num_states_visited': 15,
+            'pct_features_used': 0.5,
+            'num_states_with_notes': 30,
+            'pct_features_with_notes': 0.5,
+            'pct_visited_states_with_notes': 0.3
+        },
+        {
+            'participant': '02',
+            'ratings': False,
+            'dataset': 'rain',
+            'order': '2nd',
+            'num_states_visited': 25,
+            'pct_features_used': 0.2,
+            'num_states_with_notes': 20,
+            'pct_features_with_notes': 0.4,
+            'pct_visited_states_with_notes': 0.7
+        },
+        {
+            'participant': '03',
+            'ratings': True,
+            'dataset': 'bank',
+            'order': '2nd',
+            'num_states_visited': 20,
+            'pct_features_used': 0.9,
+            'num_states_with_notes': 90,
+            'pct_features_with_notes': 0.45,
+            'pct_visited_states_with_notes': 0.5
+        },
+        {
+            'participant': '03',
+            'ratings': False,
+            'dataset': 'rain',
+            'order': '1st',
+            'num_states_visited': 30,
+            'pct_features_used': 0.95,
+            'num_states_with_notes': 30,
+            'pct_features_with_notes': 0.35,
+            'pct_visited_states_with_notes': 0.5
+        }
+    ]
+
+    stats = [
+        'num_states_visited',
+        'pct_features_used',
+        'num_states_with_notes',
+        'pct_features_with_notes',
+        'pct_visited_states_with_notes'
+    ]
+
     ''' reading data '''
 
     def test_get_file_paths(self):
@@ -283,6 +361,58 @@ class TestAnalyze(unittest.TestCase):
                     8 / an.COUNTS[dataset]['features']
                 )
                 self.assertEqual(run['pct_visited_states_with_notes'], 0.5)
+
+    def test_nested_groupby(self):
+        # result should not depend on order of list
+        runs = TestAnalyze.expected_runs_2
+        shuffled_runs = runs.copy()
+        random.shuffle(shuffled_runs)
+
+        self.assertEqual(
+            an.nested_groupby(shuffled_runs, 'participant', 'ratings'),
+            {
+                '01': {True: runs[0], False: runs[1]},
+                '02': {True: runs[2], False: runs[3]},
+                '03': {True: runs[4], False: runs[5]}
+            }
+        )
+
+        self.assertEqual(
+            an.nested_groupby(shuffled_runs, 'participant', 'dataset'),
+            {
+                '01': {'rain': runs[0], 'bank': runs[1]},
+                '02': {'rain': runs[3], 'bank': runs[2]},
+                '03': {'rain': runs[5], 'bank': runs[4]}
+            }
+        )
+
+    def test_compare_ratings(self):
+        runs = TestAnalyze.expected_runs_2
+
+        self.assertEqual(
+            an.compare_ratings(runs, TestAnalyze.stats),
+            {
+                'num_states_visited': 3,
+                'pct_features_used': 2,
+                'num_states_with_notes': 1,
+                'pct_features_with_notes': 0,
+                'pct_visited_states_with_notes': 1
+            }
+        )
+
+    def test_compare_participant_runs(self):
+        runs = TestAnalyze.expected_runs_2
+
+        self.assertEqual(
+            an.compare_participant_runs(runs)['ratings'],
+            {
+                'num_states_visited': 3,
+                'pct_features_used': 2,
+                'num_states_with_notes': 1,
+                'pct_features_with_notes': 0,
+                'pct_visited_states_with_notes': 1
+            }
+        )
 
 
 if __name__ == '__main__':

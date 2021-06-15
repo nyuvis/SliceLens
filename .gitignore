@@ -13,3 +13,5 @@
 /public/datasets/test
 
 __pycache__/
+
+user_study/user-study-stats.json
