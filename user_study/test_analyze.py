@@ -386,6 +386,15 @@ class TestAnalyze(unittest.TestCase):
             }
         )
 
+        self.assertEqual(
+            an.nested_groupby(shuffled_runs, 'participant', 'order'),
+            {
+                '01': {'1st': runs[0], '2nd': runs[1]},
+                '02': {'1st': runs[2], '2nd': runs[3]},
+                '03': {'1st': runs[5], '2nd': runs[4]}
+            }
+        )
+
     def test_compare_ratings(self):
         runs = TestAnalyze.expected_runs_2
 
@@ -400,6 +409,20 @@ class TestAnalyze(unittest.TestCase):
             }
         )
 
+    def test_compare_order(self):
+        runs = TestAnalyze.expected_runs_2
+
+        self.assertEqual(
+            an.compare_order(runs, TestAnalyze.stats),
+            {
+                'num_states_visited': 2,
+                'pct_features_used': 1,
+                'num_states_with_notes': 2,
+                'pct_features_with_notes': 1,
+                'pct_visited_states_with_notes': 1
+            }
+        )
+
     def test_compare_participant_runs(self):
         runs = TestAnalyze.expected_runs_2
 
@@ -410,6 +433,17 @@ class TestAnalyze(unittest.TestCase):
                 'pct_features_used': 2,
                 'num_states_with_notes': 1,
                 'pct_features_with_notes': 0,
+                'pct_visited_states_with_notes': 1
+            }
+        )
+
+        self.assertEqual(
+            an.compare_participant_runs(runs)['order'],
+            {
+                'num_states_visited': 2,
+                'pct_features_used': 1,
+                'num_states_with_notes': 2,
+                'pct_features_with_notes': 1,
                 'pct_visited_states_with_notes': 1
             }
         )

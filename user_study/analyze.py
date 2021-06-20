@@ -193,6 +193,26 @@ def compare_ratings(data, stats):
     return counts
 
 
+def compare_order(data, stats):
+    ''' for each stat, count the number of participants who had a higher
+        value during their second task
+    '''
+    groups = nested_groupby(data, 'participant', 'order')
+    # not using a defaultdict dict here because we want there
+    # to be a key even when the count is 0
+    counts = {key: 0 for key in stats}
+
+    for participant, order_to_run in groups.items():
+        run_first = order_to_run['1st']
+        run_second = order_to_run['2nd']
+
+        for stat in stats:
+            if run_second[stat] > run_first[stat]:
+                counts[stat] += 1
+
+    return counts
+
+
 def compare_participant_runs(data):
     ''' compare how each participant did in their two runs '''
 
@@ -208,6 +228,7 @@ def compare_participant_runs(data):
     comparisons = {}
 
     comparisons['ratings'] = compare_ratings(data, stats)
+    comparisons['order'] = compare_order(data, stats)
 
     return comparisons
 
@@ -248,6 +269,13 @@ def print_comparisons(comparisons):
           'during their task with ratings than their task without ratings:\n',
           sep='\n')
     for key, value in comparisons['ratings'].items():
+        print(f'{key} {value}')
+
+    # order
+    print('\nNumber of participants who had a higher value for the statistic',
+          'during their second task than their first task:\n',
+          sep='\n')
+    for key, value in comparisons['order'].items():
         print(f'{key} {value}')
 
 
