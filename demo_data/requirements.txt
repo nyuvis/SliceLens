@@ -103,7 +103,7 @@ jupyter==1.0.0
 jupyter-client==6.1.11
 jupyter-console==6.1.0
 jupyter-core==4.7.1
-jupyterlab==2.1.5
+jupyterlab==2.2.10
 jupyterlab-pygments==0.1.2
 jupyterlab-server @ file:///tmp/build/80754af9/jupyterlab_server_1594164409481/work
 Keras-Preprocessing==1.1.2
