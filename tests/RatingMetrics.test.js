@@ -1,3 +1,6 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
+import sinon from "sinon/pkg/sinon-esm.js";
 import * as d3 from "d3";
 import { entropy, errorCount, errorPercent, errorDeviation, getErrorCountForSquare } from '../src/RatingMetrics.js';
 import * as dt from '../src/DataTransformer.js'
@@ -180,27 +183,29 @@ const dataE = [
   }
 ];
 
-const getData = jest.spyOn(dt, 'getData')
-    .mockImplementation((metadata, sel, dataset) => {
-      const [first, second] = sel;
+test.before.each(() => {
+  sinon.stub(dt, 'getData').callsFake((metadata, sel, dataset) => {
+    const [first, second] = sel;
 
-      if (first === 'a' && second === 'b') {
-        return dataAB;
-      } else if(first === 'a' && second === 'c') {
-        return dataAC;
-      } else if (first === 'a' && second === 'd') {
-        return dataAD;
-      } else if (first === 'e' && second === undefined) {
-        return dataE;
-      } else {
-        throw new Error('getData passed wrong selected features');
-      }
-    });
+    if (first === 'a' && second === 'b') {
+      return dataAB;
+    } else if(first === 'a' && second === 'c') {
+      return dataAC;
+    } else if (first === 'a' && second === 'd') {
+      return dataAD;
+    } else if (first === 'e' && second === undefined) {
+      return dataE;
+    } else {
+      throw new Error('getData passed wrong selected features');
+    }
+  });
+});
+
+test.after.each(() => sinon.restore());
 
 // entropy
 
 test('entropy', () => {
-
   // dataAC entropy
 
   const firstSquareEntropy = -((100 / 400) * Math.log2(100 / 400)) - ((300 / 400) * Math.log2(300 / 400));
@@ -225,14 +230,14 @@ test('entropy', () => {
 
   const actual = entropy(args);
 
-  expect(actual[0].value).toBeCloseTo(expected[0].value, 5);
-  expect(actual[0].feature).toBe(expected[0].feature);
+  assert.is(actual[0].value, expected[0].value);
+  assert.is(actual[0].feature, expected[0].feature);
 
-  expect(actual[1].value).toBeCloseTo(expected[1].value, 5);
-  expect(actual[1].feature).toBe(expected[1].feature);
+  assert.is(actual[1].value, expected[1].value);
+  assert.is(actual[1].feature, expected[1].feature);
 
-  expect(actual[2].value).toBeCloseTo(expected[2].value, 5);
-  expect(actual[2].feature).toBe(expected[2].feature);
+  assert.is(actual[2].value, expected[2].value);
+  assert.is(actual[2].feature, expected[2].feature);
 });
 
 test('entropy one bin', () => {
@@ -247,8 +252,8 @@ test('entropy one bin', () => {
 
   const actual = entropy(args);
 
-  expect(actual[0].value).toBeCloseTo(-expectedValue, 5);
-  expect(actual[0].feature).toStrictEqual('e');
+  assert.equal(actual[0].value, -expectedValue);
+  assert.equal(actual[0].feature, 'e');
 });
 
 // error deviation
@@ -269,14 +274,14 @@ test('error deviation', () => {
 
   const actual = errorDeviation(args);
 
-  expect(actual[0].value).toBeCloseTo(expected[0].value, 5);
-  expect(actual[0].feature).toBe(expected[0].feature);
+  assert.is(actual[0].value, expected[0].value);
+  assert.is(actual[0].feature, expected[0].feature);
 
-  expect(actual[1].value).toBeCloseTo(expected[1].value, 5);
-  expect(actual[1].feature).toBe(expected[1].feature);
+  assert.is(actual[1].value, expected[1].value);
+  assert.is(actual[1].feature, expected[1].feature);
 
-  expect(actual[2].value).toBeCloseTo(expected[2].value, 5);
-  expect(actual[2].feature).toBe(expected[2].feature);
+  assert.is(actual[2].value, expected[2].value);
+  assert.is(actual[2].feature, expected[2].feature);
 });
 
 test('error deviation one bin', () => {
@@ -291,7 +296,7 @@ test('error deviation one bin', () => {
 
   const actual = errorDeviation(args);
 
-  expect(actual).toStrictEqual(expected);
+  assert.equal(actual, expected);
 });
 
 // error count
@@ -310,7 +315,7 @@ test('error count', () => {
     available: ['b', 'c', 'd']
   };
 
-  expect(errorCount(args)).toStrictEqual(expected);
+  assert.equal(errorCount(args), expected);
 });
 
 test('error count one bin', () => {
@@ -325,8 +330,7 @@ test('error count one bin', () => {
 
   const actual = errorCount(args);
 
-  expect(actual).toStrictEqual(expected);
-
+  assert.equal(actual, expected);
 });
 
 // error percent
@@ -345,7 +349,7 @@ test('error percent', () => {
     available: ['b', 'c', 'd']
   };
 
-  expect(errorPercent(args)).toStrictEqual(expected);
+  assert.equal(errorPercent(args), expected);
 });
 
 test('error percent one bin', () => {
@@ -360,7 +364,7 @@ test('error percent one bin', () => {
 
   const actual = errorPercent(args);
 
-  expect(actual).toStrictEqual(expected);
+  assert.equal(actual, expected);
 });
 
 // get error count for square
@@ -368,7 +372,7 @@ test('error percent one bin', () => {
 test('get error count for no predictionResults', () => {
   const square = {};
 
-  expect(getErrorCountForSquare(square)).toBe(0);
+  assert.is(getErrorCountForSquare(square), 0);
 });
 
 test('get error count for no classes', () => {
@@ -376,7 +380,7 @@ test('get error count for no classes', () => {
     predictionResults: new d3.InternMap()
   };
 
-  expect(getErrorCountForSquare(square)).toBe(0);
+  assert.is(getErrorCountForSquare(square), 0);
 });
 
 test('get error count for one class', () => {
@@ -386,7 +390,7 @@ test('get error count for one class', () => {
     ])
   };
 
-  expect(getErrorCountForSquare(square)).toBe(7);
+  assert.is(getErrorCountForSquare(square), 7);
 });
 
 test('get error count for two classes', () => {
@@ -397,7 +401,7 @@ test('get error count for two classes', () => {
     ])
   };
 
-  expect(getErrorCountForSquare(square)).toBe(16);
+  assert.is(getErrorCountForSquare(square), 16);
 });
 
 test('get error count for three classes', () => {
@@ -410,5 +414,7 @@ test('get error count for three classes', () => {
     ])
   };
 
-  expect(getErrorCountForSquare(square)).toBe(26);
+  assert.is(getErrorCountForSquare(square), 26);
 });
+
+test.run();

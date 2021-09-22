@@ -1,7 +1,7 @@
-import {
-  getFeatureRatings,
-  normalize,
-} from '../src/FeatureSuggesterWorker.js';
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
+import sinon from "sinon/pkg/sinon-esm.js";
+import { getFeatureRatings, normalize } from '../src/FeatureRatings.js';
 
 import * as metrics from '../src/RatingMetrics.js';
 
@@ -9,11 +9,11 @@ import * as metrics from '../src/RatingMetrics.js';
 // test that the correct meric is called with the correct available features
 
 test('get feature ratings - none', () => {
-  expect(getFeatureRatings({ criterion: 'none' })).toStrictEqual(new Map());
+  assert.equal(getFeatureRatings({ criterion: 'none' }), new Map());
 });
 
 test('get feature ratings - entropy', () => {
-  const entropy = spyOn(metrics, 'entropy');
+  const entropy = sinon.replace(metrics, "entropy", sinon.fake(metrics.entropy));
 
   getFeatureRatings({
     criterion: 'entropy',
@@ -22,14 +22,12 @@ test('get feature ratings - entropy', () => {
     dataset: [],
   });
 
-  expect(entropy).toBeCalledTimes(1);
-
-  const { available } = entropy.calls.allArgs()[0][0];
-  expect(available).toStrictEqual(['age', 'weight']);
+  assert.is(entropy.callCount, 1);
+  assert.equal(entropy.firstArg.available, ['age', 'weight']);
 });
 
 test('get feature ratings - errorCount', () => {
-  const errorCount = spyOn(metrics, 'errorCount');
+  const errorCount = sinon.replace(metrics, "errorCount", sinon.fake(metrics.errorCount));
 
   getFeatureRatings({
     criterion: 'errorCount',
@@ -38,14 +36,12 @@ test('get feature ratings - errorCount', () => {
     dataset: [],
   });
 
-  expect(errorCount).toBeCalledTimes(1);
-
-  const { available } = errorCount.calls.allArgs()[0][0];
-  expect(available).toStrictEqual(['age', 'height', 'weight']);
+  assert.is(errorCount.callCount, 1);
+  assert.equal(errorCount.firstArg.available, ['age', 'height', 'weight']);
 });
 
 test('get feature ratings - errorPercent', () => {
-  const errorPercent = spyOn(metrics, 'errorPercent');
+  const errorPercent = sinon.replace(metrics, "errorPercent", sinon.fake(metrics.errorPercent));
 
   getFeatureRatings({
     criterion: 'errorPercent',
@@ -54,14 +50,12 @@ test('get feature ratings - errorPercent', () => {
     dataset: [],
   });
 
-  expect(errorPercent).toBeCalledTimes(1);
-
-  const { available } = errorPercent.calls.allArgs()[0][0];
-  expect(available).toStrictEqual(['height']);
+  assert.is(errorPercent.callCount, 1);
+  assert.equal(errorPercent.firstArg.available, ['height']);
 });
 
 test('get feature ratings - errorDeviation', () => {
-  const errorDeviation = spyOn(metrics, 'errorDeviation');
+  const errorDeviation = sinon.replace(metrics, "errorDeviation", sinon.fake(metrics.errorDeviation));
 
   getFeatureRatings({
     criterion: 'errorDeviation',
@@ -70,14 +64,14 @@ test('get feature ratings - errorDeviation', () => {
     dataset: [],
   });
 
-  expect(errorDeviation).toBeCalledTimes(1);
+  assert.is(errorDeviation.callCount, 1);
 });
 
 // normalize
 
 test('normalize no ratings', () => {
   const ratings = [];
-  expect(normalize(ratings)).toStrictEqual(new Map());
+  assert.equal(normalize(ratings), new Map());
 });
 
 test('normalize ratings positive', () => {
@@ -109,7 +103,7 @@ test('normalize ratings positive', () => {
     ['k', 1.0],
   ]);
 
-  expect(normalize(ratings)).toStrictEqual(expected);
+  assert.equal(normalize(ratings), expected);
 });
 
 test('normalize ratings negative', () => {
@@ -141,7 +135,7 @@ test('normalize ratings negative', () => {
     ['k', 0.0],
   ]);
 
-  expect(normalize(ratings)).toStrictEqual(expected);
+  assert.equal(normalize(ratings), expected);
 });
 
 test('normalize ratings negative positive and zero', () => {
@@ -167,7 +161,7 @@ test('normalize ratings negative positive and zero', () => {
     ['h', 1.0],
   ]);
 
-  expect(normalize(ratings)).toStrictEqual(expected);
+  assert.equal(normalize(ratings), expected);
 });
 
 test('normalize one rating', () => {
@@ -179,7 +173,7 @@ test('normalize one rating', () => {
     ['a', 1],
   ]);
 
-  expect(normalize(ratings)).toStrictEqual(expected);
+  assert.equal(normalize(ratings), expected);
 });
 
 test('normalize all identical ratings', () => {
@@ -199,7 +193,7 @@ test('normalize all identical ratings', () => {
     ['e', 1],
   ]);
 
-  expect(normalize(ratings)).toStrictEqual(expected);
+  assert.equal(normalize(ratings), expected);
 });
 
 test('normalize all zero ratings', () => {
@@ -219,7 +213,7 @@ test('normalize all zero ratings', () => {
     ['e', 1],
   ]);
 
-  expect(normalize(ratings)).toStrictEqual(expected);
+  assert.equal(normalize(ratings), expected);
 });
 
 test('normalize one rating', () => {
@@ -231,5 +225,7 @@ test('normalize one rating', () => {
     ['a', 1],
   ]);
 
-  expect(normalize(ratings)).toStrictEqual(expected);
+  assert.equal(normalize(ratings), expected);
 });
+
+test.run();

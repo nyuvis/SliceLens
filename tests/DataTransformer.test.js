@@ -1,3 +1,5 @@
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import * as d3 from "d3";
 import {
   cloneSelectedFeaturesMetadata,
@@ -54,41 +56,59 @@ test('quantitative bin labels', () => {
 
   const actual = getBinLabels(bins, format);
 
-  expect(actual).toStrictEqual(expected);
+  assert.equal(actual, expected);
 });
 
 // is numeric
 
 test('is numeric', () => {
-  expect(isNumeric('0')).toBe(true);
-  expect(isNumeric('1')).toBe(true);
-  expect(isNumeric('0.00')).toBe(true);
-  expect(isNumeric('-1')).toBe(true);
-  expect(isNumeric('-0')).toBe(true);
-  expect(isNumeric('-.5')).toBe(true);
-  expect(isNumeric('-123.123')).toBe(true);
+  assert.ok(isNumeric('0'));
+  assert.ok(isNumeric('1'));
+  assert.ok(isNumeric('0.00'));
+  assert.ok(isNumeric('-1'));
+  assert.ok(isNumeric('-0'));
+  assert.ok(isNumeric('-.5'));
+  assert.ok(isNumeric('-123.123'));
 
-  expect(isNumeric('abc')).toBe(false);
-  expect(isNumeric('.')).toBe(false);
-  expect(isNumeric(' ')).toBe(false);
-  expect(isNumeric('.0.')).toBe(false);
-  expect(isNumeric('10..')).toBe(false);
-  expect(isNumeric('1.0a')).toBe(false);
-  expect(isNumeric('NaN')).toBe(false);
-  expect(isNumeric('')).toBe(false);
-  expect(isNumeric(null)).toBe(false);
-  expect(isNumeric(undefined)).toBe(false);
-  expect(isNumeric(NaN)).toBe(false);
+  assert.not(isNumeric('abc'));
+  assert.not(isNumeric('.'));
+  assert.not(isNumeric(' '));
+  assert.not(isNumeric('.0.'));
+  assert.not(isNumeric('10..'));
+  assert.not(isNumeric('1.0a'));
+  assert.not(isNumeric('NaN'));
+  assert.not(isNumeric(''));
+  assert.not(isNumeric(null));
+  assert.not(isNumeric(undefined));
+  assert.not(isNumeric(NaN));
 })
 
 // equal interval thresholds
 
 test('equal interval thresholds', () => {
-  expect(equalIntervalThresholds([0, 100], 5)).toStrictEqual([20, 40, 60, 80]);
-  expect(equalIntervalThresholds([0, 1], 4)).toStrictEqual([0.25, 0.5, 0.75]);
-  expect(equalIntervalThresholds([100, 400], 3)).toStrictEqual([200, 300]);
-  expect(equalIntervalThresholds([-100, 0], 4)).toStrictEqual([-75, -50, -25]);
-  expect(equalIntervalThresholds([-100, -90], 5)).toStrictEqual([-98, -96, -94, -92]);
+  assert.equal(
+    equalIntervalThresholds([0, 100], 5),
+    [20, 40, 60, 80]
+  );
+  assert.equal(
+    equalIntervalThresholds([0, 1], 4),
+    [0.25, 0.5, 0.75]
+  );
+
+  assert.equal(
+    equalIntervalThresholds([100, 400], 3),
+    [200, 300]
+  );
+
+  assert.equal(
+    equalIntervalThresholds([-100, 0], 4),
+    [-75, -50, -25]
+  );
+
+  assert.equal(
+    equalIntervalThresholds([-100, -90], 5),
+    [-98, -96, -94, -92]
+  );
 });
 
 // clone filters
@@ -129,16 +149,16 @@ test('clone filters', () => {
   const copy = cloneFilters(filters);
 
   // selectedSet should not be copied over
-  expect(copy[0]).not.toHaveProperty('selectedSet');
+  assert.not(copy[0].hasOwnProperty('selectedSet'));
 
   // after removing selectedSet from filters, they should be equal
   delete filters[0].selectedSet;
 
-  expect(copy).toStrictEqual(filters);
+  assert.equal(copy, filters);
 
   // check that mutating filters does not mutate the copy
   filters[0].selected.push('d');
-  expect(copy).not.toStrictEqual(filters);
+  assert.not.equal(copy, filters);
 });
 
 // addSelectedSetToFilters
@@ -208,7 +228,10 @@ test('add selected set to filters', () => {
     },
   ];
 
-  expect(addSelectedSetToFilters(filters)).toStrictEqual(filtersWithSelectedSet);
+  assert.equal(
+    addSelectedSetToFilters(filters),
+    filtersWithSelectedSet
+  );
 });
 
 // get whole dataset features extent
@@ -232,15 +255,21 @@ test('get whole dataset feature extents', () => {
 
   const actual = getWholeDatasetFeatureExtents(md);
 
-  expect(actual).toStrictEqual(expected);
+  assert.equal(actual, expected);
 
   // mutating features should not mutate the feature extents
 
   md.features['abc'].extent[0] = 0;
-  expect(actual['abc'].extent).not.toStrictEqual(md.features['abc'].extent);
+  assert.not.equal(
+    actual['abc'].extent,
+    md.features['abc'].extent
+  );
 
   md.features['jkl'].categories[0] = 'x';
-  expect(actual['jkl'].categories).not.toStrictEqual(md.features['jkl'].categories);
+  assert.not.equal(
+    actual['jkl'].categories,
+    md.features['jkl'].categories
+  );
 });
 
 // clone selected features metadata
@@ -254,30 +283,51 @@ test('clone selected features metadata', () => {
     'favoriteNumber': md.features['favoriteNumber'],
     'job': md.features['job'],
   };
-  expect(actual).toStrictEqual(expected);
+  assert.equal(actual, expected);
 
   // mutating
 
   md.features['age'].extent[0] = 0;
-  expect(md.features['age'].extent).not.toStrictEqual(actual['age'].extent);
+  assert.not.equal(
+    md.features['age'].extent,
+    actual['age'].extent
+  );
 
   md.features['age'].thresholds[0] = 0;
-  expect(md.features['age'].thresholds).not.toStrictEqual(actual['age'].thresholds);
+  assert.not.equal(
+    md.features['age'].thresholds,
+    actual['age'].thresholds
+  );
 
   md.features['age'].values.push('test');
-  expect(md.features['age'].values).not.toStrictEqual(actual['age'].values);
+  assert.not.equal(
+    md.features['age'].values,
+    actual['age'].values
+  );
 
   md.features['age'].values.push('test');
-  expect(md.features['age'].values).not.toStrictEqual(actual['age'].values);
+  assert.not.equal(
+    md.features['age'].values,
+    actual['age'].values
+  );
 
   md.features['job'].values.push('test');
-  expect(md.features['job'].values).not.toStrictEqual(actual['job'].values);
+  assert.not.equal(
+    md.features['job'].values,
+    actual['job'].values
+  );
 
   md.features['job'].categories.push('test');
-  expect(md.features['job'].categories).not.toStrictEqual(actual['job'].categories);
+  assert.not.equal(
+    md.features['job'].categories,
+    actual['job'].categories
+  );
 
   md.features['job'].valueToGroup['test'] = 'test';
-  expect(md.features['job'].valueToGroup).not.toStrictEqual(actual['job'].valueToGroup);
+  assert.not.equal(
+    md.features['job'].valueToGroup,
+    actual['job'].valueToGroup
+  );
 });
 
 // get metadata
@@ -285,19 +335,25 @@ test('clone selected features metadata', () => {
 test('get metadata with predictions', () => {
   const dataWithPred = readCsv('dataset-1.csv');
   const expectedWithPred = readJson('metadata-1.json');
-  expect(getMetadata(dataWithPred)).toStrictEqual(expectedWithPred);
+  assert.equal(
+    getMetadata(dataWithPred),
+    expectedWithPred
+  );
 });
 
 test('get metadata without predictions', () => {
   const dataNoPred = readCsv('dataset-2.csv');
   const expectedNoPred = readJson('metadata-2.json');
-  expect(getMetadata(dataNoPred)).toStrictEqual(expectedNoPred);
+  assert.equal(
+    getMetadata(dataNoPred),
+    expectedNoPred
+  );
 });
 
 // get data
 
 test('get data null', () => {
-  expect(getData(null, [], [])).toBe(null);
+  assert.equal(getData(null, [], []), null);
 });
 
 test('get data without predictions, no selected features', () => {
@@ -311,7 +367,10 @@ test('get data without predictions, no selected features', () => {
   const dataset = readCsv('dataset-2.csv');
   const md = readJson('metadata-2.json');
 
-  expect(getData(md, [], dataset)).toStrictEqual(expected);
+  assert.equal(
+    getData(md, [], dataset),
+    expected
+  );
 });
 
 test('get data with predictions, no selected features', () => {
@@ -331,7 +390,10 @@ test('get data with predictions, no selected features', () => {
   const dataset = readCsv('dataset-1.csv');
   const md = readJson('metadata-1.json');
 
-  expect(getData(md, [], dataset)).toStrictEqual(expected);
+  assert.equal(
+    getData(md, [], dataset),
+    expected
+  );
 });
 
 test('get data without predictions, two selected features', () => {
@@ -420,7 +482,7 @@ test('get data without predictions, two selected features', () => {
         )
     });
 
-  expect(data).toStrictEqual(expected);
+  assert.equal(data, expected);
 });
 
 test('get data with predictions, two selected features', () => {
@@ -551,7 +613,7 @@ test('get data with predictions, two selected features', () => {
         )
     });
 
-  expect(data).toStrictEqual(expected);
+  assert.equal(data, expected);
 });
 
 test('get data with predictions, two selected features, one grouped', () => {
@@ -646,7 +708,7 @@ test('get data with predictions, two selected features, one grouped', () => {
         )
     });
 
-  expect(data).toStrictEqual(expected);
+  assert.equal(data, expected);
 });
 
 test('get data with predictions, one selected feature, empty subset', () => {
@@ -682,14 +744,17 @@ test('get data with predictions, one selected feature, empty subset', () => {
   const data = getData(md, ['height'], dataset)
     .sort((a, b) => d3.ascending(a.splits.get('height'), b.splits.get('height')));
 
-  expect(data).toStrictEqual(expected);
+  assert.equal(data, expected);
 });
 
 // filtered data
 
 test('get filtered dataset - no filters', () => {
   const fullDataset = readCsv('dataset-1.csv');
-  expect(getFilteredDataset(fullDataset, [])).toStrictEqual(fullDataset);
+  assert.equal(
+    getFilteredDataset(fullDataset, []),
+    fullDataset
+  );
 });
 
 test('get filtered dataset - quantitative feature right inclusive', () => {
@@ -708,18 +773,18 @@ test('get filtered dataset - quantitative feature right inclusive', () => {
 
   const result = getFilteredDataset(fullDataset, filters);
 
-  expect(result.categories).toStrictEqual(fullDataset.categories);
-  expect(result.name).toStrictEqual(fullDataset.name);
-  expect(result).not.toStrictEqual(fullDataset);
+  assert.equal(result.categories, fullDataset.categories);
+  assert.equal(result.name, fullDataset.name);
+  assert.not.equal(result, fullDataset);
 
   const ages = result.map(d => d.age);
 
   ages.forEach(d => {
-    expect(d >= 30 && d <= 40).toBe(true);
+    assert.ok(d >= 30 && d <= 40);
   });
 
-  expect(ages).toContain(30);
-  expect(ages).toContain(40);
+  assert.ok(ages.includes(30));
+  assert.ok(ages.includes(40));
 });
 
 test('get filtered dataset - quantitative feature right exclusive', () => {
@@ -737,18 +802,18 @@ test('get filtered dataset - quantitative feature right exclusive', () => {
   ];
   const result = getFilteredDataset(fullDataset, filters);
 
-  expect(result.categories).toStrictEqual(fullDataset.categories);
-  expect(result.name).toStrictEqual(fullDataset.name);
-  expect(result).not.toStrictEqual(fullDataset);
+  assert.equal(result.categories, fullDataset.categories);
+  assert.equal(result.name, fullDataset.name);
+  assert.not.equal(result, fullDataset);
 
   const ages = result.map(d => d.age);
 
   ages.forEach(d => {
-    expect(d >= 30 && d < 40).toBe(true);
+    assert.ok(d >= 30 && d < 40);
   });
 
-  expect(ages).toContain(30);
-  expect(ages).not.toContain(40);
+  assert.ok(ages.includes(30));
+  assert.not(ages.includes(40));
 });
 
 test('get filtered dataset - number categories', () => {
@@ -765,17 +830,17 @@ test('get filtered dataset - number categories', () => {
   ];
   const result = getFilteredDataset(fullDataset, filters);
 
-  expect(result.categories).toStrictEqual(fullDataset.categories);
-  expect(result.name).toStrictEqual(fullDataset.name);
-  expect(result).not.toStrictEqual(fullDataset);
+  assert.equal(result.categories, fullDataset.categories);
+  assert.equal(result.name, fullDataset.name);
+  assert.not.equal(result, fullDataset);
 
   const favoriteNumbers = result.map(d => d.favoriteNumber);
 
   favoriteNumbers.forEach(d => {
-    expect(d === 1 || d === 5).toBe(true);
+    assert.ok(d === 1 || d === 5);
   });
 
-  expect(favoriteNumbers).not.toContain(3);
+  assert.not(favoriteNumbers.includes(3));
 });
 
 test('get filtered dataset - string categories', () => {
@@ -792,19 +857,19 @@ test('get filtered dataset - string categories', () => {
   ];
   const result = getFilteredDataset(fullDataset, filters);
 
-  expect(result.categories).toStrictEqual(fullDataset.categories);
-  expect(result.name).toStrictEqual(fullDataset.name);
-  expect(result).not.toStrictEqual(fullDataset);
+  assert.equal(result.categories, fullDataset.categories);
+  assert.equal(result.name, fullDataset.name);
+  assert.not.equal(result, fullDataset);
 
   const jobs = result.map(d => d.job);
 
   jobs.forEach(d => {
-    expect(d === 'student' || d === 'teacher').toBe(true);
+    assert.ok(d === 'student' || d === 'teacher');
   });
 
-  expect(jobs).not.toContain('zookeeper');
-  expect(jobs).not.toContain('bartender');
-  expect(jobs).not.toContain('accountant');
+  assert.not(jobs.includes('zookeeper'));
+  assert.not(jobs.includes('bartender'));
+  assert.not(jobs.includes('accountant'));
 });
 
 test('get filtered dataset - two filters', () => {
@@ -829,22 +894,22 @@ test('get filtered dataset - two filters', () => {
   ];
   const result = getFilteredDataset(fullDataset, filters);
 
-  expect(result.categories).toStrictEqual(fullDataset.categories);
-  expect(result.name).toStrictEqual(fullDataset.name);
-  expect(result).not.toStrictEqual(fullDataset);
-  expect(result.length > 0).toBe(true);
-  expect(result.length < fullDataset.length).toBe(true);
+  assert.equal(result.categories, fullDataset.categories);
+  assert.equal(result.name, fullDataset.name);
+  assert.not.equal(result, fullDataset);
+  assert.ok(result.length > 0);
+  assert.ok(result.length < fullDataset.length);
 
   result.forEach(d => {
-    expect(d['job'] === 'student' || d['job'] === 'teacher').toBe(true);
-    expect(d['age'] >= 30 && d['age'] <= 40).toBe(true);
+    assert.ok(d['job'] === 'student' || d['job'] === 'teacher');
+    assert.ok(d['age'] >= 30 && d['age'] <= 40);
   });
 });
 
 // getScales
 
 test('getScales no features', () => {
-  expect(getScales([], 100, false)).toStrictEqual([]);
+  assert.equal(getScales([], 100, false), []);
 });
 
 test('getScales one feature', () => {
@@ -855,9 +920,9 @@ test('getScales one feature', () => {
     d3.scaleBand().domain([0, 1, 2]).range([0, 300]),
   ];
 
-  expect(actual[0].domain()).toStrictEqual(expected[0].domain());
-  expect(actual[0].range()).toStrictEqual(expected[0].range());
-  expect(actual[0].bandwidth()).toStrictEqual(expected[0].bandwidth());
+  assert.equal(actual[0].domain(), expected[0].domain());
+  assert.equal(actual[0].range(), expected[0].range());
+  assert.equal(actual[0].bandwidth(), expected[0].bandwidth());
 });
 
 test('getScales two features', () => {
@@ -869,13 +934,13 @@ test('getScales two features', () => {
     d3.scaleBand().domain([0, 1, 2, 3, 4]).range([0, 100]),
   ];
 
-  expect(actual[0].domain()).toStrictEqual(expected[0].domain());
-  expect(actual[0].range()).toStrictEqual(expected[0].range());
-  expect(actual[0].bandwidth()).toStrictEqual(expected[0].bandwidth());
+  assert.equal(actual[0].domain(), expected[0].domain());
+  assert.equal(actual[0].range(), expected[0].range());
+  assert.equal(actual[0].bandwidth(), expected[0].bandwidth());
 
-  expect(actual[1].domain()).toStrictEqual(expected[1].domain());
-  expect(actual[1].range()).toStrictEqual(expected[1].range());
-  expect(actual[1].bandwidth()).toStrictEqual(expected[1].bandwidth());
+  assert.equal(actual[1].domain(), expected[1].domain());
+  assert.equal(actual[1].range(), expected[1].range());
+  assert.equal(actual[1].bandwidth(), expected[1].bandwidth());
 });
 
 test('getScales two features reverse', () => {
@@ -887,13 +952,13 @@ test('getScales two features reverse', () => {
     d3.scaleBand().domain([4, 3, 2, 1, 0]).range([0, 100]),
   ];
 
-  expect(actual[0].domain()).toStrictEqual(expected[0].domain());
-  expect(actual[0].range()).toStrictEqual(expected[0].range());
-  expect(actual[0].bandwidth()).toStrictEqual(expected[0].bandwidth());
+  assert.equal(actual[0].domain(), expected[0].domain());
+  assert.equal(actual[0].range(), expected[0].range());
+  assert.equal(actual[0].bandwidth(), expected[0].bandwidth());
 
-  expect(actual[1].domain()).toStrictEqual(expected[1].domain());
-  expect(actual[1].range()).toStrictEqual(expected[1].range());
-  expect(actual[1].bandwidth()).toStrictEqual(expected[1].bandwidth());
+  assert.equal(actual[1].domain(), expected[1].domain());
+  assert.equal(actual[1].range(), expected[1].range());
+  assert.equal(actual[1].bandwidth(), expected[1].bandwidth());
 });
 
 // getPositionOfSquare
@@ -913,7 +978,7 @@ test('get position of square no features', () => {
     ])
   };
 
-  expect(getPositionOfSquare(d, [], [])).toStrictEqual(0);
+  assert.is(getPositionOfSquare(d, [], []), 0);
 });
 
 test('get position of square one feature', () => {
@@ -939,13 +1004,13 @@ test('get position of square one feature', () => {
   ];
 
   d.splits.set('age', 0);
-  expect(getPositionOfSquare(d, features, scales)).toStrictEqual(0);
+  assert.is(getPositionOfSquare(d, features, scales), 0);
 
   d.splits.set('age', 1);
-  expect(getPositionOfSquare(d, features, scales)).toStrictEqual(100);
+  assert.is(getPositionOfSquare(d, features, scales), 100);
 
   d.splits.set('age', 2);
-  expect(getPositionOfSquare(d, features, scales)).toStrictEqual(200);
+  assert.is(getPositionOfSquare(d, features, scales), 200);
 });
 
 test('get position of square two features', () => {
@@ -975,7 +1040,7 @@ test('get position of square two features', () => {
     for (let job = 0; job < 5; job++) {
       d.splits.set('age', age);
       d.splits.set('job', job);
-      expect(getPositionOfSquare(d, features, scales)).toStrictEqual(age * 100 + job * 20);
+      assert.is(getPositionOfSquare(d, features, scales), age * 100 + job * 20);
     }
   }
 });
@@ -1023,7 +1088,7 @@ test('get tooltip amounts with predictions', () => {
 
   const actual = getTooltipAmounts(true, d, d3.format('.1%'));
 
-  expect(actual).toStrictEqual(expected);
+  assert.equal(actual, expected);
 });
 
 test('get tooltip amounts with predictions sorting', () => {
@@ -1068,7 +1133,7 @@ test('get tooltip amounts with predictions sorting', () => {
 
   const actual = getTooltipAmounts(true, d, d3.format('.1%'));
 
-  expect(actual).toStrictEqual(expected);
+  assert.equal(actual, expected);
 });
 
 test('get tooltip amounts no predictions', () => {
@@ -1105,7 +1170,7 @@ test('get tooltip amounts no predictions', () => {
 
   const actual = getTooltipAmounts(false, d, d3.format('.1%'));
 
-  expect(actual).toStrictEqual(expected);
+  assert.equal(actual, expected);
 });
 
 test('get tooltip amounts no predictions sorting', () => {
@@ -1143,5 +1208,7 @@ test('get tooltip amounts no predictions sorting', () => {
 
   const actual = getTooltipAmounts(false, d, d3.format('.1%'));
 
-  expect(actual).toStrictEqual(expected);
+  assert.equal(actual, expected);
 });
+
+test.run();
