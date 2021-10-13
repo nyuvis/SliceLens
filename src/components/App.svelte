@@ -9,6 +9,7 @@
 
   let showPredictions = false;
   let showSize = true;
+  let visualizationType = 'squares';
   // feature name to feature values for categorical features
   // feature name to extent for quantitative features
   // on the whole dataset
@@ -41,12 +42,12 @@
       <FilteringButton {featureExtents}/>
     {/if}
 
-    <VisualizationSettings bind:showSize bind:showPredictions/>
+    <VisualizationSettings bind:showSize bind:showPredictions bind:visualizationType/>
     <FeatureSelector/>
   </div>
 
   {#if $metadata !== null}
-    <Chart {showPredictions} {showSize} />
+    <Chart {showPredictions} {showSize} {visualizationType}/>
   {/if}
 
   <div id="notes" class="sidebar">

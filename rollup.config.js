@@ -46,7 +46,7 @@ export default {
           JSON.stringify('../datasets/datasets.csv') :
           JSON.stringify('../datasets/datasets-test.csv'),
         FILTERS_ENABLED: false,
-        RATINGS_ENABLED: true,
+        RATINGS_ENABLED: false,
       }
     }),
 

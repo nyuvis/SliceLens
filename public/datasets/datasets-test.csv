@@ -9,6 +9,7 @@ Churn,https://gist.githubusercontent.com/DanielKerrigan/91fd3a46cedcd90e31ed1d7a
 Server Performance,https://gist.githubusercontent.com/DanielKerrigan/60327aa04a880659409268847b27ff5d/raw/d0d3a9b090c2e8eb07327d2380e3415f3aca0212/server-performance.csv
 Bank Marketing,https://gist.githubusercontent.com/DanielKerrigan/13ccc22bb97431ba26ad03c3c74864d1/raw/27894766de9389811c665cb40d66d902f4fd5fe5/bank-marketing.csv
 Australia Rain,https://gist.githubusercontent.com/DanielKerrigan/ddb491dcf5b0abc9f2ad2773cc3839ee/raw/3a059f5b079b3a61ad9e2a9004d0b85c575d7177/weather-aus.csv
+Bike Sharing,https://gist.githubusercontent.com/DanielKerrigan/745854a87e23216e18f10abdfcdce707/raw/454abc8cb96fb1cdeed2763458d96aa83cb86a4a/bike-sharing-with-predictions.csv
 UI Test,/datasets/test/ui-test.csv
 data-10-10000.csv,/datasets/test/data-10-10000.csv
 data-100-10000.csv,/datasets/test/data-100-10000.csv

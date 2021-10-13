@@ -69,6 +69,13 @@ test('is numeric', () => {
   assert.ok(isNumeric('-0'));
   assert.ok(isNumeric('-.5'));
   assert.ok(isNumeric('-123.123'));
+  assert.ok(isNumeric(0));
+  assert.ok(isNumeric(1));
+  assert.ok(isNumeric(0.00));
+  assert.ok(isNumeric(-1));
+  assert.ok(isNumeric(-0));
+  assert.ok(isNumeric(-.5));
+  assert.ok(isNumeric(-123.123));
 
   assert.not(isNumeric('abc'));
   assert.not(isNumeric('.'));
@@ -81,6 +88,10 @@ test('is numeric', () => {
   assert.not(isNumeric(null));
   assert.not(isNumeric(undefined));
   assert.not(isNumeric(NaN));
+  assert.not(isNumeric({}));
+  assert.not(isNumeric(true));
+  assert.not(isNumeric(false));
+  assert.not(isNumeric([]));
 })
 
 // equal interval thresholds

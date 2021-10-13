@@ -1,5 +1,12 @@
 <script>
   import Square from "./Square.svelte";
+  import SquareReg from "./SquareReg.svelte";
+  import NormalDensityEstimation from "./NormalDensityEstimation.svelte";
+  import RadialDensityEstimation from "./RadialDensityEstimation.svelte";
+  import RadialHistogram from "./RadialHistogram.svelte";
+  import NormalHistorgram from "./NormalHistogram.svelte";
+  import DivergingHistogram from "./DivergingHistogram.svelte";
+  import Pie from "./Pie.svelte";
   import Grid from "./Grid.svelte";
   import XAxis from "./XAxis.svelte";
   import YAxis from "./YAxis.svelte";
@@ -13,6 +20,7 @@
   export let showPredictions;
   export let showSize;
   export let color;
+  export let visualizationType;
 
   let div;
 
@@ -167,19 +175,100 @@
 
       <g class="squares">
         {#each $data as d}
-          <Square
-            x={getPositionOfSquare(d, xFeatures, xScales)}
-            y={getPositionOfSquare(d, yFeatures, yScales)}
-            sideLength={showSize ? sideLength(d.size) : maxSideLength}
-            {color}
-            {showPredictions}
-            {d}
-            padding={showSize
-              ? padding + (maxSideLength - sideLength(d.size)) / 2
-              : padding}
-            on:mousemove={event => handleMousemove(event, d)}
-            on:mouseleave={handleMouseleave}
-          />
+          {#if $metadata.isRegression}
+            {#if visualizationType === 'radial KDE'}
+              <RadialDensityEstimation
+                x={getPositionOfSquare(d, xFeatures, xScales)}
+                y={getPositionOfSquare(d, yFeatures, yScales)}
+                yMax={d3.max($data, b => d3.max(b.labelDensities, a => a.density))}
+                sideLength={maxSideLength}
+                {showPredictions}
+                {d}
+                padding={padding}
+              />
+            {:else if visualizationType === 'normal KDE'}
+              <NormalDensityEstimation
+                x={getPositionOfSquare(d, xFeatures, xScales)}
+                y={getPositionOfSquare(d, yFeatures, yScales)}
+                yMax={d3.max($data, b => d3.max(b.labelDensities, a => a.density))}
+                sideLength={maxSideLength}
+                {showPredictions}
+                {d}
+                padding={padding}
+              />
+            {:else if visualizationType === 'radial histogram'}
+              <RadialHistogram
+                x={getPositionOfSquare(d, xFeatures, xScales)}
+                y={getPositionOfSquare(d, yFeatures, yScales)}
+                yMax={d3.max($data, b => d3.max(b.labelBins, a => a.count))}
+                sideLength={maxSideLength}
+                {showPredictions}
+                {d}
+                padding={padding}
+              />
+            {:else if visualizationType === 'normal histogram'}
+              {#if !showPredictions}
+                <NormalHistorgram
+                  x={getPositionOfSquare(d, xFeatures, xScales)}
+                  y={getPositionOfSquare(d, yFeatures, yScales)}
+                  yMax={d3.max($data, b => d3.max(b.labelBins, a => a.count))}
+                  sideLength={maxSideLength}
+                  {d}
+                  padding={padding}
+                />
+              {:else}
+                <DivergingHistogram
+                  x={getPositionOfSquare(d, xFeatures, xScales)}
+                  y={getPositionOfSquare(d, yFeatures, yScales)}
+                  yMax={d3.max($data, b => d3.max(b.deltaBins, a => a.count))}
+                  sideLength={maxSideLength}
+                  {d}
+                  padding={padding}
+                />
+              {/if}
+            {:else if visualizationType === 'squares reg'}
+              <SquareReg
+                x={getPositionOfSquare(d, xFeatures, xScales)}
+                y={getPositionOfSquare(d, yFeatures, yScales)}
+                sideLength={showSize ? sideLength(d.size) : maxSideLength}
+                {showPredictions}
+                {d}
+                padding={showSize
+                  ? padding + (maxSideLength - sideLength(d.size)) / 2
+                  : padding}
+              />
+            {/if}
+          {:else}
+            {#if visualizationType === 'squares'}
+              <Square
+                x={getPositionOfSquare(d, xFeatures, xScales)}
+                y={getPositionOfSquare(d, yFeatures, yScales)}
+                sideLength={showSize ? sideLength(d.size) : maxSideLength}
+                {color}
+                {showPredictions}
+                {d}
+                padding={showSize
+                  ? padding + (maxSideLength - sideLength(d.size)) / 2
+                  : padding}
+                on:mousemove={event => handleMousemove(event, d)}
+                on:mouseleave={handleMouseleave}
+              />
+            {:else if visualizationType === 'pie'}
+              <Pie
+                x={getPositionOfSquare(d, xFeatures, xScales)}
+                y={getPositionOfSquare(d, yFeatures, yScales)}
+                sideLength={showSize ? sideLength(d.size) : maxSideLength}
+                {color}
+                {showPredictions}
+                {d}
+                padding={showSize
+                  ? padding + (maxSideLength - sideLength(d.size)) / 2
+                  : padding}
+                on:mousemove={event => handleMousemove(event, d)}
+                on:mouseleave={handleMouseleave}
+              />
+            {/if}
+          {/if}
         {/each}
       </g>
     </g>

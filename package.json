@@ -31,6 +31,7 @@
     "esm": "3.2.25",
     "marked": "^2.0.0",
     "rollup-plugin-web-worker-loader": "^1.6.0",
+    "simple-statistics": "^7.7.0",
     "sinon": "^11.1.2",
     "sirv-cli": "^1.0.0"
   }

@@ -1,4 +1,5 @@
 import * as d3 from "d3";
+import {kernelDensityEstimation} from 'simple-statistics'
 
 export {
   cloneSelectedFeaturesMetadata,
@@ -101,7 +102,7 @@ function getWholeDatasetFeatureExtents(md) {
 }
 
 /* given the bins and a format function for a quantitative feature
-   return the ranges the bins as strings, which are used as labels
+   return the ranges of the bins as strings, which are used as labels
    in the visualiztion */
 function getBinLabels(bins, format) {
   const n = bins.length;
@@ -155,10 +156,17 @@ function getMetadata(dataset) {
 
   const cols = dataset.columns;
 
-  const labelValues = Array.from(new Set(dataset.map(d => d['label']))).sort();
+  const allLabels = dataset.map(d => d['label']);
+  const labelValues = Array.from(new Set(allLabels)).sort(d3.ascending);
 
   const featureNames = cols.filter(d => d !== 'label' && d !== 'prediction');
   const hasPredictions = cols.includes('prediction');
+
+  /*
+    If the dataset has more than 10 unique labels and those labels are all
+    numbers, then it is a regression dataset. Otherwise, it is classification.
+  */
+  const isRegression = labelValues.length > 10 && labelValues.every(isNumeric);
 
   /*
   categorical features:
@@ -222,13 +230,28 @@ function getMetadata(dataset) {
     return acc;
   }, {});
 
-  return {
+  const md = {
+    isRegression: isRegression,
     features: features,
     featureNames: featureNames,
-    labelValues: labelValues,
     hasPredictions: hasPredictions,
     size: dataset.length,
+  };
+
+  if (isRegression) {
+    md.labelExtent = d3.extent(allLabels);
+    if (hasPredictions) {
+      const allPredictions = dataset.map(d => d['prediction']);
+      md.predictionExtent = d3.extent(allPredictions);
+      const deltas = d3.zip(allLabels, allPredictions).map(([label, pred]) => label - pred);
+      const maxDiff = d3.max(deltas, d => Math.abs(d));
+      md.deltaExtent = [-maxDiff, 0, maxDiff];
+    }
+  } else {
+    md.labelValues = labelValues;
   }
+
+  return md;
 }
 
 function getData(metadata, selectedFeatures, dataset) {
@@ -236,6 +259,109 @@ function getData(metadata, selectedFeatures, dataset) {
     return null;
   }
 
+  if (metadata.isRegression) {
+    return getDataRegression(metadata, selectedFeatures, dataset);
+  } else {
+    return getDataClassification(metadata, selectedFeatures, dataset);
+  }
+}
+
+function getDataRegression(metadata, selectedFeatures, dataset) {
+  // g is an array of all of the instances belonging to the same subset
+  function reducer(g) {
+    const node = {
+      size: g.length,
+      labels: g.map(d => d.label)
+    };
+
+    // const count = 100;
+    // const thresholds = d3.ticks(...d3.nice(...metadata.targetExtent, count), count);
+
+    // const labelPDF = kernelDensityEstimation(node.labels);
+    // node.labelDensities = thresholds.map(t => ({ target: t, density: labelPDF(t) }));
+
+    const xScaleLabel = d3.scaleLinear()
+        .domain(metadata.labelExtent).nice();
+
+    const binLabel = d3.bin()
+        .domain(xScaleLabel.domain())
+        .thresholds(xScaleLabel.ticks(20));
+
+    node.labelBins = binLabel(node.labels)
+        .map(b => ({ x0: b.x0, x1: b.x1, count: b.length }))
+        .filter(b => b.x0 !== b.x1);
+
+    node.labelSlices = new Map(node.labelBins.map((b, i) => [i, b.count]));
+
+    node.labelThresholds = binLabel.thresholds()();
+
+    if (metadata.hasPredictions) {
+      node.predictions = g.map(d => d.prediction);
+      node.deltas = g.map(d => d.prediction - d.label);
+
+      // const targetPDF = kernelDensityEstimation(node.predictions);
+      // node.targetDensities = thresholds.map(t => ({ value: t, density: targetPDF(t) }));
+
+      // node.predictionBins = bin(node.predictions)
+      //     .map(b => ({ x0: b.x0, x1: b.x1, count: b.length}))
+      //     .filter(b => b.x0 !== b.x1);
+
+      const xScaleDelta = d3.scaleDiverging()
+          .domain(metadata.deltaExtent).nice();
+
+      const binDelta = d3.bin()
+        .domain([xScaleDelta.domain()[0], xScaleDelta.domain()[2]])
+        .thresholds(xScaleDelta.ticks(20));
+
+      node.deltaBins = binDelta(node.deltas)
+        .map(b => ({ x0: b.x0, x1: b.x1, count: b.length, avg: d3.mean(b)}))
+        .filter(b => b.x0 !== b.x1);
+
+      node.deltaSlices = new Map(node.deltaBins.map((b, i) => [i, b.count]));
+
+      node.deltaThresholds = binDelta.thresholds()();
+    }
+
+    return node;
+  }
+
+  /* return the key that is used to group an instance
+     Ex: 0-2-1 means the first bin for the first selected feature,
+     the third bin for the second selected feature, and the second
+     bin for the third selected feature. */
+  function key(d) {
+    return selectedFeatures
+      .map(featureName => {
+        const feat = metadata.features[featureName];
+        if (feat.type === "Q") {
+          /* d3.bisect(array, x): "returns an insertion point which comes after
+            (to the right of) any existing entries of x in array"
+
+            if the instance's value for this feature is less than the first
+            threshold, then 0 is returned. if it's less than the second threshold,
+            then one is returned, etc.
+          */
+          return d3.bisect(feat.thresholds, d[featureName]);
+        } else if (feat.type === "C") {
+          /* values contains the names of the groups/bins */
+          return feat.values.indexOf(feat.valueToGroup[d[featureName]]);
+        }
+      })
+      .join(",");
+  }
+
+  return d3.rollups(dataset, reducer, key)
+    .map(([key, value]) => {
+    // splits is a map from the name of the selected feature
+    // to the subset's bin index
+    // this is done after since reducer doesn't have access to group's key
+    const splits = new Map(d3.zip(selectedFeatures, key.split(',').map(d => +d)));
+    value['splits'] = splits;
+    return value;
+  });
+}
+
+function getDataClassification(metadata, selectedFeatures, dataset) {
   // g is an array of all of the instances belonging to the same subset
   function reducer(g) {
     // map from ground truth label to number of instances with that label
@@ -310,9 +436,9 @@ function getData(metadata, selectedFeatures, dataset) {
 }
 
 /* https://stackoverflow.com/questions/175739/built-in-way-in-javascript-to-check-if-a-string-is-a-valid-number
-   return true if the passed in string is a number and false otherwise */
-function isNumeric(str) {
-  return !isNaN(str) && !isNaN(parseFloat(str));
+   return true if the passed value is a number and false otherwise */
+function isNumeric(x) {
+  return !isNaN(x) && !isNaN(parseFloat(x));
 }
 
 function getFilteredDataset(dataset, filters) {
