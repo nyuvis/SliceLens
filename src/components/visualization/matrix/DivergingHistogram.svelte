@@ -2,7 +2,7 @@
   import * as d3 from 'd3';
   import { metadata } from "../../../stores.js";
 
-  // export let color;
+  export let color;
   export let sideLength;
   export let padding;
   export let x;
@@ -22,14 +22,6 @@
   $: yScale = d3.scaleLinear()
       .domain([0, yMax]).nice()
       .range([visHeight, 0]);
-
-  // $: color = d3.scaleThreshold()
-  //     .domain(d.deltaThresholds20)
-  //     .range(d3.quantize(d3.interpolatePuOr, d.deltaThresholds20.length + 1));
-
-  $: color = d3.scaleDiverging()
-      .domain($metadata.deltaExtent)
-      .interpolator(d3.interpolatePuOr);
 
   const yFormat = d3.format("~s");
   $: numXTicks = visWidth / 80;

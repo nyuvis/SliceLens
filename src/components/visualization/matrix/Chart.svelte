@@ -1,6 +1,7 @@
 <script>
   import { metadata } from '../../../stores.js';
-  import ColorLegend from './ColorLegend.svelte';
+  import CategoricalColorLegend from './CategoricalColorLegend.svelte';
+  import ThresholdColorLegend from './ThresholdColorLegend.svelte';
   import Matrix from './Matrix.svelte';
   import * as d3 from 'd3';
 
@@ -8,13 +9,27 @@
   export let showSize;
   export let visualizationType;
 
-  $: color = d3.scaleOrdinal()
+  let color = null;
+
+  $: if (!$metadata.isRegression) {
+    color = d3.scaleOrdinal()
       .domain($metadata.labelValues ?? [])
-      .range(d3.schemeCategory10);
+      .range(d3.schemeCategory10)
+  } else {
+    const threholds = (showPredictions ? $metadata.deltaThresholds : $metadata.labelThresholds) ?? [];
+    const interpolator = showPredictions ? d3.interpolatePuOr : d3.interpolateBlues;
+    color = d3.scaleThreshold()
+      .domain(threholds)
+      .range(d3.quantize(interpolator, threholds.length + 1));
+  }
 </script>
 
 <div id="chart-container">
-  <ColorLegend {showPredictions} {color}/>
+  {#if !$metadata.isRegression}
+    <CategoricalColorLegend {showPredictions} {color}/>
+  {:else}
+    <ThresholdColorLegend {showPredictions} show={visualizationType !== 'normal histogram' || showPredictions} {color}/>
+  {/if}
   <Matrix {showPredictions} {showSize} {color} {visualizationType}/>
 </div>
 

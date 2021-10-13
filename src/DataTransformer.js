@@ -239,13 +239,34 @@ function getMetadata(dataset) {
   };
 
   if (isRegression) {
+
     md.labelExtent = d3.extent(allLabels);
+    const xScaleLabel = d3.scaleLinear()
+        .domain(md.labelExtent).nice();
+
+    const binLabel = d3.bin()
+        .domain(xScaleLabel.domain())
+        .thresholds(xScaleLabel.ticks(20));
+
+    md.labelDomain = binLabel.domain()();
+    md.labelThresholds = binLabel.thresholds()();
+
     if (hasPredictions) {
       const allPredictions = dataset.map(d => d['prediction']);
       md.predictionExtent = d3.extent(allPredictions);
       const deltas = d3.zip(allLabels, allPredictions).map(([label, pred]) => label - pred);
       const maxDiff = d3.max(deltas, d => Math.abs(d));
       md.deltaExtent = [-maxDiff, 0, maxDiff];
+
+      const xScaleDelta = d3.scaleDiverging()
+          .domain(md.deltaExtent).nice();
+
+      const binDelta = d3.bin()
+          .domain([xScaleDelta.domain()[0], xScaleDelta.domain()[2]])
+          .thresholds(xScaleDelta.ticks(20));
+
+      md.deltaDomain = binDelta.domain()();
+      md.deltaThresholds = binDelta.thresholds()();
     }
   } else {
     md.labelValues = labelValues;
@@ -280,20 +301,15 @@ function getDataRegression(metadata, selectedFeatures, dataset) {
     // const labelPDF = kernelDensityEstimation(node.labels);
     // node.labelDensities = thresholds.map(t => ({ target: t, density: labelPDF(t) }));
 
-    const xScaleLabel = d3.scaleLinear()
-        .domain(metadata.labelExtent).nice();
-
     const binLabel = d3.bin()
-        .domain(xScaleLabel.domain())
-        .thresholds(xScaleLabel.ticks(20));
+        .domain(metadata.labelDomain)
+        .thresholds(metadata.labelThresholds);
 
     node.labelBins = binLabel(node.labels)
-        .map(b => ({ x0: b.x0, x1: b.x1, count: b.length }))
+        .map(b => ({ x0: b.x0, x1: b.x1, count: b.length, mid: d3.mean([b.x0, b.x1]) }))
         .filter(b => b.x0 !== b.x1);
 
-    node.labelSlices = new Map(node.labelBins.map((b, i) => [i, b.count]));
-
-    node.labelThresholds = binLabel.thresholds()();
+    node.labelSlices = new Map(node.labelBins.map((b, i) => [i, { count: b.count, mid: b.mid }]));
 
     if (metadata.hasPredictions) {
       node.predictions = g.map(d => d.prediction);
@@ -305,19 +321,15 @@ function getDataRegression(metadata, selectedFeatures, dataset) {
       // node.predictionBins = bin(node.predictions)
       //     .map(b => ({ x0: b.x0, x1: b.x1, count: b.length}))
       //     .filter(b => b.x0 !== b.x1);
-
-      const xScaleDelta = d3.scaleDiverging()
-          .domain(metadata.deltaExtent).nice();
-
       const binDelta = d3.bin()
-        .domain([xScaleDelta.domain()[0], xScaleDelta.domain()[2]])
-        .thresholds(xScaleDelta.ticks(20));
+        .domain(metadata.deltaDomain)
+        .thresholds(metadata.deltaThresholds);
 
       node.deltaBins = binDelta(node.deltas)
-        .map(b => ({ x0: b.x0, x1: b.x1, count: b.length, avg: d3.mean(b)}))
+        .map(b => ({ x0: b.x0, x1: b.x1, count: b.length, mid: d3.mean([b.x0, b.x1])}))
         .filter(b => b.x0 !== b.x1);
 
-      node.deltaSlices = new Map(node.deltaBins.map((b, i) => [i, b.count]));
+      node.deltaSlices = new Map(node.deltaBins.map((b, i) => [i, { count: b.count, mid: b.mid }]));
 
       node.deltaThresholds = binDelta.thresholds()();
     }

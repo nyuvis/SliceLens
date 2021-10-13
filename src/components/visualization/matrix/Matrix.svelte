@@ -156,7 +156,7 @@
       <line x1="0" y1="0" x2="0" y2="3" style="stroke:white; stroke-width:3" />
     </pattern>
 
-    {#if showSize}
+    {#if showSize && (visualizationType === 'squares' || visualizationType === 'squares reg')}
       <g class="size-legend" transform="translate({leftSpace + padding},{height - margin.bottom})">
         <SizeLegend scale={sideLength}/>
       </g>
@@ -223,6 +223,7 @@
                   yMax={d3.max($data, b => d3.max(b.deltaBins, a => a.count))}
                   sideLength={maxSideLength}
                   {d}
+                  {color}
                   padding={padding}
                 />
               {/if}
@@ -233,6 +234,7 @@
                 sideLength={showSize ? sideLength(d.size) : maxSideLength}
                 {showPredictions}
                 {d}
+                {color}
                 padding={showSize
                   ? padding + (maxSideLength - sideLength(d.size)) / 2
                   : padding}
