@@ -219,6 +219,44 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       feature: $metadata.features[feature]
     });
   }
+
+  // feature sets
+
+  let featureSets = [];
+  let featureSetIndex = 0;
+
+  function getFeatureSets() {
+    featureSets = d3.shuffle(getPermutations(features, 2)).slice(0, 10);
+    nextSet(0);
+  }
+
+  function nextSet(index) {
+    if (index < 0 || index >= featureSets.length) {
+      return;
+    }
+
+    featureSetIndex = index;
+    $selectedFeatures = featureSets[featureSetIndex];
+  }
+
+  function getPermutations(array, size) {
+    function p(t, i) {
+        if (t.length === size) {
+            result.push(t);
+            return;
+        }
+        if (i + 1 > array.length) {
+            return;
+        }
+        p(t.concat(array[i]), i + 1);
+        p(t, i + 1);
+    }
+
+    var result = [];
+    p([], 0);
+    return result;
+  }
+
 </script>
 
 {#if showFeatureEditor}
@@ -404,6 +442,55 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   {/each}
 </div>
 
+{#if criterion.value !== 'none'}
+  <div class="sets">
+    <div class="label help-row">
+      <p class="bold">Feature Sets</p>
+      <QuestionBox>
+        SliceLens can use your selected metric to recommend complete sets of features to explore.
+      </QuestionBox>
+    </div>
+    <div>
+      <button on:click={getFeatureSets}>Find best sets</button>
+      {#if featureSets.length !== 0}
+        <div class="arrows-row">
+          <svg xmlns="http://www.w3.org/2000/svg"
+            class="icon icon-tabler icon-tabler-arrow-left"
+            width="44" height="44" viewBox="0 0 24 24"
+            stroke-width="3"
+            stroke="currentColor"
+            fill="none"
+            stroke-linecap="round" stroke-linejoin="round"
+            on:click={() => nextSet(featureSetIndex - 1)}
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <line x1="5" y1="12" x2="11" y2="18" />
+            <line x1="5" y1="12" x2="11" y2="6" />
+          </svg>
+
+          <p>{featureSetIndex + 1}/{featureSets.length}</p>
+
+          <svg xmlns="http://www.w3.org/2000/svg"
+            class="icon icon-tabler icon-tabler-arrow-right"
+            width="44" height="44" viewBox="0 0 24 24"
+            stroke-width="3"
+            stroke="currentColor"
+            fill="none"
+            stroke-linecap="round" stroke-linejoin="round"
+            on:click={() => nextSet(featureSetIndex + 1)}
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <line x1="13" y1="18" x2="19" y2="12" />
+            <line x1="13" y1="6" x2="19" y2="12" />
+          </svg>
+        </div>
+      {/if}
+    </div>
+  </div>
+{/if}
+
 <style>
   .feature-box {
     background-color: white;
@@ -434,14 +521,35 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     visibility: hidden;
   }
 
+  .icon-tabler-arrow-left:hover,
+  .icon-tabler-arrow-right:hover,
   .icon-tabler-sort-ascending-letters:hover,
   .icon-tabler-sort-ascending-numbers:hover,
   .icon-tabler-sort-descending-numbers:hover {
     color: var(--blue);
   }
 
+  .arrows-row {
+    display: flex;
+    align-items: center;
+  }
+
+  .arrows-row > p {
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    /* https://stackoverflow.com/questions/6900124/how-to-make-certain-text-not-selectable-with-css */
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+/Edge */
+    user-select: none; /* Standard */
+  }
+
   .icon-tabler + .icon-tabler {
     margin-left: 0.25em;
+  }
+
+  .icon-tabler {
+    cursor: pointer;
   }
 
   /* dragging */

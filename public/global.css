@@ -122,3 +122,11 @@ https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-conta
   -moz-hyphens: auto;
   hyphens: auto;
 }
+
+/* https://developer.mozilla.org/en-US/docs/Web/CSS/user-select */
+.unselectable {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
