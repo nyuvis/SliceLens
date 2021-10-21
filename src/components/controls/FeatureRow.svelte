@@ -12,6 +12,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   export let feature;
   export let canAddFeatures;
   export let isSelected;
+  export let highlight = false;
   export let relevance = 0;
   export let draggingOver = false;
 </script>
@@ -65,7 +66,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     {#if relevance >= 0 && canAddFeatures}
       <div class="bar" style="width: {relevance * 100}%;"></div>
     {/if}
-    <p class="cutoff feature-name">{feature}</p>
+    <p class="cutoff feature-name" class:highlight>{feature}</p>
   </div>
 
   <!-- edit icon -->
@@ -156,5 +157,10 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   .selected:hover .icon-tabler-edit:hover,
   .all:hover .icon-tabler-edit:hover {
     color: var(--blue);
+  }
+
+  .highlight {
+    /* color: red;*/
+    font-style: italic;
   }
 </style>

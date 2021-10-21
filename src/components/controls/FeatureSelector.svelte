@@ -6,6 +6,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
 <script>
   import FeatureSuggesterWorker from 'web-worker:../../FeatureSuggesterWorker';
+  import SubsetSuggesterWorker from 'web-worker:../../SubsetSuggesterWorker';
   import QuestionBox from '../QuestionBox.svelte';
   import FeatureRow from './FeatureRow.svelte';
   import FeatureEditor from './FeatureEditor.svelte';
@@ -57,6 +58,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       event: 'criterion-change',
       criterion: criterion.value,
     });
+    changeSinceCalculating = true;
   }
 
   const maxFeatures = 4;
@@ -70,9 +72,9 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   let featureToRelevance = new Map();
 
-  const worker = new FeatureSuggesterWorker();
+  const featureSuggeterWorker = new FeatureSuggesterWorker();
 
-  worker.onmessage = e => {
+  featureSuggeterWorker.onmessage = e => {
     featureToRelevance = e.data;
     workersInProgress--;
     logs.add({event: 'worker-done'});
@@ -82,7 +84,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     // we don't want to have an explicit dependency on workersInProgress, otherwise
     // this will re-run every time workersInProgress is decremented above
     incrementWorkersInProgress();
-    worker.postMessage({
+    featureSuggeterWorker.postMessage({
       criterion: criterion.value,
       selected: $selectedFeatures,
       metadata: $metadata,
@@ -92,6 +94,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   }
 
   // drag and drop
+
+  let manuallyAddedFeatures = new Set();
 
   let dragInProgress = false;
   let draggingOverFeature = null;
@@ -116,6 +120,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         choices: features.length - $selectedFeatures.length,
         workersInProgress,
       });
+
+      manuallyAddedFeatures.add(item.id);
     } else {
       logs.add({
         event: 'feature-reorder',
@@ -154,6 +160,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       });
 
       $selectedFeatures = [...$selectedFeatures, feature];
+      manuallyAddedFeatures.add(feature);
     }
   }
 
@@ -165,6 +172,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     });
 
     $selectedFeatures = $selectedFeatures.filter(d => d !== feature);
+    manuallyAddedFeatures.delete(feature);
   }
 
   // sorting features
@@ -212,6 +220,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   function onFeatureEdit(feature) {
     featureToEdit = feature;
     showFeatureEditor = true;
+    changeSinceCalculating = true;
 
     logs.add({
       event: 'feature-edit',
@@ -222,12 +231,26 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   // feature sets
 
+  const subsetSuggeterWorker = new SubsetSuggesterWorker();
+
   let featureSets = [];
   let featureSetIndex = 0;
+  let changeSinceCalculating = false;
+
+  subsetSuggeterWorker.onmessage = e => {
+    manuallyAddedFeatures = new Set($selectedFeatures);
+    featureSets = e.data;
+    nextSet(0);
+  }
 
   function getFeatureSets() {
-    featureSets = d3.shuffle(getPermutations(features, 2)).slice(0, 10);
-    nextSet(0);
+    changeSinceCalculating = false;
+    subsetSuggeterWorker.postMessage({
+      criterion: criterion.value,
+      selected: $selectedFeatures,
+      metadata: $metadata,
+      dataset: $dataset
+    });
   }
 
   function nextSet(index) {
@@ -237,24 +260,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
     featureSetIndex = index;
     $selectedFeatures = featureSets[featureSetIndex];
-  }
-
-  function getPermutations(array, size) {
-    function p(t, i) {
-        if (t.length === size) {
-            result.push(t);
-            return;
-        }
-        if (i + 1 > array.length) {
-            return;
-        }
-        p(t.concat(array[i]), i + 1);
-        p(t, i + 1);
-    }
-
-    var result = [];
-    p([], 0);
-    return result;
   }
 
 </script>
@@ -311,6 +316,63 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   </div>
 {/if}
 
+{#if criterion.value !== 'none'}
+  <div class="sets">
+    <div class="label help-row">
+      <p class="bold">Feature Sets</p>
+      <QuestionBox>
+        SliceLens can use your selected metric to recommend complete sets of features to explore.
+      </QuestionBox>
+    </div>
+    <div>
+      <button on:click={getFeatureSets}>Find best sets</button>
+      {#if featureSets.length !== 0}
+        {#if changeSinceCalculating}
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-alert-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <circle cx="12" cy="12" r="9" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+        {/if}
+        <div class="arrows-row">
+          <svg xmlns="http://www.w3.org/2000/svg"
+            class="icon icon-tabler icon-tabler-arrow-left"
+            width="44" height="44" viewBox="0 0 24 24"
+            stroke-width="3"
+            stroke="currentColor"
+            fill="none"
+            stroke-linecap="round" stroke-linejoin="round"
+            on:click={() => nextSet(featureSetIndex - 1)}
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <line x1="5" y1="12" x2="11" y2="18" />
+            <line x1="5" y1="12" x2="11" y2="6" />
+          </svg>
+
+          <p>{featureSetIndex + 1}/{featureSets.length}</p>
+
+          <svg xmlns="http://www.w3.org/2000/svg"
+            class="icon icon-tabler icon-tabler-arrow-right"
+            width="44" height="44" viewBox="0 0 24 24"
+            stroke-width="3"
+            stroke="currentColor"
+            fill="none"
+            stroke-linecap="round" stroke-linejoin="round"
+            on:click={() => nextSet(featureSetIndex + 1)}
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <line x1="13" y1="18" x2="19" y2="12" />
+            <line x1="13" y1="6" x2="19" y2="12" />
+          </svg>
+        </div>
+      {/if}
+    </div>
+  </div>
+{/if}
+
 <div class="label help-row">
   <p class="bold">Selected</p>
   <QuestionBox>
@@ -327,6 +389,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       {feature}
       {canAddFeatures}
       isSelected={true}
+      highlight={!manuallyAddedFeatures.has(feature)}
       draggingOver={draggingOverFeature === feature}
       on:drop={e => dropHandler(e, i)}
       on:dragstart={startHandler}
@@ -441,55 +504,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     </div>
   {/each}
 </div>
-
-{#if criterion.value !== 'none'}
-  <div class="sets">
-    <div class="label help-row">
-      <p class="bold">Feature Sets</p>
-      <QuestionBox>
-        SliceLens can use your selected metric to recommend complete sets of features to explore.
-      </QuestionBox>
-    </div>
-    <div>
-      <button on:click={getFeatureSets}>Find best sets</button>
-      {#if featureSets.length !== 0}
-        <div class="arrows-row">
-          <svg xmlns="http://www.w3.org/2000/svg"
-            class="icon icon-tabler icon-tabler-arrow-left"
-            width="44" height="44" viewBox="0 0 24 24"
-            stroke-width="3"
-            stroke="currentColor"
-            fill="none"
-            stroke-linecap="round" stroke-linejoin="round"
-            on:click={() => nextSet(featureSetIndex - 1)}
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <line x1="5" y1="12" x2="19" y2="12" />
-            <line x1="5" y1="12" x2="11" y2="18" />
-            <line x1="5" y1="12" x2="11" y2="6" />
-          </svg>
-
-          <p>{featureSetIndex + 1}/{featureSets.length}</p>
-
-          <svg xmlns="http://www.w3.org/2000/svg"
-            class="icon icon-tabler icon-tabler-arrow-right"
-            width="44" height="44" viewBox="0 0 24 24"
-            stroke-width="3"
-            stroke="currentColor"
-            fill="none"
-            stroke-linecap="round" stroke-linejoin="round"
-            on:click={() => nextSet(featureSetIndex + 1)}
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <line x1="5" y1="12" x2="19" y2="12" />
-            <line x1="13" y1="18" x2="19" y2="12" />
-            <line x1="13" y1="6" x2="19" y2="12" />
-          </svg>
-        </div>
-      {/if}
-    </div>
-  </div>
-{/if}
 
 <style>
   .feature-box {
