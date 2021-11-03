@@ -262,6 +262,17 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     $selectedFeatures = featureSets[featureSetIndex];
   }
 
+  function onkeydown(ev) {
+    if (featureSets.length === 0) {// || (arrowsDiv !== document.activeElement)) {
+      return;
+    }
+
+    if (ev.key === 'ArrowLeft') {
+      nextSet(featureSetIndex - 1);
+    } else if (ev.key === 'ArrowRight') {
+      nextSet(featureSetIndex + 1);
+    }
+  }
 </script>
 
 {#if showFeatureEditor}
@@ -335,7 +346,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
             <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
         {/if}
-        <div class="arrows-row">
+        <div class="arrows-row" on:keydown={onkeydown} tabindex="0">
           <svg xmlns="http://www.w3.org/2000/svg"
             class="icon icon-tabler icon-tabler-arrow-left"
             width="44" height="44" viewBox="0 0 24 24"
@@ -386,7 +397,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 <div id="selected-features" class="feature-box" class:dragInProgress>
   {#each $selectedFeatures as feature, i (feature)}
     <FeatureRow
-      {feature}
+      featureName={feature}
       {canAddFeatures}
       isSelected={true}
       highlight={!manuallyAddedFeatures.has(feature)}
@@ -492,7 +503,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   {#each featuresToShow as feature  (feature)}
     <div animate:flip={{ duration: 300 }}>
       <FeatureRow
-        {feature}
+        featureName={feature}
         {canAddFeatures}
         isSelected={false}
         relevance={featureToRelevance.get(feature) || 0}
@@ -500,6 +511,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         on:dragend={endHandler}
         on:add={() => plusClickHandler(feature)}
         on:edit={() => onFeatureEdit(feature)}
+        on:increase={() => console.log('increase', feature)}
+        on:decrease={() => console.log('decrease', feature)}
       />
     </div>
   {/each}
@@ -546,6 +559,9 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   .arrows-row {
     display: flex;
     align-items: center;
+    width: max-content;
+    border: 1px solid transparent;
+    margin-top: 0.25em;
   }
 
   .arrows-row > p {
@@ -556,6 +572,11 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     -moz-user-select: none; /* Firefox */
     -ms-user-select: none; /* IE10+/Edge */
     user-select: none; /* Standard */
+  }
+
+  .arrows-row:focus {
+    border: 1px solid black;
+    outline: none;
   }
 
   .icon-tabler + .icon-tabler {

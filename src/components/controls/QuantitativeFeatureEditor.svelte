@@ -29,7 +29,7 @@
     { value: 'custom', display: 'Custom' },
   ];
 
-  const bins = [2, 3, 4, 5];
+  const bins = d3.range(2, 13);
 
   let validThresholds = true;
   let validFormat = true;

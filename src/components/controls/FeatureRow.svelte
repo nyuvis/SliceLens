@@ -5,16 +5,74 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 -->
 
 <script>
+  import { metadata, dataset } from "../../stores.js";
   import { createEventDispatcher } from 'svelte';
+  import { equalIntervalThresholds, quantileThresholds, getBinLabels } from "../../DataTransformer.js";
+  import * as d3 from 'd3';
 
 	const dispatch = createEventDispatcher();
 
-  export let feature;
+  export let featureName;
   export let canAddFeatures;
   export let isSelected;
   export let highlight = false;
   export let relevance = 0;
   export let draggingOver = false;
+
+  $: feature = $metadata.features[featureName];
+
+  $: datasetValues = $dataset.map(d => d[featureName]);
+  $: extent = d3.extent(datasetValues);
+
+  $: canIncreaseBins = feature.numBins < 12;
+  $: canDecreaseBins = feature.numBins > 2;
+
+  $: format = d3.format(feature.format ?? '');
+
+  function increaseBins() {
+    if (!canIncreaseBins) {
+      return;
+    }
+
+    feature.numBins++;
+    updateBins();
+
+    dispatch('increase');
+  }
+
+  function decreaseBins() {
+    if (!canDecreaseBins) {
+      return;
+    }
+
+    feature.numBins--;
+    updateBins();
+
+    dispatch('decrease');
+  }
+
+  function updateBins() {
+    if (feature.splitType === 'interval') {
+      feature.thresholds = equalIntervalThresholds(extent, feature.numBins);
+      setAxisValues();
+    } else if (feature.splitType === 'quantile') {
+      feature.thresholds = quantileThresholds(datasetValues, feature.numBins);
+      setAxisValues();
+    }
+  }
+
+  function setAxisValues() {
+    const bin = d3.bin()
+      .domain(extent)
+      .thresholds(feature.thresholds);
+
+    const bins = bin(datasetValues);
+
+    feature.values = getBinLabels(bins, format);
+    feature.thresholds = bin.thresholds()();
+
+    $metadata = $metadata;
+  }
 </script>
 
 <div class="feature small"
@@ -22,7 +80,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   class:selected={isSelected}
   class:all={!isSelected}
   class:no-pointer-event="{!canAddFeatures && !isSelected}"
-  id={feature}
+  id={featureName}
   draggable=true
   ondragover="return false"
   on:drop|preventDefault
@@ -48,7 +106,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
     </svg>
   {:else}
-    <!-- plus icon -->
+    <!-- plus icon for selecting feature -->
     <svg xmlns="http://www.w3.org/2000/svg"
       class="icon icon-tabler icon-tabler-plus"
       width="24" height="24" viewBox="0 0 24 24"
@@ -66,11 +124,56 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     {#if relevance >= 0 && canAddFeatures}
       <div class="bar" style="width: {relevance * 100}%;"></div>
     {/if}
-    <p class="cutoff feature-name" class:highlight>{feature}</p>
+    <p class="cutoff feature-name">{featureName}</p>
+    <!-- lightbulb icon to indicate that the feature was added by tool -->
+    {#if highlight}
+      <svg xmlns="http://www.w3.org/2000/svg"
+        class="icon icon-tabler icon-tabler-bulb"
+        width="24" height="24" viewBox="0 0 24 24"
+        stroke-width="2" stroke="currentColor"
+        fill="none" stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+        <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+        <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+        <line x1="9.7" y1="17" x2="14.3" y2="17" />
+      </svg>
+    {/if}
   </div>
 
+  {#if feature.type === 'Q' && feature.splitType !== 'custom'}
+    <!-- circle minus icon to decrease bins -->
+    <svg xmlns="http://www.w3.org/2000/svg"
+      class="icon icon-tabler icon-tabler-circle-minus"
+      width="24" height="24" viewBox="0 0 24 24"
+      stroke-width="2" stroke="currentColor" fill="none"
+      stroke-linecap="round" stroke-linejoin="round"
+      on:click={decreaseBins}
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <line x1="9" y1="12" x2="15" y2="12" />
+    </svg>
+
+    <!-- circle plus icon to increase bins -->
+    <svg xmlns="http://www.w3.org/2000/svg"
+      class="icon icon-tabler icon-tabler-circle-plus"
+      width="24" height="24" viewBox="0 0 24 24"
+      stroke-width="2" stroke="currentColor" fill="none"
+      stroke-linecap="round" stroke-linejoin="round"
+      on:click={increaseBins}
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <line x1="9" y1="12" x2="15" y2="12" />
+      <line x1="12" y1="9" x2="12" y2="15" />
+    </svg>
+  {/if}
+
   <!-- edit icon -->
-  <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-edit"
+  <svg xmlns="http://www.w3.org/2000/svg"
+    class="icon icon-tabler icon-tabler-edit"
     width="24" height="24" viewBox="0 0 24 24"
     stroke-width="2" stroke="currentColor" fill="none"
     stroke-linecap="round" stroke-linejoin="round"
@@ -82,7 +185,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     <line x1="16" y1="5" x2="19" y2="8" />
   </svg>
 </div>
-
 
 <style>
   .feature {
@@ -133,13 +235,19 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   /* icons */
 
-  .icon-tabler-trash, .icon-tabler-plus, .icon-tabler-edit {
+  .icon-tabler-trash, .icon-tabler-plus,
+  .icon-tabler-edit, .icon-tabler-circle-plus,
+  .icon-tabler-circle-minus {
     visibility: hidden;
     cursor: pointer;
   }
 
   .selected:hover .icon-tabler-edit,
   .selected:hover .icon-tabler-trash,
+  .selected:hover .icon-tabler-circle-minus,
+  .selected:hover .icon-tabler-circle-plus,
+  .all:hover .icon-tabler-circle-minus,
+  .all:hover .icon-tabler-circle-plus,
   .all:hover .icon-tabler-plus,
   .all:hover .icon-tabler-edit {
     visibility: visible;
@@ -154,13 +262,12 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     color: var(--blue);
   }
 
+  .selected:hover .icon-tabler-circle-minus:hover,
+  .selected:hover .icon-tabler-circle-plus:hover,
+  .all:hover .icon-tabler-circle-minus:hover,
+  .all:hover .icon-tabler-circle-plus:hover,
   .selected:hover .icon-tabler-edit:hover,
   .all:hover .icon-tabler-edit:hover {
     color: var(--blue);
-  }
-
-  .highlight {
-    /* color: red;*/
-    font-style: italic;
   }
 </style>
