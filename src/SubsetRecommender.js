@@ -9,13 +9,18 @@ import { getData } from './DataTransformer.js';
 
 import * as d3 from "d3";
 
-export { getRecommendedSubsets };
+export { getRecommendedSubsets, timeSubsets, topSubsets, randomSubsets };
+
+const criteria = {
+  'entropy': entropy,
+  'antiEntropy': antiEntropy,
+}
 
 function entropy({set, metadata, dataset}) {
   const data = getData(metadata, set, dataset);
 
   // give higher rating to lower entropy, so negate it
-  const value = -d3.sum(data, square => {
+  const value = 1 - d3.sum(data, square => {
     const weight = square.size / metadata.size;
     return weight * H(square);
   });
@@ -30,18 +35,64 @@ function entropy({set, metadata, dataset}) {
   }
 }
 
-function getRecommendedSubsets({criterion, selected, metadata, dataset}) {
+function antiEntropy({set, metadata, dataset}) {
+  return 1 - entropy({set, metadata, dataset});
+}
+
+function timeSubsets({criterion, selected, metadata, dataset}) {
+  const data = [];
+
+  d3.range(0.5, 1, 0.01).reverse().forEach(threshold => {
+    const t0 = performance.now();
+    const subsets = getRecommendedSubsets({criterion, selected, metadata, dataset}, threshold);
+    const t1 = performance.now();
+
+    data.push({
+      threshold,
+      percentBetter: 1 - threshold,
+      numSubsets: subsets.length,
+      ms: t1 - t0
+    });
+  });
+
+  console.log(JSON.stringify(data));
+}
+
+function topSubsets({criterion, selected, metadata, dataset}) {
+  const data = {};
+
+  [2, 3, 4].forEach(n => {
+    console.log(n);
+    const sets = getPermutations(metadata.featureNames, n)
+      .map(cand => ({
+        set: cand,
+        score: entropy({set: cand, metadata, dataset}),
+      }))
+      .sort((a, b) => d3.descending(a.score, b.score));
+
+    data[n] = sets;
+  });
+
+  console.log(JSON.stringify(data));
+}
+
+function randomSubsets({criterion, selected, metadata, dataset}) {
+  return d3.shuffle(getPermutations(metadata.featureNames, 2)).slice(0, 10);
+}
+
+function getRecommendedSubsets({criterion, selected, metadata, dataset}, percent=1.0) {
   const L = [getLarge1ItemSets({criterion, metadata, dataset})];
 
   for (let k = 1; k < 4; k++) {
     const min = d3.min(L[k - 1], d => d.score);
-    const threshold = min * .75;
+
+    const threshold = min * percent;
 
     const candidates = getCandidates(L[k - 1]);
 
     const candScores = candidates.map(cand => ({
       set: cand,
-      score: entropy({set: cand, metadata, dataset})
+      score: criteria[criterion]({set: cand, metadata, dataset})
     }));
 
     const valid = candScores.filter(({score}) => {
@@ -51,17 +102,20 @@ function getRecommendedSubsets({criterion, selected, metadata, dataset}) {
     L.push(valid);
   }
 
-  return L.flat().sort((a, b) => d3.descending(a.score, b.score)).map(d => d.set);
+  const sorted = L.flat().sort((a, b) => d3.descending(a.score, b.score));
+
+  return sorted.map(d => d.set);
 }
 
 function getLarge1ItemSets({criterion, metadata, dataset}) {
+  const numStart = Math.min(Math.floor(metadata.featureNames.length / 2), 10);
   const scores = metadata.featureNames.map(feature => {
     return {
-      score: entropy({set: [feature], metadata, dataset}),
+      score: criteria[criterion]({set: [feature], metadata, dataset}),
       set: [feature]
     }
   }).sort((a, b) => d3.descending(a.score, b.score))
-    .slice(0, 10);
+    .slice(0, numStart);
 
   return scores;
 }

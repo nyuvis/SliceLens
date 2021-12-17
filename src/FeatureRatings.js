@@ -2,7 +2,8 @@ import {
   entropy,
   errorDeviation,
   errorCount,
-  errorPercent
+  errorPercent,
+  antiEntropy,
 } from './RatingMetrics.js';
 
 import * as d3 from "d3";
@@ -26,6 +27,8 @@ function getFeatureRatings({criterion, selected, metadata, dataset}) {
     ratings = errorPercent({selected, metadata, dataset, available});
   } else if (criterion === 'errorDeviation') {
     ratings = errorDeviation({selected, metadata, dataset, available})
+  } else if (criterion === 'antiEntropy') {
+    ratings = antiEntropy({selected, metadata, dataset, available})
   }
 
   return normalize(ratings);

@@ -8,6 +8,7 @@ export {
   errorCount,
   errorPercent,
   getErrorCountForSquare,
+  antiEntropy,
 };
 
 /*
@@ -20,7 +21,29 @@ function entropy({selected, metadata, dataset, available}) {
     const data = getData(metadata, sel, dataset);
 
     // give higher rating to lower entropy, so negate it
-    const value = -d3.sum(data, square => {
+    const value = 1-d3.sum(data, square => {
+      const weight = square.size / metadata.size;
+      return weight * H(square);
+    });
+
+    return {feature, value};
+  });
+
+  function H(square) {
+    return -d3.sum(square.groundTruth.values(), v => {
+      const p = v / square.size;
+      return p * Math.log2(p);
+    });
+  }
+}
+
+function antiEntropy({selected, metadata, dataset, available}) {
+  return available.map(feature => {
+    const sel = [...selected, feature];
+    const data = getData(metadata, sel, dataset);
+
+    // give higher rating to lower entropy, so negate it
+    const value = d3.sum(data, square => {
       const weight = square.size / metadata.size;
       return weight * H(square);
     });

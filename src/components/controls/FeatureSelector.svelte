@@ -28,6 +28,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       requiresPredictions: false,
       options: [
         { value: 'entropy', display: 'Purity', requiresPredictions: false },
+        { value: 'antiEntropy', display: 'Non-Purity', requiresPredictions: false },
         { value: 'none', display: 'None', requiresPredictions: false },
       ],
     },
@@ -575,8 +576,10 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   }
 
   .arrows-row:focus {
-    border: 1px solid black;
+    /* border: 1px solid black; */
     outline: none;
+    background-color: white;
+    border-radius: 5px;
   }
 
   .icon-tabler + .icon-tabler {

@@ -222,12 +222,31 @@ function getMetadata(dataset) {
     return acc;
   }, {});
 
+  const classes = {
+    groundTruth: d3.rollup(dataset, v => v.length / dataset.length, d => d.label)
+  };
+
+  if (hasPredictions) {
+    // classes.predictionCounts = d3.rollup(dataset, v => v.length / dataset.length, d => d.prediction);
+    classes.predictions = d3.rollup(
+      dataset,
+      v =>
+        d3.rollup(
+          v,
+          g => g.length / dataset.length,
+          p => p.prediction === p.label ? "correct" : "incorrect"
+        ),
+      d => d.prediction
+    );
+  }
+
   return {
     features: features,
     featureNames: featureNames,
     labelValues: labelValues,
     hasPredictions: hasPredictions,
     size: dataset.length,
+    classes: classes,
   }
 }
 
@@ -245,6 +264,17 @@ function getData(metadata, selectedFeatures, dataset) {
       groundTruth,
       size: g.length
     };
+
+    const diff = {
+      groundTruth: new Map(
+        metadata.labelValues.map(label => [
+          label,
+          (groundTruth.get(label) / g.length) - metadata.classes.groundTruth.get(label)
+        ])
+      )
+    };
+
+    node.diff = diff;
 
     if (metadata.hasPredictions) {
       // if the dataset has model predictions,
@@ -268,6 +298,24 @@ function getData(metadata, selectedFeatures, dataset) {
 
       node['predictionCounts'] = predictionCounts;
       node['predictionResults'] = predictionResults;
+
+      node.diff.predictions = d3.cross(metadata.labelValues, ["correct", "incorrect"])
+            .map(([label, correct]) => {
+              const predictedCount = predictionResults.get(label)?.get(correct) ?? 0;
+              const predictedPercent = predictedCount / g.length;
+              const rootPercent = metadata.classes.predictions.get(label)?.get(correct) ?? 0;
+              const diffPercent = Math.max(0, predictedPercent - rootPercent);
+              const diffCount = diffPercent * g.length;
+              const sameCount = predictedCount - diffCount;
+
+              return {
+                label,
+                correct,
+                diffCount,
+                sameCount,
+                count: predictedCount,
+              };
+            })
     }
 
     return node;

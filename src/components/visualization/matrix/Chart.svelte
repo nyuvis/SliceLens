@@ -6,6 +6,7 @@
 
   export let showPredictions;
   export let showSize;
+  export let visualizationType;
 
   $: color = d3.scaleOrdinal()
       .domain($metadata.labelValues)
@@ -14,7 +15,7 @@
 
 <div id="chart-container">
   <ColorLegend {showPredictions} {color}/>
-  <Matrix {showPredictions} {showSize} {color}/>
+  <Matrix {showPredictions} {showSize} {color} {visualizationType}/>
 </div>
 
 <style>

@@ -1,5 +1,9 @@
 <script>
   import Square from "./Square.svelte";
+  import SquareDiff from "./SquareDiff.svelte";
+  import SquareBar from "./SquareBar.svelte";
+  import SquareWide from "./SquareWide.svelte";
+  import SquareLine from "./SquareLine.svelte";
   import Grid from "./Grid.svelte";
   import XAxis from "./XAxis.svelte";
   import YAxis from "./YAxis.svelte";
@@ -13,6 +17,7 @@
   export let showPredictions;
   export let showSize;
   export let color;
+  export let visualizationType;
 
   let div;
 
@@ -167,19 +172,77 @@
 
       <g class="squares">
         {#each $data as d}
-          <Square
-            x={getPositionOfSquare(d, xFeatures, xScales)}
-            y={getPositionOfSquare(d, yFeatures, yScales)}
-            sideLength={showSize ? sideLength(d.size) : maxSideLength}
-            {color}
-            {showPredictions}
-            {d}
-            padding={showSize
-              ? padding + (maxSideLength - sideLength(d.size)) / 2
-              : padding}
-            on:mousemove={event => handleMousemove(event, d)}
-            on:mouseleave={handleMouseleave}
-          />
+          {#if visualizationType === 'squares'}
+            <Square
+              x={getPositionOfSquare(d, xFeatures, xScales)}
+              y={getPositionOfSquare(d, yFeatures, yScales)}
+              sideLength={showSize ? sideLength(d.size) : maxSideLength}
+              {color}
+              {showPredictions}
+              {d}
+              padding={showSize
+                ? padding + (maxSideLength - sideLength(d.size)) / 2
+                : padding}
+              on:mousemove={event => handleMousemove(event, d)}
+              on:mouseleave={handleMouseleave}
+            />
+          {:else if visualizationType === 'squares-diff'}
+            <SquareDiff
+              x={getPositionOfSquare(d, xFeatures, xScales)}
+              y={getPositionOfSquare(d, yFeatures, yScales)}
+              sideLength={showSize ? sideLength(d.size) : maxSideLength}
+              {color}
+              {showPredictions}
+              {d}
+              padding={showSize
+                ? padding + (maxSideLength - sideLength(d.size)) / 2
+                : padding}
+              on:mousemove={event => handleMousemove(event, d)}
+              on:mouseleave={handleMouseleave}
+            />
+          {:else if visualizationType === 'squares-bar'}
+            <SquareBar
+              x={getPositionOfSquare(d, xFeatures, xScales)}
+              y={getPositionOfSquare(d, yFeatures, yScales)}
+              sideLength={showSize ? sideLength(d.size) : maxSideLength}
+              {color}
+              {showPredictions}
+              {d}
+              padding={showSize
+                ? padding + (maxSideLength - sideLength(d.size)) / 2
+                : padding}
+              on:mousemove={event => handleMousemove(event, d)}
+              on:mouseleave={handleMouseleave}
+            />
+          {:else if visualizationType === 'squares-wide'}
+            <SquareWide
+              x={getPositionOfSquare(d, xFeatures, xScales)}
+              y={getPositionOfSquare(d, yFeatures, yScales)}
+              sideLength={showSize ? sideLength(d.size) : maxSideLength}
+              {color}
+              {showPredictions}
+              {d}
+              padding={showSize
+                ? padding + (maxSideLength - sideLength(d.size)) / 2
+                : padding}
+              on:mousemove={event => handleMousemove(event, d)}
+              on:mouseleave={handleMouseleave}
+            />
+          {:else if visualizationType === 'squares-line'}
+            <SquareLine
+              x={getPositionOfSquare(d, xFeatures, xScales)}
+              y={getPositionOfSquare(d, yFeatures, yScales)}
+              sideLength={showSize ? sideLength(d.size) : maxSideLength}
+              {color}
+              {showPredictions}
+              {d}
+              padding={showSize
+                ? padding + (maxSideLength - sideLength(d.size)) / 2
+                : padding}
+              on:mousemove={event => handleMousemove(event, d)}
+              on:mouseleave={handleMouseleave}
+            />
+          {/if}
         {/each}
       </g>
     </g>

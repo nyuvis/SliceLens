@@ -142,7 +142,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     {/if}
   </div>
 
-  {#if feature.type === 'Q' && feature.splitType !== 'custom'}
+  {#if isSelected && feature.type === 'Q' && feature.splitType !== 'custom'}
     <!-- circle minus icon to decrease bins -->
     <svg xmlns="http://www.w3.org/2000/svg"
       class="icon icon-tabler icon-tabler-circle-minus"

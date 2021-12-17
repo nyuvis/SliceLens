@@ -10,6 +10,8 @@ Server Performance,https://gist.githubusercontent.com/DanielKerrigan/60327aa04a8
 Bank Marketing,https://gist.githubusercontent.com/DanielKerrigan/13ccc22bb97431ba26ad03c3c74864d1/raw/27894766de9389811c665cb40d66d902f4fd5fe5/bank-marketing.csv
 Australia Rain,https://gist.githubusercontent.com/DanielKerrigan/ddb491dcf5b0abc9f2ad2773cc3839ee/raw/3a059f5b079b3a61ad9e2a9004d0b85c575d7177/weather-aus.csv
 UI Test,/datasets/test/ui-test.csv
+Normal,/datasets/normal.csv
+Synthetic,/datasets/synthetic.csv
 data-10-10000.csv,/datasets/test/data-10-10000.csv
 data-100-10000.csv,/datasets/test/data-100-10000.csv
 data-20-10000.csv,/datasets/test/data-20-10000.csv
