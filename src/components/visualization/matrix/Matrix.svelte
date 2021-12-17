@@ -9,7 +9,7 @@
   import YAxis from "./YAxis.svelte";
   import Tooltip from "./Tooltip.svelte";
   import SizeLegend from "./SizeLegend.svelte";
-  import { data, metadata, selectedFeatures } from "../../../stores.js";
+  import { data, metadata, selectedFeatures, hov } from "../../../stores.js";
   import { getScales, getPositionOfSquare } from "../../../DataTransformer.js"
   import { onMount } from 'svelte';
   import * as d3 from "d3";
@@ -176,12 +176,12 @@
             <Square
               x={getPositionOfSquare(d, xFeatures, xScales)}
               y={getPositionOfSquare(d, yFeatures, yScales)}
-              sideLength={showSize ? sideLength(d.size) : maxSideLength}
+              sideLength={showSize ? sideLength($hov ? d.groundTruth.get($hov.label) : d.size) : maxSideLength}
               {color}
               {showPredictions}
               {d}
               padding={showSize
-                ? padding + (maxSideLength - sideLength(d.size)) / 2
+                ? padding + (maxSideLength - sideLength($hov ? d.groundTruth.get($hov.label) : d.size)) / 2
                 : padding}
               on:mousemove={event => handleMousemove(event, d)}
               on:mouseleave={handleMouseleave}

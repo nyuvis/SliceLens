@@ -1,8 +1,16 @@
 <script>
-  import { selectedFeatures } from '../../../stores.js';
+  import { selectedFeatures, hov } from '../../../stores.js';
 
   export let showPredictions;
   export let color;
+
+  function enter(label) {
+    $hov = { label, correct: true };
+  }
+
+  function leave() {
+    $hov = null;
+  }
 
   $: title = $selectedFeatures
     ? $selectedFeatures.join(' vs. ')
@@ -25,7 +33,7 @@
         {#each color.domain() as label}
           <div class="column">
             <div class="legend-cell">
-              <div class="legend-square" style="background: {color(label)}"></div>
+              <div class="legend-square" style="background: {color(label)}" on:mouseenter={() => enter(label)} on:mouseleave={leave}></div>
               <div class="legend-label">{label}</div>
             </div>
             {#if showPredictions}

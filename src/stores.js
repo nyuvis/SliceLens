@@ -4,6 +4,8 @@ import { getData } from './DataTransformer.js';
 // un-filtered dataset
 export const fullDataset = writable([]);
 
+export const hov = writable(null);
+
 // filtered dataset
 export const dataset = writable([]);
 

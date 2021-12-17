@@ -1,6 +1,6 @@
 <script>
   import * as d3 from 'd3';
-  import { metadata } from "../../../stores.js";
+  import { metadata, hov } from "../../../stores.js";
 
   export let showPredictions;
   export let color;
@@ -10,12 +10,16 @@
   export let y;
   export let d;
 
+  $: size = $hov ? d.groundTruth.get($hov.label) : d.size;
+
+  $: console.log()
+
   $: height = d3.scaleLinear()
-      .domain([0, d.size])
+      .domain([0, size])
       .range([0, sideLength]);
 
   $: stack = d3.stack()
-      .keys(color.domain())
+      .keys($hov ? $hov.label : color.domain())
       .value((d, key) => d.has(key) ? d.get(key) : 0);
 
   $: counts = showPredictions && $metadata.hasPredictions ?
