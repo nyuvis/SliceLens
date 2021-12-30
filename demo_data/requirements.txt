@@ -130,7 +130,7 @@ multipledispatch==0.6.0
 navigator-updater==0.2.1
 nbclient==0.5.3
 nbconvert==6.0.7
-nbdime==1.1.0
+nbdime==1.1.1
 nbformat==5.1.2
 nest-asyncio==1.5.1
 networkx @ file:///tmp/build/80754af9/networkx_1594377231366/work
