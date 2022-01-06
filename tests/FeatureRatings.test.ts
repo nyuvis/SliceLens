@@ -8,62 +8,61 @@ import * as metrics from '../src/RatingMetrics';
 // test that the correct meric is called with the correct available features
 
 test('get feature ratings - none', () => {
-  assert.equal(getFeatureRatings({ criterion: 'none' }), new Map());
+  assert.equal(getFeatureRatings({ criterion: 'none' }, {}), new Map());
 });
 
+const metricFakes = {
+  entropy: sinon.fake(metrics.entropy),
+  errorCount: sinon.fake(metrics.errorCount),
+  errorPercent: sinon.fake(metrics.errorPercent),
+  errorDeviation: sinon.fake(metrics.errorDeviation),
+};
+
 test('get feature ratings - entropy', () => {
-  const entropy = sinon.replaceGetter(metrics, "entropy", sinon.fake(metrics.entropy));
-
   getFeatureRatings({
-    criterion: 'entropy',
-    selected: ['height'],
-    metadata: {featureNames: ['age', 'height', 'weight']},
-    dataset: [],
-  });
+      criterion: 'entropy',
+      selected: ['height'],
+      metadata: {featureNames: ['age', 'height', 'weight']},
+      dataset: [],
+  }, metricFakes);
 
-  assert.is(entropy.callCount, 1);
-  assert.equal(entropy.firstArg.available, ['age', 'weight']);
+  assert.is(metricFakes.entropy.callCount, 1);
+  assert.equal(metricFakes.entropy.firstArg.available, ['age', 'weight']);
 });
 
 test('get feature ratings - errorCount', () => {
-  const errorCount = sinon.replace(metrics, "errorCount", sinon.fake(metrics.errorCount));
-
   getFeatureRatings({
     criterion: 'errorCount',
     selected: [],
     metadata: {featureNames: ['age', 'height', 'weight']},
     dataset: [],
-  });
+  }, metricFakes);
 
-  assert.is(errorCount.callCount, 1);
-  assert.equal(errorCount.firstArg.available, ['age', 'height', 'weight']);
+  assert.is(metricFakes.errorCount.callCount, 1);
+  assert.equal(metricFakes.errorCount.firstArg.available, ['age', 'height', 'weight']);
 });
 
 test('get feature ratings - errorPercent', () => {
-  const errorPercent = sinon.replace(metrics, "errorPercent", sinon.fake(metrics.errorPercent));
-
   getFeatureRatings({
     criterion: 'errorPercent',
     selected: ['age', 'weight'],
     metadata: {featureNames: ['age', 'height', 'weight']},
     dataset: [],
-  });
+  }, metricFakes);
 
-  assert.is(errorPercent.callCount, 1);
-  assert.equal(errorPercent.firstArg.available, ['height']);
+  assert.is(metricFakes.errorPercent.callCount, 1);
+  assert.equal(metricFakes.errorPercent.firstArg.available, ['height']);
 });
 
 test('get feature ratings - errorDeviation', () => {
-  const errorDeviation = sinon.replace(metrics, "errorDeviation", sinon.fake(metrics.errorDeviation));
-
   getFeatureRatings({
     criterion: 'errorDeviation',
     selected: [],
     metadata: {featureNames: []},
     dataset: [],
-  });
+  }, metricFakes);
 
-  assert.is(errorDeviation.callCount, 1);
+  assert.is(metricFakes.errorDeviation.callCount, 1);
 });
 
 // normalize

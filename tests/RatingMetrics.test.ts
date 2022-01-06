@@ -201,7 +201,23 @@ test.before.each(() => {
   });
 });
 
-test.after.each(() => sinon.restore());
+const fakeGetData = sinon.fake((metadata, sel, dataset) => {
+  const [first, second] = sel;
+
+  if (first === 'a' && second === 'b') {
+    return dataAB;
+  } else if(first === 'a' && second === 'c') {
+    return dataAC;
+  } else if (first === 'a' && second === 'd') {
+    return dataAD;
+  } else if (first === 'e' && second === undefined) {
+    return dataE;
+  } else {
+    throw new Error('getData passed wrong selected features');
+  }
+});
+
+// test.after.each(() => sinon.restore());
 
 // entropy
 
@@ -228,7 +244,7 @@ test('entropy', () => {
     available: ['b', 'c', 'd']
   };
 
-  const actual = entropy(args);
+  const actual = entropy(args, fakeGetData);
 
   assert.is(actual[0].value, expected[0].value);
   assert.is(actual[0].feature, expected[0].feature);
@@ -250,7 +266,7 @@ test('entropy one bin', () => {
     available: ['e']
   };
 
-  const actual = entropy(args);
+  const actual = entropy(args, fakeGetData);
 
   assert.equal(actual[0].value, -expectedValue);
   assert.equal(actual[0].feature, 'e');
@@ -272,7 +288,7 @@ test('error deviation', () => {
     available: ['b', 'c', 'd']
   };
 
-  const actual = errorDeviation(args);
+  const actual = errorDeviation(args, fakeGetData);
 
   assert.is(actual[0].value, expected[0].value);
   assert.is(actual[0].feature, expected[0].feature);
@@ -294,7 +310,7 @@ test('error deviation one bin', () => {
     available: ['e']
   };
 
-  const actual = errorDeviation(args);
+  const actual = errorDeviation(args, fakeGetData);
 
   assert.equal(actual, expected);
 });
@@ -315,7 +331,7 @@ test('error count', () => {
     available: ['b', 'c', 'd']
   };
 
-  assert.equal(errorCount(args), expected);
+  assert.equal(errorCount(args, fakeGetData), expected);
 });
 
 test('error count one bin', () => {
@@ -328,7 +344,7 @@ test('error count one bin', () => {
     available: ['e']
   };
 
-  const actual = errorCount(args);
+  const actual = errorCount(args, fakeGetData);
 
   assert.equal(actual, expected);
 });
@@ -349,7 +365,7 @@ test('error percent', () => {
     available: ['b', 'c', 'd']
   };
 
-  assert.equal(errorPercent(args), expected);
+  assert.equal(errorPercent(args, fakeGetData), expected);
 });
 
 test('error percent one bin', () => {
@@ -362,7 +378,7 @@ test('error percent one bin', () => {
     available: ['e']
   };
 
-  const actual = errorPercent(args);
+  const actual = errorPercent(args, fakeGetData);
 
   assert.equal(actual, expected);
 });
@@ -372,7 +388,7 @@ test('error percent one bin', () => {
 test('get error count for no predictionResults', () => {
   const square = {};
 
-  assert.is(getErrorCountForSquare(square), 0);
+  assert.is(getErrorCountForSquare(square, fakeGetData), 0);
 });
 
 test('get error count for no classes', () => {
@@ -380,7 +396,7 @@ test('get error count for no classes', () => {
     predictionResults: new d3.InternMap()
   };
 
-  assert.is(getErrorCountForSquare(square), 0);
+  assert.is(getErrorCountForSquare(square, fakeGetData), 0);
 });
 
 test('get error count for one class', () => {
@@ -390,7 +406,7 @@ test('get error count for one class', () => {
     ])
   };
 
-  assert.is(getErrorCountForSquare(square), 7);
+  assert.is(getErrorCountForSquare(square, fakeGetData), 7);
 });
 
 test('get error count for two classes', () => {
@@ -401,7 +417,7 @@ test('get error count for two classes', () => {
     ])
   };
 
-  assert.is(getErrorCountForSquare(square), 16);
+  assert.is(getErrorCountForSquare(square, fakeGetData), 16);
 });
 
 test('get error count for three classes', () => {
@@ -414,7 +430,7 @@ test('get error count for three classes', () => {
     ])
   };
 
-  assert.is(getErrorCountForSquare(square), 26);
+  assert.is(getErrorCountForSquare(square, fakeGetData), 26);
 });
 
 test.run();

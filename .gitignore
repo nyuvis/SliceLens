@@ -15,3 +15,5 @@
 __pycache__/
 
 user_study/user-study-stats.json
+
+.vscode/
