@@ -1,9 +1,10 @@
-<script>
-  let expanded = false;
+<script lang="ts">
+  let expanded: boolean = false;
 
   // https://stackoverflow.com/questions/152975/how-do-i-detect-a-click-outside-an-element/3028037#3028037
-  function bodyClick(event) {
-    if (!event.target.closest('#dropdown-container') && expanded) {
+  function bodyClick(event: Event) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('#dropdown-container') && expanded) {
       expanded = false;
     }
   }

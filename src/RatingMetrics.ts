@@ -1,4 +1,5 @@
-import { getData } from './DataTransformer.js';
+import { getData } from './DataTransformer';
+import type { Node, Metadata, Dataset } from './types';
 
 import * as d3 from "d3";
 
@@ -10,11 +11,14 @@ export {
   getErrorCountForSquare,
 };
 
+export type Rating = {feature: string, value: number};
+type RatingInput = {selected: string[], metadata: Metadata, dataset: Dataset, available: string[]};
+
 /*
   Return the feature that results in the nodes with the
   lowest average entropy.
 */
-function entropy({selected, metadata, dataset, available}) {
+function entropy({selected, metadata, dataset, available}: RatingInput): Rating[] {
   return available.map(feature => {
     const sel = [...selected, feature];
     const data = getData(metadata, sel, dataset);
@@ -28,7 +32,7 @@ function entropy({selected, metadata, dataset, available}) {
     return {feature, value};
   });
 
-  function H(square) {
+  function H(square: Node) {
     return -d3.sum(square.groundTruth.values(), v => {
       const p = v / square.size;
       return p * Math.log2(p);
@@ -40,7 +44,7 @@ function entropy({selected, metadata, dataset, available}) {
   Give a higher rating to features that result in the
   subsets with higher standard deviations of percent error
 */
-function errorDeviation({selected, metadata, dataset, available}) {
+function errorDeviation({selected, metadata, dataset, available}: RatingInput): Rating[] {
   return available.map(feature => {
     const sel = [...selected, feature];
     const data = getData(metadata, sel, dataset);
@@ -56,7 +60,7 @@ function errorDeviation({selected, metadata, dataset, available}) {
   Give a higher rating to features that result in the
   single nodes that have the higher number of errors
 */
-function errorCount({selected, metadata, dataset, available}) {
+function errorCount({selected, metadata, dataset, available}: RatingInput): Rating[] {
   return available.map(feature => {
     const sel = [...selected, feature];
     const data = getData(metadata, sel, dataset);
@@ -71,7 +75,7 @@ function errorCount({selected, metadata, dataset, available}) {
   Give a higher rating to features that result in the
   single nodes that have the higher percent of errors
 */
-function errorPercent({selected, metadata, dataset, available}) {
+function errorPercent({selected, metadata, dataset, available}: RatingInput): Rating[] {
   return available.map(feature => {
     const sel = [...selected, feature];
     const data = getData(metadata, sel, dataset);
@@ -83,7 +87,7 @@ function errorPercent({selected, metadata, dataset, available}) {
 }
 
 
-function getErrorCountForSquare(square) {
+function getErrorCountForSquare(square: Node): number {
   // this should not happen
   if (square.predictionResults === undefined) {
     return 0;

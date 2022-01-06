@@ -1,26 +1,27 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { selectedFeatures, metadata, filters, fullDataset, dataset } from '../../stores.js';
   import { cloneSelectedFeaturesMetadata, addSelectedSetToFilters, cloneFilters, getMetadata, getFilteredDataset } from '../../DataTransformer.js';
-  import marked from 'marked';
-  import DOMPurify from 'dompurify';
+  import { marked } from 'marked';
+  import { sanitize } from 'dompurify';
+  import type { Dataset, Feature, Filter, Metadata, Note } from '../../types.js';
 
-  export let note = null;
-  export let edit = false;
+  export let note: Note = null;
+  export let edit: boolean = false;
 
   const dispatch = createEventDispatcher();
 
   function gotoState() {
-    const selected = [...note.state.selectedFeatures];
-    const filts = addSelectedSetToFilters(cloneFilters(note.state.filters));
-    const features = cloneSelectedFeaturesMetadata(note.state.selectedFeaturesMetadata, selected);
+    const selected: string[] = [...note.state.selectedFeatures];
+    const filts: Filter[] = addSelectedSetToFilters(cloneFilters(note.state.filters));
+    const features: Record<string,Feature> = cloneSelectedFeaturesMetadata(note.state.selectedFeaturesMetadata, selected);
 
     if(filts.length === 0 && $filters.length === 0) {
       $metadata.features = Object.assign($metadata.features, features);
       $metadata = $metadata;
     } else {
-      const data = getFilteredDataset($fullDataset, filts);
-      const md = getMetadata(data);
+      const data: Dataset = getFilteredDataset($fullDataset, filts);
+      const md: Metadata = getMetadata(data);
       md.features = Object.assign(md.features, features)
       $dataset = data;
       $metadata = md;
@@ -67,7 +68,7 @@
     ></textarea>
   {:else}
     <div class="viewer content small hyphen">
-      {@html DOMPurify.sanitize(marked(note.body))}
+      {@html sanitize(marked(note.body))}
     </div>
   {/if}
 {/if}

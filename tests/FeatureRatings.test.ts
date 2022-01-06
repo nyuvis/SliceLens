@@ -1,9 +1,8 @@
 import { test } from 'uvu';
 import * as assert from 'uvu/assert';
-import sinon from "sinon/pkg/sinon-esm.js";
-import { getFeatureRatings, normalize } from '../src/FeatureRatings.js';
-
-import * as metrics from '../src/RatingMetrics.js';
+import sinon from "sinon/pkg/sinon";
+import { getFeatureRatings, normalize } from '../src/FeatureRatings';
+import * as metrics from '../src/RatingMetrics';
 
 // get feature ratings
 // test that the correct meric is called with the correct available features
@@ -13,7 +12,7 @@ test('get feature ratings - none', () => {
 });
 
 test('get feature ratings - entropy', () => {
-  const entropy = sinon.replace(metrics, "entropy", sinon.fake(metrics.entropy));
+  const entropy = sinon.replaceGetter(metrics, "entropy", sinon.fake(metrics.entropy));
 
   getFeatureRatings({
     criterion: 'entropy',

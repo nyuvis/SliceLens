@@ -1,12 +1,12 @@
-<script>
+<script lang="ts">
   import { onMount, createEventDispatcher } from "svelte";
   import { dataset } from "../../stores.js";
   import { equalIntervalThresholds, quantileThresholds, getBinLabels } from "../../DataTransformer.js";
   import Histogram from '../visualization/histogram/Histogram.svelte';
-
   import * as d3 from "d3";
+  import type { QuantitativeFeature } from "../../types.js";
 
-  export let feature;
+  export let feature: QuantitativeFeature;
 
   export function onWindowClose() {
     if (feature.splitType === 'custom' ||
@@ -15,13 +15,13 @@
     }
   }
 
-  const originalFormatSpecifier = feature.format;
+  const originalFormatSpecifier: string = feature.format;
   let format = d3.format(feature.format);
 
   const dispatch = createEventDispatcher();
 
-  const datasetValues = $dataset.map(d => d[feature.name]);
-  const extent = d3.extent(datasetValues);
+  const datasetValues: number[] = $dataset.map(d => d[feature.name]) as number[];
+  const extent: [number, number] = d3.extent(datasetValues);
 
   const splits = [
     { value: 'interval', display: 'Equal Width' },
@@ -31,8 +31,8 @@
 
   const bins = [2, 3, 4, 5];
 
-  let validThresholds = true;
-  let validFormat = true;
+  let validThresholds: boolean = true;
+  let validFormat: boolean = true;
   $: valid = validThresholds && validFormat;
   $: dispatch('validate', valid);
 
@@ -57,9 +57,9 @@
       feature.thresholds = quantileThresholds(datasetValues, feature.numBins);
       setAxisValues();
     } else if (feature.splitType === 'custom') {
-      const targetNumThresholds = feature.numBins - 1;
-      const numThreshold = feature.thresholds.length;
-      const diff = Math.abs(targetNumThresholds - numThreshold);
+      const targetNumThresholds: number = feature.numBins - 1;
+      const numThreshold: number = feature.thresholds.length;
+      const diff: number = Math.abs(targetNumThresholds - numThreshold);
 
       if (targetNumThresholds < numThreshold) {
         feature.thresholds = feature.thresholds.slice(0, -diff);
@@ -71,9 +71,9 @@
     }
   }
 
-  function areThresholdsValid() {
+  function areThresholdsValid(): boolean {
     // thresholds must be strictly increasing
-    const arr = [extent[0], ...feature.thresholds, extent[1]];
+    const arr: number[] = [extent[0], ...feature.thresholds, extent[1]];
 
     for (let i = 1, n = arr.length; i < n; i++) {
       if (arr[i - 1] >= arr[i]) {
@@ -90,7 +90,8 @@
       .thresholds(feature.thresholds);
     const bins = bin(datasetValues);
     feature.values = getBinLabels(bins, format);
-    feature.thresholds = bin.thresholds()();
+    const thresholdFunc: any = bin.thresholds();
+    feature.thresholds = thresholdFunc() as number[];
   }
 </script>
 
@@ -127,7 +128,7 @@
   <!-- svelte-ignore a11y-no-onchange -->
   <select bind:value={feature.numBins} on:change={onSelectChange}>
     {#each bins as bin}
-      <option {bin}>{bin}</option>
+      <option>{bin}</option>
     {/each}
   </select>
 </div>

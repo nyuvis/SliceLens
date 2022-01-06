@@ -1,23 +1,25 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import type { Note } from '../../types';
 
   const dispatch = createEventDispatcher();
 
-  let fileInput;
+  let fileInput: HTMLInputElement;
 
-  function onchange(event) {
-    const files = event.target.files;
-    if (files.length === 0) {
+  function onchange(event: Event & { currentTarget: EventTarget & HTMLInputElement; }) {
+    const files = event.currentTarget?.files;
+
+    if (files === undefined || files.length === 0) {
       return;
     }
 
-    const file = files[0];
+    const file: File = files[0];
 
-    const reader = new FileReader();
+    const reader: FileReader = new FileReader();
 
     reader.onload = function(event) {
-      const text = event.target.result;
-      const json = JSON.parse(text);
+      const text = event.target.result as string;
+      const json = JSON.parse(text) as Note[];
       dispatch('upload', json);
     }
 

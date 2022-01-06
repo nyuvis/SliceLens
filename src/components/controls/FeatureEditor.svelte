@@ -3,7 +3,7 @@ References:
 https://www.w3schools.com/howto/howto_css_modals.asp
 -->
 
-<script>
+<script lang="ts">
   import CategoricalFeatureEditor from "./CategoricalFeatureEditor.svelte";
   import QuantitativeFeatureEditor from "./QuantitativeFeatureEditor.svelte";
   import { metadata, logs } from "../../stores.js";
@@ -11,14 +11,14 @@ https://www.w3schools.com/howto/howto_css_modals.asp
 
   const dispatch = createEventDispatcher();
 
-  export let featureName;
+  export let featureName: string;
   $: feature = $metadata.features[featureName];
 
-  let valid = true;
+  let valid: boolean = true;
   $: canClose = valid || feature.type === 'C';
 
-  let categoricalComponent;
-  let quantitativeComponent;
+  let categoricalComponent: CategoricalFeatureEditor;
+  let quantitativeComponent: QuantitativeFeatureEditor;
 
   function onWindowClose() {
     if (!canClose) {
@@ -37,7 +37,7 @@ https://www.w3schools.com/howto/howto_css_modals.asp
     dispatch("close");
   }
 
-  function onkeydown(ev) {
+  function onkeydown(ev: KeyboardEvent) {
     if (ev.key === 'Escape') {
       onWindowClose();
     }

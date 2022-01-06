@@ -1,21 +1,22 @@
-<script>
+<script lang="ts">
   import { format } from 'd3';
   import { metadata } from "../../../stores.js";
   import { getTooltipAmounts } from "../../../DataTransformer.js";
+  import type { Node } from '../../../types';
 
-  export let showPredictions;
-  export let d;
-  export let x;
-  export let y;
-  export let bounds;
-  export let color;
+  export let showPredictions: boolean;
+  export let d: Node;
+  export let x: number;
+  export let y: number;
+  export let bounds: { left: number, right: number, top: number, bottom: number };
+  export let color: d3.ScaleOrdinal<string, string, string>;
 
   const percentFormat = format('.1%');
 
-  const padding = 10;
+  const padding: number = 10;
 
-  let width = 100;
-  let height = 100;
+  let width: number = 100;
+  let height: number = 100;
 
   $: splits =
     d.splits.size === 0

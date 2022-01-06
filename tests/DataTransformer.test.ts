@@ -15,18 +15,18 @@ import {
   getScales,
   getPositionOfSquare,
   getTooltipAmounts,
-} from '../src/DataTransformer.js';
-
-const fs = require('fs');
+  parseDataset
+} from '../src/DataTransformer';
+import * as fs from "fs";
 
 function readCsv(filename) {
   const data = d3.csvParse(
     fs.readFileSync(`./tests/data/${filename}`).toString(),
-    d3.autoType
   );
-  data.name = filename;
 
-  return data;
+  const ds = parseDataset(data, filename);
+
+  return ds;
 }
 
 function readJson(filename) {

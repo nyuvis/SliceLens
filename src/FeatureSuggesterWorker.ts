@@ -1,6 +1,6 @@
 import { getFeatureRatings } from './FeatureRatings';
 
-self.onmessage = e => {
+self.onmessage = (e: MessageEvent) => {
   const featureToRelevance = getFeatureRatings(e.data);
   postMessage(featureToRelevance);
 }

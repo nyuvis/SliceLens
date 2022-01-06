@@ -1,6 +1,6 @@
-<script>
-  export let showPredictions;
-  export let color;
+<script lang="ts">
+  export let showPredictions: boolean;
+  export let color: d3.ScaleOrdinal<string, string, string>;
 </script>
 
 <div id="legend" class="small">

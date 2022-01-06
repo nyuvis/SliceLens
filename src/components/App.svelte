@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import DatasetSelector from './controls/DatasetSelector.svelte';
   import FeatureSelector from './controls/FeatureSelector.svelte';
   import FilteringButton from './controls/filtering/FilteringButton.svelte';
@@ -6,13 +6,14 @@
   import Chart from './visualization/matrix/Chart.svelte';
   import NotesSidebar from './notes/NotesSidebar.svelte';
   import { metadata } from '../stores.js';
+  import type { FeatureExtent } from '../types';
 
-  let showPredictions = false;
-  let showSize = true;
+  let showPredictions: boolean = false;
+  let showSize: boolean = true;
   // feature name to feature values for categorical features
   // feature name to extent for quantitative features
   // on the whole dataset
-  let featureExtents = {};
+  let featureExtents: Record<string, FeatureExtent> = {};
 </script>
 
 <div id="container">

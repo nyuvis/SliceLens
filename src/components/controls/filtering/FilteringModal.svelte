@@ -6,26 +6,27 @@ A lot of this code is from FeatureEditor.svelte. It could be
 refactored into a Modal.svelte.
 -->
 
-<script>
-  import QuantitativeFilter from './QuantitativeFilter.svelte';
-  import CategoricalFilter from './CategoricalFilter.svelte';
+<script lang="ts">
+  import QuantitativeFilterEditor from './QuantitativeFilterEditor.svelte';
+  import CategoricalFilterEditor from './CategoricalFilterEditor.svelte';
   import { filters, fullDataset, dataset, metadata } from '../../../stores.js';
   import { getMetadata, getFilteredDataset } from '../../../DataTransformer.js';
   import { createEventDispatcher } from "svelte";
+  import type { Dataset, FeatureExtent, Metadata, QuantitativeExtent, CategoricalExtent, QuantitativeFilter, CategoricalFilter } from '../../../types';
 
-  export let featureExtents;
+  export let featureExtents: Record<string, FeatureExtent>;
 
   const dispatch = createEventDispatcher();
-  const defaultOption = 'Select a feature';
+  const defaultOption: string = 'Select a feature';
 
-  let emptyDataset = false;
+  let emptyDataset: boolean = false;
 
   $: filteredFeatureNames = new Set($filters.map(f => f.feature));
   // [].every(f => f.valid) returns true, so allFiltersValid is true
   // when there are no filters
   $: allFiltersValid = $filters.every(f => f.valid);
 
-  function onkeydown(ev) {
+  function onkeydown(ev: KeyboardEvent) {
     if (ev.key === 'Escape') {
       onCloseWindow();
     }
@@ -37,7 +38,7 @@ refactored into a Modal.svelte.
       return false;
     }
 
-    const data = getFilteredDataset($fullDataset, $filters);
+    const data: Dataset = getFilteredDataset($fullDataset, $filters);
 
     // don't allow the window to close if the filtered dataset is empty
     if (data.length === 0) {
@@ -47,7 +48,7 @@ refactored into a Modal.svelte.
 
     emptyDataset = false;
 
-    const md = getMetadata(data);
+    const md: Metadata = getMetadata(data);
     $dataset = data;
     $metadata = md;
 
@@ -55,11 +56,14 @@ refactored into a Modal.svelte.
   }
 
   function addFilter() {
-    $filters = [...$filters, { feature: defaultOption, type: '', valid: false }];
+    $filters = [
+      ...$filters,
+      { type: 'Q', feature: defaultOption, valid: false, min: 0, max: 0, rightInclusive: false }
+    ];
   }
 
   // removing a filter
-  function removeFilter(i) {
+  function removeFilter(i: number) {
     if (i < $filters.length) {
       $filters.splice(i, 1);
       $filters = $filters;
@@ -67,28 +71,42 @@ refactored into a Modal.svelte.
   }
 
   // changing which feature the filter is for
-  function onChangeFeature(name, i) {
+  function onChangeFeature(target: EventTarget & HTMLSelectElement, i: number) {
+    const name: string = target.value;
+
     if (name === defaultOption) {
       return;
     }
 
     const featureExtent = featureExtents[name];
 
-    const filter = {
-      feature: name,
-      type: featureExtent.type,
-      valid: true
-    };
-
-    if (filter.type === 'Q') {
-      [filter.min, filter.max] = featureExtent.extent;
-      filter.rightInclusive = true;
+    if (featureExtent.type === 'Q') {
+      const [min, max] = featureExtent.extent;
+      $filters[i] = {
+        feature: name,
+        type: featureExtent.type,
+        valid: true,
+        rightInclusive: true,
+        min,
+        max
+      };
     } else {
-      filter.selected = [...featureExtent.categories];
-      filter.selectedSet = new Set(filter.selected);
+      $filters[i] = {
+        feature: name,
+        type: featureExtent.type,
+        valid: true,
+        selected: [...featureExtent.categories],
+        selectedSet: new Set(featureExtent.categories)
+      };
     }
+  }
 
-    $filters[i] = filter;
+  function getExtent(filter: QuantitativeFilter): [number, number] {
+    return (featureExtents[filter.feature] as QuantitativeExtent).extent;
+  }
+
+  function getCategories(filter: CategoricalFilter): string[] {
+    return (featureExtents[filter.feature] as CategoricalExtent).categories;
   }
 </script>
 
@@ -120,7 +138,7 @@ refactored into a Modal.svelte.
           <div class="filter-name-row">
 
             <!-- svelte-ignore a11y-no-onchange -->
-            <select value={filter.feature} on:change={e => onChangeFeature(e.target.value, i)}>
+            <select value={filter.feature} on:change={e => onChangeFeature(e.currentTarget, i)}>
 
               <option disabled>{defaultOption}</option>
 
@@ -155,18 +173,14 @@ refactored into a Modal.svelte.
           </div>
 
           <div class="filter-content">
-            {#if filter.type === 'Q'}
-              <QuantitativeFilter extent={featureExtents[filter.feature].extent} {filter} />
+            {#if filter.feature === defaultOption}
+              <p class="error">
+                Select a feature to filter.
+              </p>
+            {:else if filter.type === 'Q'}
+              <QuantitativeFilterEditor extent={getExtent(filter)} {filter} />
             {:else if filter.type === 'C'}
-              <CategoricalFilter categories={featureExtents[filter.feature].categories} {filter}/>
-            {:else}
-
-              {#if !filter.valid}
-                <p class="error">
-                  Select a feature to filter.
-                </p>
-              {/if}
-
+              <CategoricalFilterEditor categories={getCategories(filter)} {filter}/>
             {/if}
           </div>
 

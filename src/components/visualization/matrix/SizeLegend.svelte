@@ -1,7 +1,7 @@
-<script>
+<script lang="ts">
   import * as d3 from "d3";
 
-  export let scale;
+  export let scale: d3.ScalePower<number, number, number>;
 
   const format = d3.format("~s");
 

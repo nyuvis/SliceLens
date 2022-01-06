@@ -1,20 +1,21 @@
-<script>
+<script lang="ts">
   import * as d3 from 'd3';
   import { metadata } from "../../../stores.js";
+  import type { Node } from "../../../types";
 
-  export let showPredictions;
-  export let color;
-  export let sideLength;
-  export let padding;
-  export let x;
-  export let y;
-  export let d;
+  export let showPredictions: boolean;
+  export let color: d3.ScaleOrdinal<string, string, string>;
+  export let sideLength: number;
+  export let padding: number;
+  export let x: number;
+  export let y: number;
+  export let d: Node;
 
   $: height = d3.scaleLinear()
       .domain([0, d.size])
       .range([0, sideLength]);
 
-  $: stack = d3.stack()
+  $: stack = d3.stack<d3.InternMap<string, number>>()
       .keys(color.domain())
       .value((d, key) => d.has(key) ? d.get(key) : 0);
 
@@ -36,12 +37,12 @@
     };
 
     if (showPredictions && $metadata.hasPredictions) {
-      const predictionResults = d.predictionResults.get(label);
+      const predictionResults: d3.InternMap<string,number> = d.predictionResults.get(label);
 
       if (predictionResults !== undefined && predictionResults.has('incorrect')) {
         const incorrect = d3.scaleLinear()
-          .domain([0, counts.get(label)])
-          .range([0, rect.height]);
+            .domain([0, counts.get(label)])
+            .range([0, rect.height]);
 
         rect.incorrectHeight = incorrect(predictionResults.get('incorrect'));
       }

@@ -1,9 +1,9 @@
-<script>
+<script lang="ts">
   import { metadata } from '../../stores.js';
 
-  export let showSize = true;
-  let showPredictionsCheckBox = false;
-  export let showPredictions = false;
+  export let showSize: boolean = true;
+  let showPredictionsCheckBox: boolean = false;
+  export let showPredictions: boolean = false;
 
   $: if ($metadata !== null && $metadata.hasPredictions) {
     showPredictionsCheckBox = true;

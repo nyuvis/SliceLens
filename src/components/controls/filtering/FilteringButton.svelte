@@ -1,9 +1,10 @@
-<script>
+<script lang="ts">
   import FilteringModal from './FilteringModal.svelte';
+  import type { FeatureExtent } from '../../../types';
 
-  export let featureExtents;
+  export let featureExtents: Record<string, FeatureExtent>;
 
-  let showModal = false;
+  let showModal: boolean = false;
 </script>
 
 <div>

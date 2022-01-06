@@ -1,27 +1,29 @@
 <!-- https://observablehq.com/@d3/histogram -->
-<script>
+<script lang="ts">
   import { dataset } from '../../../stores.js';
   import * as d3 from 'd3';
 
-  export let feature;
-  export let thresholds;
+  export let feature: string;
+  export let thresholds: number[];
 
   const margin = { top: 20, left: 50, right: 50, bottom: 20};
-  const numBins = 20;
-  let width = 200;
-  let height = 200;
+  const numBins: number = 20;
+  let width: number = 200;
+  let height: number = 200;
 
   $: visWidth = width - margin.left - margin.right;
   $: visHeight = height - margin.top - margin.bottom;
 
-  $: data = $dataset.map(d => d[feature]);
+  $: data = $dataset.map(d => d[feature]) as number[];
 
   $: xScale = d3.scaleLinear()
       .domain(d3.extent(data)).nice()
       .range([0, visWidth]);
 
+  let bins: { x0: number, x1: number, count: number }[];
+
   $: bins = d3.bin()
-      .domain(xScale.domain())
+      .domain(xScale.domain() as [number, number])
       .thresholds(xScale.ticks(numBins))(data)
       .map(b => ({ x0: b.x0, x1: b.x1, count: b.length}));
 

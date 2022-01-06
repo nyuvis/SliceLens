@@ -1,9 +1,9 @@
 import { test } from 'uvu';
 import * as assert from 'uvu/assert';
-import sinon from "sinon/pkg/sinon-esm.js";
+import sinon from "sinon/pkg/sinon";
 import * as d3 from "d3";
-import { entropy, errorCount, errorPercent, errorDeviation, getErrorCountForSquare } from '../src/RatingMetrics.js';
-import * as dt from '../src/DataTransformer.js'
+import { entropy, errorCount, errorPercent, errorDeviation, getErrorCountForSquare } from '../src/RatingMetrics';
+import * as dt from '../src/DataTransformer'
 
 // data
 

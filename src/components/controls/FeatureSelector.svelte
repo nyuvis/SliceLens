@@ -4,7 +4,7 @@ https://svelte.dev/repl/810b0f1e16ac4bbd8af8ba25d5e0deff?version=3.4.2
 https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 -->
 
-<script>
+<script lang="ts">
   import FeatureSuggesterWorker from 'web-worker:../../FeatureSuggesterWorker';
   import QuestionBox from '../QuestionBox.svelte';
   import FeatureRow from './FeatureRow.svelte';
@@ -13,7 +13,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   import * as d3 from 'd3';
   import { flip } from "svelte/animate";
 
-  let features = [];
+  let features: string[] = [];
   $: if ($metadata !== null) {
     // sort by alphabetical order
     features = $metadata.featureNames.slice().sort((a, b) => a.localeCompare(b));
@@ -59,20 +59,20 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     });
   }
 
-  const maxFeatures = 4;
+  const maxFeatures: number = 4;
   $: canAddFeatures = $selectedFeatures.length < maxFeatures;
 
   // web worker for feature suggestions
 
-  let workersInProgress = 0;
+  let workersInProgress: number = 0;
 
   const incrementWorkersInProgress = () => workersInProgress++;
 
-  let featureToRelevance = new Map();
+  let featureToRelevance: Map<string, number> = new Map();
 
   const worker = new FeatureSuggesterWorker();
 
-  worker.onmessage = e => {
+  worker.onmessage = (e: MessageEvent) => {
     featureToRelevance = e.data;
     workersInProgress--;
     logs.add({event: 'worker-done'});
@@ -93,10 +93,10 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   // drag and drop
 
-  let dragInProgress = false;
-  let draggingOverFeature = null;
+  let dragInProgress: boolean = false;
+  let draggingOverFeature: string = null;
 
-  function dropHandler(event, i) {
+  function dropHandler(event: DragEvent, i: number) {
     const item = JSON.parse(event.dataTransfer.getData("text"));
 
     /* make sure that a feature is being dragged in */
@@ -128,9 +128,9 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     $selectedFeatures = filtered;
   }
 
-  function startHandler(event) {
+  function startHandler(event: DragEvent, feature: string) {
     dragInProgress = true;
-    const item = {id: event.target.id};
+    const item = {id: feature};
     event.dataTransfer.setData("text", JSON.stringify(item));
   }
 
@@ -141,7 +141,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   // adding and removing features
 
-  function plusClickHandler(feature) {
+  function plusClickHandler(feature: string) {
     if (!$selectedFeatures.includes(feature)) {
       logs.add({
         event: 'feature-add',
@@ -157,7 +157,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     }
   }
 
-  function trashClickHandler(feature) {
+  function trashClickHandler(feature: string) {
     logs.add({
       event: 'feature-remove',
       feature,
@@ -169,7 +169,9 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   // sorting features
 
-  let sortBy = 'alpha';
+  type Order = 'alpha' | 'rating-ascending' | 'rating-descending';
+
+  let sortBy: Order = 'alpha';
 
   $: if (criterion.value === 'none') {
     sortBy = 'alpha';
@@ -196,7 +198,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         )
       );
 
-  $: sortingOrders = {
+  let sortingOrders: Record<Order, string[]>;
+  $: sortingOrders  = {
     'alpha': features,
     'rating-ascending': featuresSortedByRatingAscending,
     'rating-descending': featuresSortedByRatingDescending,
@@ -206,10 +209,10 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   // editing features
 
-  let showFeatureEditor = false;
-  let featureToEdit = null;
+  let showFeatureEditor: boolean = false;
+  let featureToEdit: string = null;
 
-  function onFeatureEdit(feature) {
+  function onFeatureEdit(feature: string) {
     featureToEdit = feature;
     showFeatureEditor = true;
 
@@ -291,7 +294,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       isSelected={true}
       draggingOver={draggingOverFeature === feature}
       on:drop={e => dropHandler(e, i)}
-      on:dragstart={startHandler}
+      on:dragstart={(e) => startHandler(e, feature)}
       on:dragend={endHandler}
       on:dragenter={() => draggingOverFeature = feature}
       on:dragleave={() => draggingOverFeature = null}
@@ -301,7 +304,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   {/each}
   {#if canAddFeatures}
     <div class="place-holder"
-      ondragover="return false"
+      on:dragover|preventDefault={() => false}
       on:drop|preventDefault={e => dropHandler(e, $selectedFeatures.length)}
     >
       <p class="instruction"
@@ -394,8 +397,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         {feature}
         {canAddFeatures}
         isSelected={false}
-        relevance={featureToRelevance.get(feature) || 0}
-        on:dragstart={startHandler}
+        relevance={featureToRelevance.get(feature) ?? 0}
+        on:dragstart={(e) => startHandler(e, feature)}
         on:dragend={endHandler}
         on:add={() => plusClickHandler(feature)}
         on:edit={() => onFeatureEdit(feature)}

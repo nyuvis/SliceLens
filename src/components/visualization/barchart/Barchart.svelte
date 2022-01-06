@@ -1,16 +1,18 @@
 <!-- https://observablehq.com/@d3/histogram -->
-<script>
+<script lang="ts">
   import { dataset } from '../../../stores.js';
   import * as d3 from 'd3';
 
-  export let feature;
+  export let feature: string;
 
   const margin = { top: 20, left: 50, right: 50, bottom: 100};
-  let width = 200;
-  let height = 200;
+  let width: number = 200;
+  let height: number = 200;
 
   $: visWidth = width - margin.left - margin.right;
   $: visHeight = height - margin.top - margin.bottom;
+
+  let data: { value: string, count: number }[];
 
   $: data = d3.rollups(
     $dataset.map(d => d[feature]),

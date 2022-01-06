@@ -1,4 +1,5 @@
 import * as d3 from "d3";
+import type { QuantitativeFeature, CategoricalFeature, Feature, Metadata, Dataset, Row, Node, Filter, FeatureExtent, TooltipData} from "./types";
 
 export {
   cloneSelectedFeaturesMetadata,
@@ -15,32 +16,41 @@ export {
   getScales,
   getPositionOfSquare,
   getTooltipAmounts,
+  parseDataset,
 };
 
-function cloneSelectedFeaturesMetadata(features, selectedFeatures) {
+function cloneSelectedFeaturesMetadata(features: Record<string, Feature>, selectedFeatures: string[]): Record<string, Feature> {
   const copyOfFeatures = {};
 
   selectedFeatures.forEach(featureName => {
     const feature = features[featureName];
 
-    const copy = {
-      name: feature.name,
-      type: feature.type,
-      values: [...feature.values],
-    };
-
     if (feature.type === 'Q') {
-      copy.extent = [...feature.extent];
-      copy.splitType = feature.splitType;
-      copy.numBins = feature.numBins;
-      copy.thresholds = [...feature.thresholds];
-      copy.format = feature.format;
+      const copy: QuantitativeFeature = {
+        name: feature.name,
+        type: feature.type,
+        values: [...feature.values],
+        extent: [...feature.extent],
+        splitType: feature.splitType,
+        numBins: feature.numBins,
+        thresholds: [...feature.thresholds],
+        format: feature.format
+      };
+
+      copyOfFeatures[featureName] = copy;
+
     } else {
-      copy.categories = [...feature.categories];
-      copy.valueToGroup = Object.assign({}, feature.valueToGroup);
+      const copy: CategoricalFeature = {
+        name: feature.name,
+        type: feature.type,
+        values: [...feature.values],
+        categories: [...feature.categories],
+        valueToGroup: Object.assign({}, feature.valueToGroup)
+      }
+
+      copyOfFeatures[featureName] = copy;
     }
 
-    copyOfFeatures[featureName] = copy;
   });
 
   return copyOfFeatures;
@@ -48,29 +58,31 @@ function cloneSelectedFeaturesMetadata(features, selectedFeatures) {
 
 /* crete copies of each filter. for categorical filters, do not
   copy the selectedSet property, which can't be turned into JSON*/
-function cloneFilters(filters) {
+function cloneFilters(filters: Filter[]): Filter[] {
   return filters.map(filter => {
-    const copy = {
-      feature: filter.feature,
-      type: filter.type,
-      valid: filter.valid,
-    };
-
     if (filter.type === 'Q') {
-      copy.min = filter.min;
-      copy.max = filter.max;
-      copy.rightInclusive = filter.rightInclusive;
+      return {
+        feature: filter.feature,
+        type: filter.type,
+        valid: filter.valid,
+        min: filter.min,
+        max: filter.max,
+        rightInclusive: filter.rightInclusive
+      }
     } else {
-      copy.selected = [...filter.selected];
+      return {
+        feature: filter.feature,
+        type: filter.type,
+        valid: filter.valid,
+        selected: [...filter.selected]
+      }
     }
-
-    return copy;
   });
 }
 
 /* after reading filters from JSON, the selectedSet needs to be
   added, since it is not in the JSON */
-function addSelectedSetToFilters(filters) {
+function addSelectedSetToFilters(filters: Filter[]) {
   filters.forEach(filter => {
     if (filter.type === 'C') {
       filter.selectedSet = new Set(filter.selected);
@@ -82,20 +94,14 @@ function addSelectedSetToFilters(filters) {
 
 /* for categorical features, get the unique feature values
    for quantiative features, get the min and max values */
-function getWholeDatasetFeatureExtents(md) {
+function getWholeDatasetFeatureExtents(md: Metadata): Record<string, FeatureExtent> {
   return Object.fromEntries(
     Object.entries(md.features).map(([name, feature]) => {
-      const copy = {
-        type: feature.type,
-      };
-
       if (feature.type === "Q") {
-        copy.extent = [...feature.extent];
+        return [name, { type: "Q", extent: [...feature.extent]}];
       } else {
-        copy.categories = [...feature.categories];
+        return [name, { type: "C", categories: [...feature.categories]}];
       }
-
-      return [name, copy];
     })
   );
 }
@@ -103,7 +109,7 @@ function getWholeDatasetFeatureExtents(md) {
 /* given the bins and a format function for a quantitative feature
    return the ranges the bins as strings, which are used as labels
    in the visualiztion */
-function getBinLabels(bins, format) {
+function getBinLabels(bins: (number[] & { x0: number, x1: number })[], format: (n: number) => string): string[] {
   const n = bins.length;
   return bins.map((bin, i) => {
     // the right endpoint of the last bin is inclusive
@@ -131,7 +137,7 @@ function getBinLabels(bins, format) {
 /* given the extent of a quantiative feature and the number of bins
    return evenly spaced thresholds. this will give equal-width bins.
    this could be replaced with d3.scaleQuantize maybe */
-function equalIntervalThresholds([min, max], numBins) {
+function equalIntervalThresholds([min, max]: [number, number], numBins: number): number[] {
   // width of each bin
   const binSize = (max - min) / numBins;
   const thresholds = d3.range(1, numBins)
@@ -141,53 +147,61 @@ function equalIntervalThresholds([min, max], numBins) {
 
 /* given all values of a quantitative feature and the number of bins
  return thresholds for equal-frequency bins */
-function quantileThresholds(values, numBins) {
+function quantileThresholds(values: number[], numBins: number): number[] {
   return d3.scaleQuantile()
     .domain(values)
     .range(d3.range(numBins))
     .quantiles();
 }
 
-function getMetadata(dataset) {
+function isQuantitativeFeature(values: (string | number)[]): values is number[] {
+  return typeof values[0] === 'number';
+}
+
+function isCategoricalFeature(values: unknown[]): values is string[] {
+  return typeof values[0] === 'string';
+}
+
+function isNumericFeature(values: unknown[]): boolean {
+  const uniqueValues = new Set(values);
+  return Array.from(uniqueValues).every(isNumeric) && uniqueValues.size > 12;
+}
+
+function parseDataset(data: d3.DSVRowArray<string>, name: string): Dataset {
+  const quantitatveColumns = new Set(
+    data.columns.filter(
+      col =>
+        col !== "label" &&
+        col !== "prediction" &&
+        isNumericFeature(data.map(d => d[col]))
+    )
+  );
+
+  const rows = data.map(d => {
+    const row: Row = {...d} as Row;
+    quantitatveColumns.forEach(col => row[col] = +row[col]);
+    return row;
+  });
+
+  return Object.assign(rows, { name, columns: data.columns });
+}
+
+function getMetadata(dataset: Dataset): Metadata {
   if (!dataset || !dataset.columns) {
     return null;
   }
 
-  const cols = dataset.columns;
+  const cols: string[] = dataset.columns;
 
-  const labelValues = Array.from(new Set(dataset.map(d => d['label']))).sort();
+  const labelValues: string[] = Array.from(new Set(dataset.map(d => d.label))).sort().map(d => d.toString());
 
-  const featureNames = cols.filter(d => d !== 'label' && d !== 'prediction');
-  const hasPredictions = cols.includes('prediction');
+  const featureNames: string[] = cols.filter(d => d !== 'label' && d !== 'prediction');
+  const hasPredictions: boolean = cols.includes('prediction');
 
-  /*
-  categorical features:
-  - name: string
-  - values: array of primitive values
-  - categories: array of primitive values
-  - valueToGroup: map from primitive to primitive
-  - type: string
-
-  quantitative features:
-  - name: string
-  - extent: array of numbers
-  - splitType: string
-  - numBins: int
-  - thresholds: array of numbers
-  - values: array of strings
-  - format: string
-  - type: string
-  */
   const features = featureNames.reduce((acc, val) => {
-    const values = dataset.map(d => d[val]);
-    const uniqueValues = Array.from(new Set(values)).sort();
-    const feature = {
-      name: val
-    };
+    const values: (string | number)[] = dataset.map(d => d[val]);
 
-    const areNumbers = Array.from(uniqueValues).every(d => !isNaN(d));
-
-    if (areNumbers && uniqueValues.length > 5) {
+    if (isQuantitativeFeature(values)) {
       const numBins = 3;
       const splitType = 'interval';
       const extent = d3.extent(values);
@@ -200,24 +214,35 @@ function getMetadata(dataset) {
       const formatSpecifier = '.2~f';
       const featureValueLabels = getBinLabels(bins, d3.format(formatSpecifier));
 
-      feature.extent = extent;
-      feature.splitType = splitType;
-      feature.numBins = numBins;
-      feature.thresholds = thresholds;
-      // values contains the labels for the bins
-      feature.values = featureValueLabels;
-      feature.format = formatSpecifier;
-      feature.type = 'Q';
-    } else {
-      // values are the names of the groups
-      feature.values = uniqueValues;
-      feature.categories = [...uniqueValues];
-      // by default, each value is in its own group
-      feature.valueToGroup = Object.fromEntries(d3.zip(uniqueValues, uniqueValues));
-      feature.type = 'C';
-    }
+      const feature: QuantitativeFeature = {
+        type: "Q",
+        name: val,
+        extent: extent,
+        splitType: splitType,
+        numBins: numBins,
+        thresholds: thresholds,
+        // values contains the labels for the bins
+        values: featureValueLabels,
+        format: formatSpecifier,
+      };
 
-    acc[val] = feature;
+      acc[val] = feature;
+
+    } else if(isCategoricalFeature(values)){
+      const uniqueValues = Array.from(new Set(values)).sort();
+
+      const feature: CategoricalFeature = {
+        type: "C",
+        name: val,
+        // values are the names of the groups
+        values: uniqueValues,
+        categories: [...uniqueValues],
+        // by default, each value is in its own group
+        valueToGroup: Object.fromEntries(d3.zip(uniqueValues, uniqueValues))
+      };
+
+      acc[val] = feature;
+    }
 
     return acc;
   }, {});
@@ -231,19 +256,20 @@ function getMetadata(dataset) {
   }
 }
 
-function getData(metadata, selectedFeatures, dataset) {
+function getData(metadata: Metadata, selectedFeatures: string[], dataset: Dataset): Node[] {
   if (metadata === null) {
     return null;
   }
 
   // g is an array of all of the instances belonging to the same subset
-  function reducer(g) {
+  function reducer(g: Row[]) {
     // map from ground truth label to number of instances with that label
     const groundTruth = d3.rollup(g, v => v.length, d => d.label);
 
-    const node = {
+    const node: Node = {
+      size: g.length,
+      splits: new Map(),
       groundTruth,
-      size: g.length
     };
 
     if (metadata.hasPredictions) {
@@ -277,7 +303,7 @@ function getData(metadata, selectedFeatures, dataset) {
      Ex: 0-2-1 means the first bin for the first selected feature,
      the third bin for the second selected feature, and the second
      bin for the third selected feature. */
-  function key(d) {
+  function key(d: Row): string {
     return selectedFeatures
       .map(featureName => {
         const feat = metadata.features[featureName];
@@ -289,7 +315,7 @@ function getData(metadata, selectedFeatures, dataset) {
             threshold, then 0 is returned. if it's less than the second threshold,
             then one is returned, etc.
           */
-          return d3.bisect(feat.thresholds, d[featureName]);
+          return d3.bisect(feat.thresholds, d[featureName] as number);
         } else if (feat.type === "C") {
           /* values contains the names of the groups/bins */
           return feat.values.indexOf(feat.valueToGroup[d[featureName]]);
@@ -303,19 +329,21 @@ function getData(metadata, selectedFeatures, dataset) {
     // splits is a map from the name of the selected feature
     // to the subset's bin index
     // this is done after since reducer doesn't have access to group's key
-    const splits = new Map(d3.zip(selectedFeatures, key.split(',').map(d => +d)));
-    value['splits'] = splits;
+    const kvps: [string, number][] = d3.zip(selectedFeatures, key.split(','))
+        .map(([a, b]) => ([a, +b]));
+    const splits = new Map(kvps);
+    value.splits = splits;
     return value;
   });
 }
 
 /* https://stackoverflow.com/questions/175739/built-in-way-in-javascript-to-check-if-a-string-is-a-valid-number
    return true if the passed in string is a number and false otherwise */
-function isNumeric(str) {
+function isNumeric(str: any): boolean {
   return !isNaN(str) && !isNaN(parseFloat(str));
 }
 
-function getFilteredDataset(dataset, filters) {
+function getFilteredDataset(dataset: Dataset, filters: Filter[]): Dataset {
   if (filters.length === 0) {
     return dataset;
   }
@@ -339,7 +367,7 @@ function getFilteredDataset(dataset, filters) {
             return false;
           }
         }
-      } else if (!filt.selectedSet.has(value)) {
+      } else if (!filt.selectedSet.has(value as string)) {
         return false;
       }
     }
@@ -347,17 +375,14 @@ function getFilteredDataset(dataset, filters) {
     return true;
   });
 
-  filtered.columns = dataset.columns;
-  filtered.name = dataset.name;
-
-  return filtered;
+  return Object.assign(filtered, {columns: dataset.columns, name: dataset.name});
 }
 
 /* functions for positioning the squares in the matrix */
 
 /* returns an array of scales for the given features
    space is the width or height of the matrix */
-function getScales(selectedFeatures, space, reverse) {
+function getScales(selectedFeatures: Feature[], space: number, reverse: boolean) {
   return selectedFeatures.map((feat) => {
     const domain = d3.range(feat.values.length);
 
@@ -367,7 +392,7 @@ function getScales(selectedFeatures, space, reverse) {
     }
 
     // range for every scale starts at 0
-    const scale = d3.scaleBand().domain(domain).range([0, space]);
+    const scale = d3.scaleBand<number>().domain(domain).range([0, space]);
 
     // space for next scale is the band width of the current scale
     space = scale.bandwidth();
@@ -376,8 +401,12 @@ function getScales(selectedFeatures, space, reverse) {
   });
 }
 
+function zip<T,U>(arr1: T[], arr2: U[]): [T,U][] {
+  return arr1.map((d, i) => [d, arr2[i]]);
+}
+
 /* d is the data for a given square */
-function getPositionOfSquare(d, features, scales) {
+function getPositionOfSquare(d: Node, features: Feature[], scales: d3.ScaleBand<number>[]) {
   // get the bin index for each feature
   // d.splits is a map from the name of the selected feature to the subset's bin index
   // Ex. age -> 1, height -> 2
@@ -385,14 +414,14 @@ function getPositionOfSquare(d, features, scales) {
 
   // adding together the position for each feature gives the position of the square
   return d3.sum(
-    d3.zip(scales, splits),
+    zip(scales, splits),
     ([scale, split]) => scale(split)
   );
 }
 
 /* tooltip data */
 
-function getTooltipAmounts(showPredictions, d, percentFormat) {
+function getTooltipAmounts(showPredictions: boolean, d: Node, percentFormat: (n: number) => string): TooltipData {
   if (showPredictions) {
     return (
       Array.from(d.predictionResults)

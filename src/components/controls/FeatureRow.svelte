@@ -4,16 +4,16 @@ https://svelte.dev/repl/810b0f1e16ac4bbd8af8ba25d5e0deff?version=3.4.2
 https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 -->
 
-<script>
+<script lang="ts">
   import { createEventDispatcher } from 'svelte';
 
-	const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher();
 
-  export let feature;
-  export let canAddFeatures;
-  export let isSelected;
-  export let relevance = 0;
-  export let draggingOver = false;
+  export let feature: string;
+  export let canAddFeatures: boolean;
+  export let isSelected: boolean;
+  export let relevance: number = 0;
+  export let draggingOver: boolean = false;
 </script>
 
 <div class="feature small"
@@ -23,7 +23,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   class:no-pointer-event="{!canAddFeatures && !isSelected}"
   id={feature}
   draggable=true
-  ondragover="return false"
+  on:dragover|preventDefault={() => false}
   on:drop|preventDefault
   on:dragstart
   on:dragend

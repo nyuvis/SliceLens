@@ -1,5 +1,5 @@
-<script>
-  let show = false;
+<script lang="ts">
+  let show: boolean = false;
 </script>
 
 <div class="tooltip-container">
