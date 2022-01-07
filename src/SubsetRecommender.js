@@ -9,7 +9,7 @@ import { getData } from './DataTransformer.js';
 
 import * as d3 from "d3";
 
-export { getRecommendedSubsets, timeSubsets, topSubsets, randomSubsets };
+export { getRecommendedSubsets, timeSubsets, topSubsets, randomSubsets, bestTwos, worstTwos };
 
 const criteria = {
   'entropy': entropy,
@@ -56,6 +56,27 @@ function timeSubsets({criterion, selected, metadata, dataset}) {
   });
 
   console.log(JSON.stringify(data));
+}
+
+
+function bestTwos({criterion, selected, metadata, dataset}) {
+  return getPermutations(metadata.featureNames, 2)
+    .map(cand => ({
+      set: cand,
+      score: entropy({set: cand, metadata, dataset}),
+    }))
+    .sort((a, b) => d3.descending(a.score, b.score))
+    .map(d => d.set);
+}
+
+function worstTwos({criterion, selected, metadata, dataset}) {
+  return getPermutations(metadata.featureNames, 2)
+    .map(cand => ({
+      set: cand,
+      score: entropy({set: cand, metadata, dataset}),
+    }))
+    .sort((a, b) => d3.ascending(a.score, b.score))
+    .map(d => d.set);
 }
 
 function topSubsets({criterion, selected, metadata, dataset}) {
