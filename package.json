@@ -29,7 +29,7 @@
     "d3": "^6.7.0",
     "dompurify": "^2.0.17",
     "esm": "3.2.25",
-    "marked": "^2.0.0",
+    "marked": "^4.0.10",
     "rollup-plugin-web-worker-loader": "^1.6.0",
     "sinon": "^11.1.2",
     "sirv-cli": "^1.0.0"
