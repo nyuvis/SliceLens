@@ -55,6 +55,7 @@
   }
 
   onMount(async () => {
+    // @ts-ignore
     // DATASETS_FILE is set in rollup.config.js
     d3.csv(DATASETS_FILE).then(d => {
       datasets = d as unknown as DatasetInfo[];

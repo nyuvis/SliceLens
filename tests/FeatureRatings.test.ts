@@ -1,15 +1,27 @@
 import { test } from 'uvu';
 import * as assert from 'uvu/assert';
-import sinon from "sinon/pkg/sinon";
+import sinon from "sinon";
 import { getFeatureRatings, normalize } from '../src/FeatureRatings';
 import * as metrics from '../src/RatingMetrics';
+import type { Rating } from '../src/RatingMetrics'
+import type { Metadata, Dataset } from '../src/types'
 
-// get feature ratings
-// test that the correct meric is called with the correct available features
+function getExampleMetadata(featureNames: string[] = []): Metadata {
+  return {
+    size: 0,
+    features: {},
+    featureNames: featureNames,
+    labelValues: [],
+    hasPredictions: true
+  };
+}
 
-test('get feature ratings - none', () => {
-  assert.equal(getFeatureRatings({ criterion: 'none' }, {}), new Map());
-});
+function getExampleDataset(): Dataset {
+  return Object.assign([], {
+    columns: [],
+    name: ''
+  });
+}
 
 const metricFakes = {
   entropy: sinon.fake(metrics.entropy),
@@ -18,48 +30,60 @@ const metricFakes = {
   errorDeviation: sinon.fake(metrics.errorDeviation),
 };
 
+// get feature ratings
+// test that the correct meric is called with the correct available features
+
+test('get feature ratings - none', () => {
+  assert.equal(getFeatureRatings({
+    criterion: 'none',
+    selected: [],
+    metadata: getExampleMetadata(),
+    dataset: getExampleDataset()
+  }, metricFakes), new Map());
+});
+
 test('get feature ratings - entropy', () => {
   getFeatureRatings({
       criterion: 'entropy',
       selected: ['height'],
-      metadata: {featureNames: ['age', 'height', 'weight']},
-      dataset: [],
+      metadata: getExampleMetadata(['age', 'height', 'weight']),
+      dataset: getExampleDataset(),
   }, metricFakes);
 
   assert.is(metricFakes.entropy.callCount, 1);
-  assert.equal(metricFakes.entropy.firstArg.available, ['age', 'weight']);
+  assert.equal(metricFakes.entropy.firstCall.firstArg.available, ['age', 'weight']);
 });
 
 test('get feature ratings - errorCount', () => {
   getFeatureRatings({
     criterion: 'errorCount',
     selected: [],
-    metadata: {featureNames: ['age', 'height', 'weight']},
-    dataset: [],
+    metadata: getExampleMetadata(['age', 'height', 'weight']),
+    dataset: getExampleDataset(),
   }, metricFakes);
 
   assert.is(metricFakes.errorCount.callCount, 1);
-  assert.equal(metricFakes.errorCount.firstArg.available, ['age', 'height', 'weight']);
+  assert.equal(metricFakes.errorCount.firstCall.firstArg.available, ['age', 'height', 'weight']);
 });
 
 test('get feature ratings - errorPercent', () => {
   getFeatureRatings({
     criterion: 'errorPercent',
     selected: ['age', 'weight'],
-    metadata: {featureNames: ['age', 'height', 'weight']},
-    dataset: [],
+    metadata: getExampleMetadata(['age', 'height', 'weight']),
+    dataset: getExampleDataset(),
   }, metricFakes);
 
   assert.is(metricFakes.errorPercent.callCount, 1);
-  assert.equal(metricFakes.errorPercent.firstArg.available, ['height']);
+  assert.equal(metricFakes.errorPercent.firstCall.firstArg.available, ['height']);
 });
 
 test('get feature ratings - errorDeviation', () => {
   getFeatureRatings({
     criterion: 'errorDeviation',
     selected: [],
-    metadata: {featureNames: []},
-    dataset: [],
+    metadata: getExampleMetadata(),
+    dataset: getExampleDataset(),
   }, metricFakes);
 
   assert.is(metricFakes.errorDeviation.callCount, 1);
@@ -68,12 +92,12 @@ test('get feature ratings - errorDeviation', () => {
 // normalize
 
 test('normalize no ratings', () => {
-  const ratings = [];
+  const ratings: Rating[] = [];
   assert.equal(normalize(ratings), new Map());
 });
 
 test('normalize ratings positive', () => {
-  const ratings = [
+  const ratings: Rating[] = [
     { feature: 'a', value: 0},
     { feature: 'b', value: 10},
     { feature: 'c', value: 20},
@@ -105,7 +129,7 @@ test('normalize ratings positive', () => {
 });
 
 test('normalize ratings negative', () => {
-  const ratings = [
+  const ratings: Rating[] = [
     { feature: 'a', value: -50},
     { feature: 'b', value: -55},
     { feature: 'c', value: -60},
@@ -137,7 +161,7 @@ test('normalize ratings negative', () => {
 });
 
 test('normalize ratings negative positive and zero', () => {
-  const ratings = [
+  const ratings: Rating[] = [
     { feature: 'a', value: -100},
     { feature: 'b', value: -50},
     { feature: 'c', value: 0},
@@ -163,7 +187,7 @@ test('normalize ratings negative positive and zero', () => {
 });
 
 test('normalize one rating', () => {
-  const ratings = [
+  const ratings: Rating[] = [
     { feature: 'a', value: 5},
   ];
 
@@ -175,7 +199,7 @@ test('normalize one rating', () => {
 });
 
 test('normalize all identical ratings', () => {
-  const ratings = [
+  const ratings: Rating[] = [
     { feature: 'a', value: 5},
     { feature: 'b', value: 5},
     { feature: 'c', value: 5},
@@ -195,7 +219,7 @@ test('normalize all identical ratings', () => {
 });
 
 test('normalize all zero ratings', () => {
-  const ratings = [
+  const ratings: Rating[] = [
     { feature: 'a', value: 0},
     { feature: 'b', value: 0},
     { feature: 'c', value: 0},
@@ -215,7 +239,7 @@ test('normalize all zero ratings', () => {
 });
 
 test('normalize one rating', () => {
-  const ratings = [
+  const ratings: Rating[] = [
     { feature: 'a', value: 1.2345},
   ];
 

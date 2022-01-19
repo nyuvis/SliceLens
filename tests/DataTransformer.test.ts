@@ -18,8 +18,9 @@ import {
   parseDataset
 } from '../src/DataTransformer';
 import * as fs from "fs";
+import type {Filter, Metadata} from '../src/types';
 
-function readCsv(filename) {
+function readCsv(filename: string) {
   const data = d3.csvParse(
     fs.readFileSync(`./tests/data/${filename}`).toString(),
   );
@@ -29,7 +30,7 @@ function readCsv(filename) {
   return ds;
 }
 
-function readJson(filename) {
+function readJson(filename: string) {
   return JSON.parse(
     fs.readFileSync(`./tests/data/${filename}`).toString()
   );
@@ -114,7 +115,7 @@ test('equal interval thresholds', () => {
 // clone filters
 
 test('clone filters', () => {
-  const filters = [
+  const filters: Filter[] = [
     {
       feature: 'feature0',
       type: 'C',
@@ -151,20 +152,24 @@ test('clone filters', () => {
   // selectedSet should not be copied over
   assert.not(copy[0].hasOwnProperty('selectedSet'));
 
-  // after removing selectedSet from filters, they should be equal
-  delete filters[0].selectedSet;
+  if (filters[0].type === 'C') {
+    // after removing selectedSet from filters, they should be equal
+    delete filters[0].selectedSet;
 
-  assert.equal(copy, filters);
+    assert.equal(copy, filters);
 
-  // check that mutating filters does not mutate the copy
-  filters[0].selected.push('d');
-  assert.not.equal(copy, filters);
+    // check that mutating filters does not mutate the copy
+    filters[0].selected.push('d');
+    assert.not.equal(copy, filters);
+  } else {
+    throw new Error("filter has wrong type");
+  }
 });
 
 // addSelectedSetToFilters
 
 test('add selected set to filters', () => {
-  const filters = [
+  const filters: Filter[] = [
     {
       feature: 'feature0',
       type: 'C',
@@ -195,7 +200,7 @@ test('add selected set to filters', () => {
     },
   ];
 
-  const filtersWithSelectedSet = [
+  const filtersWithSelectedSet: Filter[] = [
     {
       feature: 'feature0',
       type: 'C',
@@ -237,19 +242,23 @@ test('add selected set to filters', () => {
 // get whole dataset features extent
 
 test('get whole dataset feature extents', () => {
-  const md = {
+  const md: Metadata = {
     features: {
-      'abc': { name: 'abc', type: 'Q', extent: [-1, 1] },
-      'def': { name: 'def', type: 'Q', extent: [15, 30] },
-      'ghi': { name: 'ghi', type: 'C', categories: [1, 2, 3, 4, 5] },
-      'jkl': { name: 'jkl', type: 'C', categories: ['a', 'b', 'c', 'd', 'e'] },
-    }
+      'abc': { name: 'abc', type: 'Q', extent: [-1, 1], numBins: 0, splitType: "interval", thresholds: [], values: [], format: '' },
+      'def': { name: 'def', type: 'Q', extent: [15, 30], numBins: 0, splitType: "interval", thresholds: [], values: [], format: '' },
+      'ghi': { name: 'ghi', type: 'C', categories: ['1', '2', '3', '4', '5'],  values: [], valueToGroup: {}},
+      'jkl': { name: 'jkl', type: 'C', categories: ['a', 'b', 'c', 'd', 'e'], values: [], valueToGroup: {} },
+    },
+    featureNames: [],
+    labelValues: [],
+    hasPredictions: false,
+    size: 0
   };
 
   const expected = {
     'abc': { type: 'Q', extent: [-1, 1] },
     'def': { type: 'Q', extent: [15, 30] },
-    'ghi': { type: 'C', categories: [1, 2, 3, 4, 5] },
+    'ghi': { type: 'C', categories: ['1', '2', '3', '4', '5'] },
     'jkl': { type: 'C', categories: ['a', 'b', 'c', 'd', 'e'] },
   };
 
@@ -259,24 +268,32 @@ test('get whole dataset feature extents', () => {
 
   // mutating features should not mutate the feature extents
 
-  md.features['abc'].extent[0] = 0;
-  assert.not.equal(
-    actual['abc'].extent,
-    md.features['abc'].extent
-  );
+  if (md.features['abc'].type === 'Q' && actual['abc'].type === 'Q') {
+    md.features['abc'].extent[0] = 0;
+    assert.not.equal(
+      actual['abc'].extent,
+      md.features['abc'].extent
+    );
+  } else {
+    throw new Error("feature has wrong type");
+  }
 
-  md.features['jkl'].categories[0] = 'x';
-  assert.not.equal(
-    actual['jkl'].categories,
-    md.features['jkl'].categories
-  );
+  if (md.features['jkl'].type === 'C' && actual['jkl'].type === 'C') {
+    md.features['jkl'].categories[0] = 'x';
+    assert.not.equal(
+      actual['jkl'].categories,
+      md.features['jkl'].categories
+    );
+  } else {
+    throw new Error("feature has wrong type");
+  }
 });
 
 // clone selected features metadata
 
 test('clone selected features metadata', () => {
   // copying
-  const md = readJson('metadata-1.json');
+  const md: Metadata = readJson('metadata-1.json');
   const actual = cloneSelectedFeaturesMetadata(md.features, ['age', 'favoriteNumber', 'job']);
   const expected = {
     'age': md.features['age'],
@@ -287,17 +304,21 @@ test('clone selected features metadata', () => {
 
   // mutating
 
-  md.features['age'].extent[0] = 0;
-  assert.not.equal(
-    md.features['age'].extent,
-    actual['age'].extent
-  );
+  if (md.features['age'].type === 'Q' && actual['age'].type === 'Q') {
+    md.features['age'].extent[0] = 0;
+    assert.not.equal(
+      md.features['age'].extent,
+      actual['age'].extent
+    );
 
-  md.features['age'].thresholds[0] = 0;
-  assert.not.equal(
-    md.features['age'].thresholds,
-    actual['age'].thresholds
-  );
+    md.features['age'].thresholds[0] = 0;
+    assert.not.equal(
+      md.features['age'].thresholds,
+      actual['age'].thresholds
+    );
+  } else {
+    throw new Error("feature has wrong type");
+  }
 
   md.features['age'].values.push('test');
   assert.not.equal(
@@ -317,17 +338,21 @@ test('clone selected features metadata', () => {
     actual['job'].values
   );
 
-  md.features['job'].categories.push('test');
-  assert.not.equal(
-    md.features['job'].categories,
-    actual['job'].categories
-  );
+  if (md.features['job'].type === 'C' && actual['job'].type === 'C') {
+    md.features['job'].categories.push('test');
+    assert.not.equal(
+      md.features['job'].categories,
+      actual['job'].categories
+    );
 
-  md.features['job'].valueToGroup['test'] = 'test';
-  assert.not.equal(
-    md.features['job'].valueToGroup,
-    actual['job'].valueToGroup
-  );
+    md.features['job'].valueToGroup['test'] = 'test';
+    assert.not.equal(
+      md.features['job'].valueToGroup,
+      actual['job'].valueToGroup
+    );
+  } else {
+    throw new Error("feature has wrong type");
+  }
 });
 
 // get metadata
@@ -353,7 +378,7 @@ test('get metadata without predictions', () => {
 // get data
 
 test('get data null', () => {
-  assert.equal(getData(null, [], []), null);
+  assert.equal(getData(null, [], Object.assign([], { columns: [], name: ''})), null);
 });
 
 test('get data without predictions, no selected features', () => {
@@ -760,10 +785,10 @@ test('get filtered dataset - no filters', () => {
 test('get filtered dataset - quantitative feature right inclusive', () => {
   const fullDataset = readCsv('dataset-1.csv');
 
-  const filters = [
+  const filters: Filter[] = [
     {
       feature: 'age',
-      type: 'Q',
+      type: "Q",
       valid: true,
       min: 30,
       max: 40,
@@ -773,7 +798,7 @@ test('get filtered dataset - quantitative feature right inclusive', () => {
 
   const result = getFilteredDataset(fullDataset, filters);
 
-  assert.equal(result.categories, fullDataset.categories);
+  assert.equal(result.columns, fullDataset.columns);
   assert.equal(result.name, fullDataset.name);
   assert.not.equal(result, fullDataset);
 
@@ -790,7 +815,7 @@ test('get filtered dataset - quantitative feature right inclusive', () => {
 test('get filtered dataset - quantitative feature right exclusive', () => {
   const fullDataset = readCsv('dataset-1.csv');
 
-  const filters = [
+  const filters: Filter[] = [
     {
       feature: 'age',
       type: 'Q',
@@ -802,7 +827,7 @@ test('get filtered dataset - quantitative feature right exclusive', () => {
   ];
   const result = getFilteredDataset(fullDataset, filters);
 
-  assert.equal(result.categories, fullDataset.categories);
+  assert.equal(result.columns, fullDataset.columns);
   assert.equal(result.name, fullDataset.name);
   assert.not.equal(result, fullDataset);
 
@@ -819,34 +844,34 @@ test('get filtered dataset - quantitative feature right exclusive', () => {
 test('get filtered dataset - number categories', () => {
   const fullDataset = readCsv('dataset-1.csv');
 
-  const filters = [
+  const filters: Filter[] = [
     {
       feature: 'favoriteNumber',
       type: 'C',
       valid: true,
-      selected: [1, 5],
-      selectedSet: new Set([1, 5])
+      selected: ['1', '5'],
+      selectedSet: new Set(['1', '5'])
     }
   ];
   const result = getFilteredDataset(fullDataset, filters);
 
-  assert.equal(result.categories, fullDataset.categories);
+  assert.equal(result.columns, fullDataset.columns);
   assert.equal(result.name, fullDataset.name);
   assert.not.equal(result, fullDataset);
 
   const favoriteNumbers = result.map(d => d.favoriteNumber);
 
   favoriteNumbers.forEach(d => {
-    assert.ok(d === 1 || d === 5);
+    assert.ok(d === '1' || d === '5');
   });
 
-  assert.not(favoriteNumbers.includes(3));
+  assert.not(favoriteNumbers.includes('3'));
 });
 
 test('get filtered dataset - string categories', () => {
   const fullDataset = readCsv('dataset-1.csv');
 
-  const filters = [
+  const filters: Filter[] = [
     {
       feature: 'job',
       type: 'C',
@@ -857,7 +882,7 @@ test('get filtered dataset - string categories', () => {
   ];
   const result = getFilteredDataset(fullDataset, filters);
 
-  assert.equal(result.categories, fullDataset.categories);
+  assert.equal(result.columns, fullDataset.columns);
   assert.equal(result.name, fullDataset.name);
   assert.not.equal(result, fullDataset);
 
@@ -875,7 +900,7 @@ test('get filtered dataset - string categories', () => {
 test('get filtered dataset - two filters', () => {
   const fullDataset = readCsv('dataset-1.csv');
 
-  const filters = [
+  const filters: Filter[] = [
     {
       feature: 'age',
       type: 'Q',
@@ -894,7 +919,7 @@ test('get filtered dataset - two filters', () => {
   ];
   const result = getFilteredDataset(fullDataset, filters);
 
-  assert.equal(result.categories, fullDataset.categories);
+  assert.equal(result.columns, fullDataset.columns);
   assert.equal(result.name, fullDataset.name);
   assert.not.equal(result, fullDataset);
   assert.ok(result.length > 0);
@@ -917,7 +942,7 @@ test('getScales one feature', () => {
   const features = [md.features['age']];
   const actual = getScales(features, 300, false);
   const expected = [
-    d3.scaleBand().domain([0, 1, 2]).range([0, 300]),
+    d3.scaleBand<number>().domain([0, 1, 2]).range([0, 300]),
   ];
 
   assert.equal(actual[0].domain(), expected[0].domain());
@@ -930,8 +955,8 @@ test('getScales two features', () => {
   const features = [md.features['age'], md.features['job']];
   const actual = getScales(features, 300, false);
   const expected = [
-    d3.scaleBand().domain([0, 1, 2]).range([0, 300]),
-    d3.scaleBand().domain([0, 1, 2, 3, 4]).range([0, 100]),
+    d3.scaleBand<number>().domain([0, 1, 2]).range([0, 300]),
+    d3.scaleBand<number>().domain([0, 1, 2, 3, 4]).range([0, 100]),
   ];
 
   assert.equal(actual[0].domain(), expected[0].domain());
@@ -948,8 +973,8 @@ test('getScales two features reverse', () => {
   const features = [md.features['age'], md.features['job']];
   const actual = getScales(features, 300, true);
   const expected = [
-    d3.scaleBand().domain([2, 1, 0]).range([0, 300]),
-    d3.scaleBand().domain([4, 3, 2, 1, 0]).range([0, 100]),
+    d3.scaleBand<number>().domain([2, 1, 0]).range([0, 300]),
+    d3.scaleBand<number>().domain([4, 3, 2, 1, 0]).range([0, 100]),
   ];
 
   assert.equal(actual[0].domain(), expected[0].domain());
@@ -1000,7 +1025,7 @@ test('get position of square one feature', () => {
 
   const features = [md.features['age']];
   const scales = [
-    d3.scaleBand().domain([0, 1, 2]).range([0, 300]),
+    d3.scaleBand<number>().domain([0, 1, 2]).range([0, 300]),
   ];
 
   d.splits.set('age', 0);
@@ -1032,8 +1057,8 @@ test('get position of square two features', () => {
 
   const features = [md.features['age'], md.features['job']];
   const scales = [
-    d3.scaleBand().domain([0, 1, 2]).range([0, 300]),
-    d3.scaleBand().domain([0, 1, 2, 3, 4]).range([0, 100]),
+    d3.scaleBand<number>().domain([0, 1, 2]).range([0, 300]),
+    d3.scaleBand<number>().domain([0, 1, 2, 3, 4]).range([0, 100]),
   ];
 
   for (let age = 0; age < 3; age++) {

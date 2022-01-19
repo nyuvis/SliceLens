@@ -1,13 +1,14 @@
 import { test } from 'uvu';
 import * as assert from 'uvu/assert';
-import sinon from "sinon/pkg/sinon";
+import sinon from "sinon";
 import * as d3 from "d3";
 import { entropy, errorCount, errorPercent, errorDeviation, getErrorCountForSquare } from '../src/RatingMetrics';
-import * as dt from '../src/DataTransformer'
+import type { Rating, RatingInput } from '../src/RatingMetrics'
+import type { Metadata, Node, Dataset } from '../src/types'
 
 // data
 
-const dataAB = [
+const dataAB: Node[] = [
   {
     groundTruth: new d3.InternMap([["no", 200], ["yes", 200]]),
     size: 400,
@@ -61,7 +62,7 @@ const dataAB = [
   }
 ];
 
-const dataAC = [
+const dataAC: Node[] = [
   {
     groundTruth: new d3.InternMap([["no", 100], ["yes", 300]]),
     size: 400,
@@ -116,7 +117,7 @@ const dataAC = [
   }
 ];
 
-const dataAD = [
+const dataAD: Node[] = [
   {
     groundTruth: new d3.InternMap([["yes", 400]]),
     size: 400,
@@ -168,7 +169,7 @@ const dataAD = [
 ];
 
 // when the entire dataset is in one bin with a feature selected
-const dataE = [
+const dataE: Node[] = [
   {
     groundTruth: new d3.InternMap([["no", 100], ["yes", 300]]),
     size: 400,
@@ -183,26 +184,32 @@ const dataE = [
   }
 ];
 
-test.before.each(() => {
-  sinon.stub(dt, 'getData').callsFake((metadata, sel, dataset) => {
-    const [first, second] = sel;
+function getExampleMetadata(size: number = 100): Metadata {
+  return {
+    size: size,
+    features: {},
+    featureNames: [],
+    labelValues: [],
+    hasPredictions: true
+  };
+}
 
-    if (first === 'a' && second === 'b') {
-      return dataAB;
-    } else if(first === 'a' && second === 'c') {
-      return dataAC;
-    } else if (first === 'a' && second === 'd') {
-      return dataAD;
-    } else if (first === 'e' && second === undefined) {
-      return dataE;
-    } else {
-      throw new Error('getData passed wrong selected features');
-    }
+function getExampleDataset(): Dataset {
+  return Object.assign([], {
+    columns: [],
+    name: ''
   });
-});
+}
 
-const fakeGetData = sinon.fake((metadata, sel, dataset) => {
+
+// set up
+
+const fakeGetData = sinon.fake((metadata: Metadata, sel: string[], dataset: Dataset) => {
   const [first, second] = sel;
+
+  // ignore hints about not using values
+  metadata;
+  dataset;
 
   if (first === 'a' && second === 'b') {
     return dataAB;
@@ -217,7 +224,7 @@ const fakeGetData = sinon.fake((metadata, sel, dataset) => {
   }
 });
 
-// test.after.each(() => sinon.restore());
+// tests
 
 // entropy
 
@@ -239,8 +246,8 @@ test('entropy', () => {
 
   const args = {
     selected: ['a'],
-    metadata: { size: 710 },
-    dataset: [],
+    metadata: getExampleMetadata(710),
+    dataset: getExampleDataset(),
     available: ['b', 'c', 'd']
   };
 
@@ -261,8 +268,8 @@ test('entropy one bin', () => {
 
   const args = {
     selected: [],
-    metadata: { size: 400 },
-    dataset: [],
+    metadata: getExampleMetadata(400),
+    dataset: getExampleDataset(),
     available: ['e']
   };
 
@@ -283,8 +290,8 @@ test('error deviation', () => {
 
   const args = {
     selected: ['a'],
-    metadata: {},
-    dataset: [],
+    metadata: getExampleMetadata(),
+    dataset: getExampleDataset(),
     available: ['b', 'c', 'd']
   };
 
@@ -305,8 +312,8 @@ test('error deviation one bin', () => {
 
   const args = {
     selected: [],
-    metadata: { size: 400 },
-    dataset: [],
+    metadata: getExampleMetadata(400),
+    dataset: getExampleDataset(),
     available: ['e']
   };
 
@@ -326,8 +333,8 @@ test('error count', () => {
 
   const args = {
     selected: ['a'],
-    metadata: {},
-    dataset: [],
+    metadata: getExampleMetadata(),
+    dataset: getExampleDataset(),
     available: ['b', 'c', 'd']
   };
 
@@ -339,8 +346,8 @@ test('error count one bin', () => {
 
   const args = {
     selected: [],
-    metadata: { size: 400 },
-    dataset: [],
+    metadata: getExampleMetadata(400),
+    dataset: getExampleDataset(),
     available: ['e']
   };
 
@@ -360,8 +367,8 @@ test('error percent', () => {
 
   const args = {
     selected: ['a'],
-    metadata: {},
-    dataset: [],
+    metadata: getExampleMetadata(),
+    dataset: getExampleDataset(),
     available: ['b', 'c', 'd']
   };
 
@@ -369,12 +376,12 @@ test('error percent', () => {
 });
 
 test('error percent one bin', () => {
-  const expected = [ {feature: 'e', value: 0.25} ];
+  const expected: Rating[] = [ {feature: 'e', value: 0.25} ];
 
-  const args = {
+  const args: RatingInput = {
     selected: [],
-    metadata: { size: 400 },
-    dataset: [],
+    metadata: getExampleMetadata(400),
+    dataset: getExampleDataset(),
     available: ['e']
   };
 
@@ -386,42 +393,54 @@ test('error percent one bin', () => {
 // get error count for square
 
 test('get error count for no predictionResults', () => {
-  const square = {};
+  const square: Node = { size: 1, splits: new Map(), groundTruth: new d3.InternMap() };
 
-  assert.is(getErrorCountForSquare(square, fakeGetData), 0);
+  assert.is(getErrorCountForSquare(square), 0);
 });
 
 test('get error count for no classes', () => {
-  const square = {
+  const square: Node = {
+    size: 1,
+    splits: new Map(),
+    groundTruth: new d3.InternMap(),
     predictionResults: new d3.InternMap()
   };
 
-  assert.is(getErrorCountForSquare(square, fakeGetData), 0);
+  assert.is(getErrorCountForSquare(square), 0);
 });
 
 test('get error count for one class', () => {
-  const square = {
+  const square: Node = {
+    size: 1,
+    splits: new Map(),
+    groundTruth: new d3.InternMap(),
     predictionResults: new d3.InternMap([
       ["no", new d3.InternMap([["correct", 10], ["incorrect", 7]])],
     ])
   };
 
-  assert.is(getErrorCountForSquare(square, fakeGetData), 7);
+  assert.is(getErrorCountForSquare(square), 7);
 });
 
 test('get error count for two classes', () => {
-  const square = {
+  const square: Node = {
+    size: 1,
+    splits: new Map(),
+    groundTruth: new d3.InternMap(),
     predictionResults: new d3.InternMap([
       ["no", new d3.InternMap([["correct", 10], ["incorrect", 7]])],
       ["yes", new d3.InternMap([["correct", 20], ["incorrect", 9]])],
     ])
   };
 
-  assert.is(getErrorCountForSquare(square, fakeGetData), 16);
+  assert.is(getErrorCountForSquare(square), 16);
 });
 
 test('get error count for three classes', () => {
-  const square = {
+  const square: Node = {
+    size: 1,
+    splits: new Map(),
+    groundTruth: new d3.InternMap(),
     predictionResults: new d3.InternMap([
       ["no", new d3.InternMap([["correct", 10], ["incorrect", 7]])],
       ["yes", new d3.InternMap([["correct", 20], ["incorrect", 9]])],
@@ -430,7 +449,7 @@ test('get error count for three classes', () => {
     ])
   };
 
-  assert.is(getErrorCountForSquare(square, fakeGetData), 26);
+  assert.is(getErrorCountForSquare(square), 26);
 });
 
 test.run();

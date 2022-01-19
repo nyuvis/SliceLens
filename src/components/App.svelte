@@ -14,6 +14,10 @@
   // feature name to extent for quantitative features
   // on the whole dataset
   let featureExtents: Record<string, FeatureExtent> = {};
+
+  // @ts-ignore
+  // defined in rollup.config.js
+  const filtersEnabled: boolean = FILTERS_ENABLED;
 </script>
 
 <div id="container">
@@ -36,9 +40,7 @@
     </div>
     <DatasetSelector on:load={({detail}) => featureExtents = detail}/>
 
-    <!-- defined in rollup.config.js -->
-    <!-- svelte-ignore missing-declaration -->
-    {#if FILTERS_ENABLED}
+    {#if filtersEnabled}
       <FilteringButton {featureExtents}/>
     {/if}
 

@@ -12,7 +12,7 @@ export {
 
 export type Metric = (input: RatingInput, getData: (metadata: Metadata, selectedFeatures: string[], dataset: Dataset) => Node[]) => Rating[];
 export type Rating = {feature: string, value: number};
-type RatingInput = {selected: string[], metadata: Metadata, dataset: Dataset, available: string[]};
+export type RatingInput = {selected: string[], metadata: Metadata, dataset: Dataset, available: string[]};
 
 /*
   Return the feature that results in the nodes with the

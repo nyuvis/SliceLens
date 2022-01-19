@@ -13,6 +13,10 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   import * as d3 from 'd3';
   import { flip } from "svelte/animate";
 
+  // @ts-ignore
+  // defined in rollup.config.js
+  const ratingsEnabled: boolean = RATINGS_ENABLED;
+
   let features: string[] = [];
   $: if ($metadata !== null) {
     // sort by alphabetical order
@@ -41,8 +45,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     },
   ];
 
-  // RATINGS_ENABLED is defined in rollup.config.js
-  const defaultCriterion = RATINGS_ENABLED ? criteria[0].options[0] : criteria[0].options[1];
+  const defaultCriterion = ratingsEnabled ? criteria[0].options[0] : criteria[0].options[1];
   let criterion = defaultCriterion;
 
   $: hasPredictions = $metadata !== null && $metadata.hasPredictions;
@@ -234,9 +237,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   />
 {/if}
 
-<!-- defined in rollup.config.js -->
-<!-- svelte-ignore missing-declaration -->
-{#if RATINGS_ENABLED}
+{#if ratingsEnabled}
   <div class="label help-row">
     <p class="bold">Rating Metric</p>
     <QuestionBox>
