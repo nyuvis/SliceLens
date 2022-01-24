@@ -2,6 +2,7 @@
 <script lang="ts">
   import { dataset } from '../../../stores.js';
   import * as d3 from 'd3';
+  import type { Row } from '../../../types.js';
 
   export let feature: string;
 
@@ -15,7 +16,7 @@
   let data: { value: string, count: number }[];
 
   $: data = d3.rollups(
-    $dataset.map(d => d[feature]),
+    $dataset.rows.map((d: Row) => d[feature]),
     g => g.length,
     d => d
   ).sort((a, b) => d3.descending(a[1], b[1]))

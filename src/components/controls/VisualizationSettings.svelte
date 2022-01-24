@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { metadata } from '../../stores.js';
+  import { dataset } from '../../stores.js';
 
   export let showSize: boolean = true;
   let showPredictionsCheckBox: boolean = false;
   export let showPredictions: boolean = false;
 
-  $: if ($metadata !== null && $metadata.hasPredictions) {
+  $: if ($dataset !== null && $dataset.hasPredictions) {
     showPredictionsCheckBox = true;
   } else {
     showPredictionsCheckBox = false;

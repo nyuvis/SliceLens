@@ -6,13 +6,13 @@ https://www.w3schools.com/howto/howto_css_modals.asp
 <script lang="ts">
   import CategoricalFeatureEditor from "./CategoricalFeatureEditor.svelte";
   import QuantitativeFeatureEditor from "./QuantitativeFeatureEditor.svelte";
-  import { metadata, logs } from "../../stores.js";
+  import { features, logs } from "../../stores.js";
   import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
 
   export let featureName: string;
-  $: feature = $metadata.features[featureName];
+  $: feature = $features[featureName];
 
   let valid: boolean = true;
   $: canClose = valid || feature.type === 'C';
@@ -33,7 +33,7 @@ https://www.w3schools.com/howto/howto_css_modals.asp
 
     logs.add({ event: 'feature-edit', phase: 'close', feature });
 
-    $metadata = $metadata;
+    $features = $features;
     dispatch("close");
   }
 

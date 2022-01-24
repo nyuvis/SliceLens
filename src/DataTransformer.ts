@@ -1,12 +1,26 @@
 import * as d3 from "d3";
-import type { QuantitativeFeature, CategoricalFeature, Feature, Metadata, Dataset, Row, Node, Filter, FeatureExtent, TooltipData} from "./types";
+import type {
+  QuantitativeFeature,
+  CategoricalFeature,
+  Feature,
+  Features,
+  Dataset,
+  RegressionRow,
+  ClassificationRow,
+  Node,
+  Filter,
+  FeatureExtent,
+  TooltipData,
+  ClassificationDataset,
+  Row
+} from "./types";
 
 export {
-  cloneSelectedFeaturesMetadata,
+  cloneSelectedFeatures,
   equalIntervalThresholds,
   quantileThresholds,
-  getMetadata,
-  getData,
+  getFeatures,
+  getClassificationData,
   getBinLabels,
   getFilteredDataset,
   isNumeric,
@@ -19,7 +33,7 @@ export {
   parseDataset,
 };
 
-function cloneSelectedFeaturesMetadata(features: Record<string, Feature>, selectedFeatures: string[]): Record<string, Feature> {
+function cloneSelectedFeatures(features: Features, selectedFeatures: string[]): Features {
   const copyOfFeatures = {};
 
   selectedFeatures.forEach(featureName => {
@@ -56,7 +70,7 @@ function cloneSelectedFeaturesMetadata(features: Record<string, Feature>, select
   return copyOfFeatures;
 }
 
-/* crete copies of each filter. for categorical filters, do not
+/* create copies of each filter. for categorical filters, do not
   copy the selectedSet property, which can't be turned into JSON*/
 function cloneFilters(filters: Filter[]): Filter[] {
   return filters.map(filter => {
@@ -94,9 +108,9 @@ function addSelectedSetToFilters(filters: Filter[]) {
 
 /* for categorical features, get the unique feature values
    for quantiative features, get the min and max values */
-function getWholeDatasetFeatureExtents(md: Metadata): Record<string, FeatureExtent> {
+function getWholeDatasetFeatureExtents(features: Features): Record<string, FeatureExtent> {
   return Object.fromEntries(
-    Object.entries(md.features).map(([name, feature]) => {
+    Object.entries(features).map(([name, feature]) => {
       if (feature.type === "Q") {
         return [name, { type: "Q", extent: [...feature.extent]}];
       } else {
@@ -107,7 +121,7 @@ function getWholeDatasetFeatureExtents(md: Metadata): Record<string, FeatureExte
 }
 
 /* given the bins and a format function for a quantitative feature
-   return the ranges the bins as strings, which are used as labels
+   return the ranges of the bins as strings, which are used as labels
    in the visualiztion */
 function getBinLabels(bins: (number[] & { x0: number, x1: number })[], format: (n: number) => string): string[] {
   const n = bins.length;
@@ -154,6 +168,67 @@ function quantileThresholds(values: number[], numBins: number): number[] {
     .quantiles();
 }
 
+function isNumericFeature(values: unknown[]): boolean {
+  const uniqueValues = new Set(values);
+  return Array.from(uniqueValues).every(isNumeric) && uniqueValues.size > 12;
+}
+
+function parseDataset(data: d3.DSVRowArray<string>, name: string): Dataset {
+  const size = data.length;
+  const featureNames: string[] = data.columns.filter(d => d !== 'label' && d !== 'prediction');
+  const hasPredictions: boolean = data.columns.includes('prediction');
+
+  const quantitatveColumns = new Set(data.columns.filter(col => isNumericFeature(data.map(d => d[col]))));
+
+  const isRegression = quantitatveColumns.has("label") || quantitatveColumns.has("prediction");
+
+  if (isRegression) {
+    quantitatveColumns.add("label");
+    if (hasPredictions) {
+      quantitatveColumns.add("prediction");
+    }
+
+    // convert strings to numbers for quantitative columns
+    const rows = data.map(d => {
+      const row = {...d} as RegressionRow;
+      quantitatveColumns.forEach(col => row[col] = +row[col]);
+      return row;
+    });
+
+    return {
+      type: "regression" as const,
+      rows,
+      name,
+      featureNames,
+      labelValues: [],
+      hasPredictions,
+      size
+    };
+  } else {
+    quantitatveColumns.delete("label");
+    quantitatveColumns.delete("prediction");
+
+    // convert strings to numbers for quantitative columns
+    const rows = data.map(d => {
+      const row = {...d} as ClassificationRow;
+      quantitatveColumns.forEach(col => row[col] = +row[col]);
+      return row;
+    });
+
+    const labelValues: string[] = Array.from(new Set(data.map(d => d.label))).sort();
+
+    return {
+      type: "classification" as const,
+      rows,
+      name,
+      featureNames,
+      labelValues,
+      hasPredictions,
+      size
+    };
+  }
+}
+
 function isQuantitativeFeature(values: (string | number)[]): values is number[] {
   return typeof values[0] === 'number';
 }
@@ -162,44 +237,13 @@ function isCategoricalFeature(values: unknown[]): values is string[] {
   return typeof values[0] === 'string';
 }
 
-function isNumericFeature(values: unknown[]): boolean {
-  const uniqueValues = new Set(values);
-  return Array.from(uniqueValues).every(isNumeric) && uniqueValues.size > 12;
-}
-
-function parseDataset(data: d3.DSVRowArray<string>, name: string): Dataset {
-  const quantitatveColumns = new Set(
-    data.columns.filter(
-      col =>
-        col !== "label" &&
-        col !== "prediction" &&
-        isNumericFeature(data.map(d => d[col]))
-    )
-  );
-
-  const rows = data.map(d => {
-    const row: Row = {...d} as Row;
-    quantitatveColumns.forEach(col => row[col] = +row[col]);
-    return row;
-  });
-
-  return Object.assign(rows, { name, columns: data.columns });
-}
-
-function getMetadata(dataset: Dataset): Metadata {
-  if (!dataset || !dataset.columns) {
+function getFeatures(dataset: Dataset): Features {
+  if (!dataset) {
     return null;
   }
 
-  const cols: string[] = dataset.columns;
-
-  const labelValues: string[] = Array.from(new Set(dataset.map(d => d.label))).sort().map(d => d.toString());
-
-  const featureNames: string[] = cols.filter(d => d !== 'label' && d !== 'prediction');
-  const hasPredictions: boolean = cols.includes('prediction');
-
-  const features = featureNames.reduce((acc, val) => {
-    const values: (string | number)[] = dataset.map(d => d[val]);
+  const features = dataset.featureNames.reduce((acc, val) => {
+    const values: (string | number)[] = dataset.rows.map((d: Row) => d[val]);
 
     if (isQuantitativeFeature(values)) {
       const numBins = 3;
@@ -247,22 +291,16 @@ function getMetadata(dataset: Dataset): Metadata {
     return acc;
   }, {});
 
-  return {
-    features: features,
-    featureNames: featureNames,
-    labelValues: labelValues,
-    hasPredictions: hasPredictions,
-    size: dataset.length,
-  }
+  return features;
 }
 
-function getData(metadata: Metadata, selectedFeatures: string[], dataset: Dataset): Node[] {
-  if (metadata === null) {
+function getClassificationData(features: Features, selectedFeatures: string[], dataset: ClassificationDataset): Node[] {
+  if (features === null) {
     return null;
   }
 
   // g is an array of all of the instances belonging to the same subset
-  function reducer(g: Row[]) {
+  function reducer(g: ClassificationRow[]) {
     // map from ground truth label to number of instances with that label
     const groundTruth = d3.rollup(g, v => v.length, d => d.label);
 
@@ -272,7 +310,7 @@ function getData(metadata: Metadata, selectedFeatures: string[], dataset: Datase
       groundTruth,
     };
 
-    if (metadata.hasPredictions) {
+    if (dataset.hasPredictions) {
       // if the dataset has model predictions,
       // also count the number of each prediction
       // and the amount correct and incorrect
@@ -303,10 +341,10 @@ function getData(metadata: Metadata, selectedFeatures: string[], dataset: Datase
      Ex: 0-2-1 means the first bin for the first selected feature,
      the third bin for the second selected feature, and the second
      bin for the third selected feature. */
-  function key(d: Row): string {
+  function key(d: ClassificationRow): string {
     return selectedFeatures
       .map(featureName => {
-        const feat = metadata.features[featureName];
+        const feat = features[featureName];
         if (feat.type === "Q") {
           /* d3.bisect(array, x): "returns an insertion point which comes after
             (to the right of) any existing entries of x in array"
@@ -324,7 +362,7 @@ function getData(metadata: Metadata, selectedFeatures: string[], dataset: Datase
       .join(",");
   }
 
-  return d3.rollups(dataset, reducer, key)
+  return d3.rollups(dataset.rows, reducer, key)
     .map(([key, value]) => {
     // splits is a map from the name of the selected feature
     // to the subset's bin index
@@ -343,39 +381,64 @@ function isNumeric(str: any): boolean {
   return !isNaN(str) && !isNaN(parseFloat(str));
 }
 
+
 function getFilteredDataset(dataset: Dataset, filters: Filter[]): Dataset {
   if (filters.length === 0) {
     return dataset;
   }
 
-  const filtered = dataset.filter(row => {
-    for (let i = 0; i < filters.length; i++) {
-      const filt = filters[i];
-      const value = row[filt.feature];
+  function getFilteredRows<Type>(rows: Type[]): Type[] {
+    return rows.filter(row => {
+      for (let i = 0; i < filters.length; i++) {
+        const filt = filters[i];
+        const value = row[filt.feature];
 
-      if (filt.type === 'Q') {
-        if (value < filt.min) {
+        if (filt.type === 'Q') {
+          if (value < filt.min) {
+            return false;
+          }
+
+          if (filt.rightInclusive) {
+            if (value > filt.max) {
+              return false;
+            }
+          } else {
+            if (value >= filt.max) {
+              return false;
+            }
+          }
+        } else if (!filt.selectedSet.has(value as string)) {
           return false;
         }
-
-        if (filt.rightInclusive) {
-          if (value > filt.max) {
-            return false;
-          }
-        } else {
-          if (value >= filt.max) {
-            return false;
-          }
-        }
-      } else if (!filt.selectedSet.has(value as string)) {
-        return false;
       }
-    }
 
-    return true;
-  });
+      return true;
+    });
+  }
 
-  return Object.assign(filtered, {columns: dataset.columns, name: dataset.name});
+  if (dataset.type === 'classification') {
+    const rows = getFilteredRows(dataset.rows);
+    return {
+      type: 'classification',
+      rows: rows,
+      name: dataset.name,
+      featureNames: dataset.featureNames,
+      labelValues: dataset.labelValues,
+      hasPredictions: dataset.hasPredictions,
+      size: rows.length
+    };
+  } else {
+    const rows = getFilteredRows(dataset.rows);
+    return {
+      type: 'regression',
+      rows: rows,
+      name: dataset.name,
+      featureNames: dataset.featureNames,
+      labelValues: dataset.labelValues,
+      hasPredictions: dataset.hasPredictions,
+      size: rows.length
+    };
+  }
 }
 
 /* functions for positioning the squares in the matrix */

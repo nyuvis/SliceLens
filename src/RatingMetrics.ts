@@ -1,4 +1,4 @@
-import type { Node, Metadata, Dataset } from './types';
+import type { Node, Features, Dataset } from './types';
 
 import * as d3 from "d3";
 
@@ -10,22 +10,22 @@ export {
   getErrorCountForSquare,
 };
 
-export type Metric = (input: RatingInput, getData: (metadata: Metadata, selectedFeatures: string[], dataset: Dataset) => Node[]) => Rating[];
+export type Metric = (input: RatingInput, getData: (features: Features, selectedFeatures: string[], dataset: Dataset) => Node[]) => Rating[];
 export type Rating = {feature: string, value: number};
-export type RatingInput = {selected: string[], metadata: Metadata, dataset: Dataset, available: string[]};
+export type RatingInput = {selected: string[], features: Features, dataset: Dataset, available: string[]};
 
 /*
   Return the feature that results in the nodes with the
   lowest average entropy.
 */
-function entropy({selected, metadata, dataset, available}: RatingInput, getData: (metadata: Metadata, selectedFeatures: string[], dataset: Dataset) => Node[]): Rating[] {
+function entropy({selected, features, dataset, available}: RatingInput, getData: (features: Features, selectedFeatures: string[], dataset: Dataset) => Node[]): Rating[] {
   return available.map(feature => {
     const sel = [...selected, feature];
-    const data = getData(metadata, sel, dataset);
+    const data = getData(features, sel, dataset);
 
     // give higher rating to lower entropy, so negate it
     const value = -d3.sum(data, square => {
-      const weight = square.size / metadata.size;
+      const weight = square.size / dataset.size;
       return weight * H(square);
     });
 
@@ -44,10 +44,10 @@ function entropy({selected, metadata, dataset, available}: RatingInput, getData:
   Give a higher rating to features that result in the
   subsets with higher standard deviations of percent error
 */
-function errorDeviation({selected, metadata, dataset, available}: RatingInput, getData: (metadata: Metadata, selectedFeatures: string[], dataset: Dataset) => Node[]): Rating[] {
+function errorDeviation({selected, features, dataset, available}: RatingInput, getData: (features: Features, selectedFeatures: string[], dataset: Dataset) => Node[]): Rating[] {
   return available.map(feature => {
     const sel = [...selected, feature];
-    const data = getData(metadata, sel, dataset);
+    const data = getData(features, sel, dataset);
 
     // d3.deviation returns undefined if there are fewer than two numbers
     const value = data.length < 2 ? 0 : d3.deviation(data, d => getErrorCountForSquare(d) / d.size);
@@ -60,10 +60,10 @@ function errorDeviation({selected, metadata, dataset, available}: RatingInput, g
   Give a higher rating to features that result in the
   single nodes that have the higher number of errors
 */
-function errorCount({selected, metadata, dataset, available}: RatingInput, getData: (metadata: Metadata, selectedFeatures: string[], dataset: Dataset) => Node[]): Rating[] {
+function errorCount({selected, features, dataset, available}: RatingInput, getData: (features: Features, selectedFeatures: string[], dataset: Dataset) => Node[]): Rating[] {
   return available.map(feature => {
     const sel = [...selected, feature];
-    const data = getData(metadata, sel, dataset);
+    const data = getData(features, sel, dataset);
 
     const value = d3.max(data, getErrorCountForSquare);
 
@@ -75,10 +75,10 @@ function errorCount({selected, metadata, dataset, available}: RatingInput, getDa
   Give a higher rating to features that result in the
   single nodes that have the higher percent of errors
 */
-function errorPercent({selected, metadata, dataset, available}: RatingInput, getData: (metadata: Metadata, selectedFeatures: string[], dataset: Dataset) => Node[]): Rating[] {
+function errorPercent({selected, features, dataset, available}: RatingInput, getData: (features: Features, selectedFeatures: string[], dataset: Dataset) => Node[]): Rating[] {
   return available.map(feature => {
     const sel = [...selected, feature];
-    const data = getData(metadata, sel, dataset);
+    const data = getData(features, sel, dataset);
 
     const value = d3.max(data, d => getErrorCountForSquare(d) / d.size);
 

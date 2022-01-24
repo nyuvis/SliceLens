@@ -4,7 +4,7 @@
   import { equalIntervalThresholds, quantileThresholds, getBinLabels } from "../../DataTransformer.js";
   import Histogram from '../visualization/histogram/Histogram.svelte';
   import * as d3 from "d3";
-  import type { QuantitativeFeature } from "../../types.js";
+  import type { QuantitativeFeature, Row } from "../../types.js";
 
   export let feature: QuantitativeFeature;
 
@@ -20,7 +20,7 @@
 
   const dispatch = createEventDispatcher();
 
-  const datasetValues: number[] = $dataset.map(d => d[feature.name]) as number[];
+  const datasetValues: number[] = $dataset.rows.map((d: Row) => d[feature.name]) as number[];
   const extent: [number, number] = d3.extent(datasetValues);
 
   const splits = [

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { format } from 'd3';
-  import { metadata } from "../../../stores.js";
+  import { features, dataset } from "../../../stores.js";
   import { getTooltipAmounts } from "../../../DataTransformer.js";
   import type { Node } from '../../../types';
 
@@ -22,11 +22,11 @@
     d.splits.size === 0
       ? []
       : Array.from(d.splits).map(([featureName, splitIndex]) => {
-          const split = $metadata.features[featureName].values[splitIndex];
+          const split = $features[featureName].values[splitIndex];
           return {featureName, split};
         });
 
-  $: amounts = getTooltipAmounts(showPredictions && $metadata.hasPredictions, d, percentFormat);
+  $: amounts = getTooltipAmounts(showPredictions && $dataset.hasPredictions, d, percentFormat);
 
   // keep the tool tip on the screen
 
@@ -68,7 +68,7 @@
   {/if}
 
   <div class="size group">
-    {d.size}/{$metadata.size} instances ({percentFormat(d.size / $metadata.size)})
+    {d.size}/{$dataset.size} instances ({percentFormat(d.size / $dataset.size)})
   </div>
 
   <div class="divider"></div>

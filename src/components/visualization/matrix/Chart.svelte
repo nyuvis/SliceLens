@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { metadata } from '../../../stores.js';
+  import { dataset } from '../../../stores.js';
   import ColorLegend from './ColorLegend.svelte';
   import Matrix from './Matrix.svelte';
   import * as d3 from 'd3';
@@ -9,7 +9,7 @@
 
   let color: d3.ScaleOrdinal<string, string, string>;
   $: color = d3.scaleOrdinal<string>()
-      .domain($metadata.labelValues)
+      .domain($dataset.labelValues)
       .range(d3.schemeCategory10)
       .unknown("black");
 </script>

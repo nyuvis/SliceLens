@@ -1,6 +1,47 @@
 import type {InternMap} from "d3";
 
-// metadata
+
+// dataset
+
+export type ClassificationRow = Record<string, string|number> & { label: string, prediction?: string };
+export type RegressionRow = Record<string, string|number> & { label: number, prediction?: number };
+export type Row = ClassificationRow | RegressionRow;
+
+export type ClassificationDataset = {
+  type: "classification",
+  rows: ClassificationRow[]
+  name: string,
+  featureNames: string[],
+  labelValues: string[],
+  hasPredictions: boolean,
+  size: number
+};
+
+export type RegressionDataset = {
+  type: "regression",
+  rows: RegressionRow[],
+  name: string,
+  featureNames: string[],
+  labelValues: string[],
+  hasPredictions: boolean,
+  size: number
+};
+
+export type Dataset = ClassificationDataset | RegressionDataset;
+
+
+// data
+
+export type Node = {
+  size: number,
+  splits: Map<string, number>,
+  groundTruth: InternMap<string, number>,
+  predictionCounts?: InternMap<string, number>,
+  predictionResults?: InternMap<string, InternMap<string, number>>
+};
+
+
+// features
 
 export type QuantitativeFeature = {
   type: "Q",
@@ -23,13 +64,10 @@ export type CategoricalFeature = {
 
 export type Feature = QuantitativeFeature | CategoricalFeature;
 
-export type Metadata = {
-  features: Record<string, Feature>,
-  featureNames: string[],
-  labelValues: string[],
-  hasPredictions: boolean,
-  size: number
-};
+export type Features = Record<string, Feature>;
+
+
+// extents
 
 export type CategoricalExtent = {
   type: "C",
@@ -43,19 +81,6 @@ export type QuantitativeExtent = {
 
 export type FeatureExtent = CategoricalExtent | QuantitativeExtent;
 
-// dataset
-
-export type Row = Record<string, string|number> & { label: string, prediction?: string };
-
-export type Dataset = Row[] & { columns: string[], name: string };
-
-export type Node = {
-  size: number,
-  splits: Map<string, number>,
-  groundTruth: InternMap<string, number>,
-  predictionCounts?: InternMap<string, number>,
-  predictionResults?: InternMap<string, InternMap<string, number>>
-};
 
 // filters
 
@@ -94,7 +119,7 @@ export type TooltipData = {
 
 export type NoteState = {
   selectedFeatures: string[],
-  selectedFeaturesMetadata: Record<string, Feature>,
+  selectedFeaturesInfo: Record<string, Feature>,
   dataset: string,
   filters: Filter[]
 };

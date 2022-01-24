@@ -4,8 +4,8 @@
   import Dropdown from './Dropdown.svelte';
   import MenuItem from './MenuItem.svelte';
   import QuestionBox from "../QuestionBox.svelte";
-  import { dataset, metadata } from "../../stores.js";
-  import { getData } from "../../DataTransformer.js";
+  import { dataset, features } from "../../stores.js";
+  import { getClassificationData } from "../../DataTransformer.js";
   import * as d3 from "d3";
   import type { CategoricalFeature, Node } from "../../types";
 
@@ -93,7 +93,9 @@
   function onClickSortCount() {
     updateFeature();
 
-    const data: Node[] = getData($metadata, [feature.name], $dataset);
+    const data: Node[] = ($dataset.type === 'classification') ?
+        getClassificationData($features, [feature.name], $dataset) :
+        [];
 
     const valueToCount: Map<string, number> = new Map(data.map(d => {
       const valueIndex = d.splits.get(feature.name);

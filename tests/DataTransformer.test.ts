@@ -2,10 +2,10 @@ import { test } from 'uvu';
 import * as assert from 'uvu/assert';
 import * as d3 from "d3";
 import {
-  cloneSelectedFeaturesMetadata,
+  cloneSelectedFeatures,
   equalIntervalThresholds,
-  getMetadata,
-  getData,
+  getFeatures,
+  getClassificationData,
   getBinLabels,
   getFilteredDataset,
   isNumeric,
@@ -18,9 +18,9 @@ import {
   parseDataset
 } from '../src/DataTransformer';
 import * as fs from "fs";
-import type {Filter, Metadata} from '../src/types';
+import type {Filter, Features, Dataset} from '../src/types';
 
-function readCsv(filename: string) {
+function readCsv(filename: string): Dataset {
   const data = d3.csvParse(
     fs.readFileSync(`./tests/data/${filename}`).toString(),
   );
@@ -242,17 +242,11 @@ test('add selected set to filters', () => {
 // get whole dataset features extent
 
 test('get whole dataset feature extents', () => {
-  const md: Metadata = {
-    features: {
-      'abc': { name: 'abc', type: 'Q', extent: [-1, 1], numBins: 0, splitType: "interval", thresholds: [], values: [], format: '' },
-      'def': { name: 'def', type: 'Q', extent: [15, 30], numBins: 0, splitType: "interval", thresholds: [], values: [], format: '' },
-      'ghi': { name: 'ghi', type: 'C', categories: ['1', '2', '3', '4', '5'],  values: [], valueToGroup: {}},
-      'jkl': { name: 'jkl', type: 'C', categories: ['a', 'b', 'c', 'd', 'e'], values: [], valueToGroup: {} },
-    },
-    featureNames: [],
-    labelValues: [],
-    hasPredictions: false,
-    size: 0
+  const features: Features = {
+    'abc': { name: 'abc', type: 'Q', extent: [-1, 1], numBins: 0, splitType: "interval", thresholds: [], values: [], format: '' },
+    'def': { name: 'def', type: 'Q', extent: [15, 30], numBins: 0, splitType: "interval", thresholds: [], values: [], format: '' },
+    'ghi': { name: 'ghi', type: 'C', categories: ['1', '2', '3', '4', '5'],  values: [], valueToGroup: {}},
+    'jkl': { name: 'jkl', type: 'C', categories: ['a', 'b', 'c', 'd', 'e'], values: [], valueToGroup: {} },
   };
 
   const expected = {
@@ -262,27 +256,27 @@ test('get whole dataset feature extents', () => {
     'jkl': { type: 'C', categories: ['a', 'b', 'c', 'd', 'e'] },
   };
 
-  const actual = getWholeDatasetFeatureExtents(md);
+  const actual = getWholeDatasetFeatureExtents(features);
 
   assert.equal(actual, expected);
 
   // mutating features should not mutate the feature extents
 
-  if (md.features['abc'].type === 'Q' && actual['abc'].type === 'Q') {
-    md.features['abc'].extent[0] = 0;
+  if (features['abc'].type === 'Q' && actual['abc'].type === 'Q') {
+    features['abc'].extent[0] = 0;
     assert.not.equal(
       actual['abc'].extent,
-      md.features['abc'].extent
+      features['abc'].extent
     );
   } else {
     throw new Error("feature has wrong type");
   }
 
-  if (md.features['jkl'].type === 'C' && actual['jkl'].type === 'C') {
-    md.features['jkl'].categories[0] = 'x';
+  if (features['jkl'].type === 'C' && actual['jkl'].type === 'C') {
+    features['jkl'].categories[0] = 'x';
     assert.not.equal(
       actual['jkl'].categories,
-      md.features['jkl'].categories
+      features['jkl'].categories
     );
   } else {
     throw new Error("feature has wrong type");
@@ -293,61 +287,61 @@ test('get whole dataset feature extents', () => {
 
 test('clone selected features metadata', () => {
   // copying
-  const md: Metadata = readJson('metadata-1.json');
-  const actual = cloneSelectedFeaturesMetadata(md.features, ['age', 'favoriteNumber', 'job']);
+  const features: Features = readJson('features-1.json');
+  const actual = cloneSelectedFeatures(features, ['age', 'favoriteNumber', 'job']);
   const expected = {
-    'age': md.features['age'],
-    'favoriteNumber': md.features['favoriteNumber'],
-    'job': md.features['job'],
+    'age': features['age'],
+    'favoriteNumber': features['favoriteNumber'],
+    'job': features['job'],
   };
   assert.equal(actual, expected);
 
   // mutating
 
-  if (md.features['age'].type === 'Q' && actual['age'].type === 'Q') {
-    md.features['age'].extent[0] = 0;
+  if (features['age'].type === 'Q' && actual['age'].type === 'Q') {
+    features['age'].extent[0] = 0;
     assert.not.equal(
-      md.features['age'].extent,
+      features['age'].extent,
       actual['age'].extent
     );
 
-    md.features['age'].thresholds[0] = 0;
+    features['age'].thresholds[0] = 0;
     assert.not.equal(
-      md.features['age'].thresholds,
+      features['age'].thresholds,
       actual['age'].thresholds
     );
   } else {
     throw new Error("feature has wrong type");
   }
 
-  md.features['age'].values.push('test');
+  features['age'].values.push('test');
   assert.not.equal(
-    md.features['age'].values,
+    features['age'].values,
     actual['age'].values
   );
 
-  md.features['age'].values.push('test');
+  features['age'].values.push('test');
   assert.not.equal(
-    md.features['age'].values,
+    features['age'].values,
     actual['age'].values
   );
 
-  md.features['job'].values.push('test');
+  features['job'].values.push('test');
   assert.not.equal(
-    md.features['job'].values,
+    features['job'].values,
     actual['job'].values
   );
 
-  if (md.features['job'].type === 'C' && actual['job'].type === 'C') {
-    md.features['job'].categories.push('test');
+  if (features['job'].type === 'C' && actual['job'].type === 'C') {
+    features['job'].categories.push('test');
     assert.not.equal(
-      md.features['job'].categories,
+      features['job'].categories,
       actual['job'].categories
     );
 
-    md.features['job'].valueToGroup['test'] = 'test';
+    features['job'].valueToGroup['test'] = 'test';
     assert.not.equal(
-      md.features['job'].valueToGroup,
+      features['job'].valueToGroup,
       actual['job'].valueToGroup
     );
   } else {
@@ -359,18 +353,18 @@ test('clone selected features metadata', () => {
 
 test('get metadata with predictions', () => {
   const dataWithPred = readCsv('dataset-1.csv');
-  const expectedWithPred = readJson('metadata-1.json');
+  const expectedWithPred = readJson('features-1.json');
   assert.equal(
-    getMetadata(dataWithPred),
+    getFeatures(dataWithPred),
     expectedWithPred
   );
 });
 
 test('get metadata without predictions', () => {
   const dataNoPred = readCsv('dataset-2.csv');
-  const expectedNoPred = readJson('metadata-2.json');
+  const expectedNoPred = readJson('features-2.json');
   assert.equal(
-    getMetadata(dataNoPred),
+    getFeatures(dataNoPred),
     expectedNoPred
   );
 });
@@ -378,7 +372,11 @@ test('get metadata without predictions', () => {
 // get data
 
 test('get data null', () => {
-  assert.equal(getData(null, [], Object.assign([], { columns: [], name: ''})), null);
+  const dataset = readCsv('dataset-1.csv');
+  if (dataset.type === 'regression') {
+    throw new Error('wrong dataset type');
+  }
+  assert.equal(getClassificationData(null, [], dataset), null);
 });
 
 test('get data without predictions, no selected features', () => {
@@ -390,10 +388,13 @@ test('get data without predictions, no selected features', () => {
     }
   ];
   const dataset = readCsv('dataset-2.csv');
-  const md = readJson('metadata-2.json');
+  if (dataset.type === 'regression') {
+    throw new Error('wrong dataset type');
+  }
+  const features = readJson('features-2.json');
 
   assert.equal(
-    getData(md, [], dataset),
+    getClassificationData(features, [], dataset),
     expected
   );
 });
@@ -413,10 +414,13 @@ test('get data with predictions, no selected features', () => {
   ];
 
   const dataset = readCsv('dataset-1.csv');
-  const md = readJson('metadata-1.json');
+  if (dataset.type === 'regression') {
+    throw new Error('wrong dataset type');
+  }
+  const features = readJson('features-1.json');
 
   assert.equal(
-    getData(md, [], dataset),
+    getClassificationData(features, [], dataset),
     expected
   );
 });
@@ -498,8 +502,12 @@ test('get data without predictions, two selected features', () => {
   ];
 
   const dataset = readCsv('dataset-2.csv');
-  const md = readJson('metadata-2.json');
-  const data = getData(md, ['age', 'favoriteNumber'], dataset)
+  if (dataset.type === 'regression') {
+    throw new Error('wrong dataset type');
+  }
+
+  const features = readJson('features-2.json');
+  const data = getClassificationData(features, ['age', 'favoriteNumber'], dataset)
     .sort((a, b) => {
       return d3.ascending(
         `${a.splits.get('age')},${a.splits.get('favoriteNumber')}`,
@@ -629,8 +637,13 @@ test('get data with predictions, two selected features', () => {
   ];
 
   const dataset = readCsv('dataset-1.csv');
-  const md = readJson('metadata-1.json');
-  const data = getData(md, ['age', 'favoriteNumber'], dataset)
+  if (dataset.type === 'regression') {
+    throw new Error('wrong dataset type');
+  }
+
+  const features = readJson('features-1.json');
+
+  const data = getClassificationData(features, ['age', 'favoriteNumber'], dataset)
     .sort((a, b) => {
       return d3.ascending(
         `${a.splits.get('age')},${a.splits.get('favoriteNumber')}`,
@@ -724,8 +737,12 @@ test('get data with predictions, two selected features, one grouped', () => {
   ];
 
   const dataset = readCsv('dataset-1.csv');
-  const md = readJson('metadata-3.json');
-  const data = getData(md, ['age', 'job'], dataset)
+  if (dataset.type === 'regression') {
+    throw new Error('wrong dataset type');
+  }
+
+  const features = readJson('features-3.json');
+  const data = getClassificationData(features, ['age', 'job'], dataset)
     .sort((a, b) => {
       return d3.ascending(
         `${a.splits.get('age')},${a.splits.get('job')}`,
@@ -765,8 +782,12 @@ test('get data with predictions, one selected feature, empty subset', () => {
   ];
 
   const dataset = readCsv('dataset-1.csv');
-  const md = readJson('metadata-4.json');
-  const data = getData(md, ['height'], dataset)
+  if (dataset.type === 'regression') {
+    throw new Error('wrong dataset type');
+  }
+
+  const features = readJson('features-4.json');
+  const data = getClassificationData(features, ['height'], dataset)
     .sort((a, b) => d3.ascending(a.splits.get('height'), b.splits.get('height')));
 
   assert.equal(data, expected);
@@ -784,6 +805,9 @@ test('get filtered dataset - no filters', () => {
 
 test('get filtered dataset - quantitative feature right inclusive', () => {
   const fullDataset = readCsv('dataset-1.csv');
+  if (fullDataset.type === 'regression') {
+    throw new Error('wrong dataset type');
+  }
 
   const filters: Filter[] = [
     {
@@ -797,12 +821,23 @@ test('get filtered dataset - quantitative feature right inclusive', () => {
   ];
 
   const result = getFilteredDataset(fullDataset, filters);
+  if (result.type === 'regression') {
+    throw new Error('wrong dataset type');
+  }
 
-  assert.equal(result.columns, fullDataset.columns);
+  assert.equal(result.type, fullDataset.type);
   assert.equal(result.name, fullDataset.name);
-  assert.not.equal(result, fullDataset);
+  assert.equal(result.featureNames, fullDataset.featureNames);
+  assert.equal(result.labelValues, fullDataset.labelValues);
+  assert.equal(result.hasPredictions, fullDataset.hasPredictions);
+  assert.equal(result.size, result.rows.length);
 
-  const ages = result.map(d => d.age);
+  assert.ok(result.rows.length > 0);
+  assert.ok(result.size < fullDataset.size);
+
+  assert.not.equal(result.rows, fullDataset.rows);
+
+  const ages = result.rows.map(d => d.age);
 
   ages.forEach(d => {
     assert.ok(d >= 30 && d <= 40);
@@ -814,6 +849,9 @@ test('get filtered dataset - quantitative feature right inclusive', () => {
 
 test('get filtered dataset - quantitative feature right exclusive', () => {
   const fullDataset = readCsv('dataset-1.csv');
+  if (fullDataset.type === 'regression') {
+    throw new Error('wrong dataset type');
+  }
 
   const filters: Filter[] = [
     {
@@ -826,12 +864,23 @@ test('get filtered dataset - quantitative feature right exclusive', () => {
     }
   ];
   const result = getFilteredDataset(fullDataset, filters);
+  if (result.type === 'regression') {
+    throw new Error('wrong dataset type');
+  }
 
-  assert.equal(result.columns, fullDataset.columns);
+  assert.equal(result.type, fullDataset.type);
   assert.equal(result.name, fullDataset.name);
-  assert.not.equal(result, fullDataset);
+  assert.equal(result.featureNames, fullDataset.featureNames);
+  assert.equal(result.labelValues, fullDataset.labelValues);
+  assert.equal(result.hasPredictions, fullDataset.hasPredictions);
+  assert.equal(result.size, result.rows.length);
 
-  const ages = result.map(d => d.age);
+  assert.ok(result.rows.length > 0);
+  assert.ok(result.size < fullDataset.size);
+
+  assert.not.equal(result.rows, fullDataset.rows);
+
+  const ages = result.rows.map(d => d.age);
 
   ages.forEach(d => {
     assert.ok(d >= 30 && d < 40);
@@ -843,6 +892,9 @@ test('get filtered dataset - quantitative feature right exclusive', () => {
 
 test('get filtered dataset - number categories', () => {
   const fullDataset = readCsv('dataset-1.csv');
+  if (fullDataset.type === 'regression') {
+    throw new Error('wrong dataset type');
+  }
 
   const filters: Filter[] = [
     {
@@ -854,12 +906,23 @@ test('get filtered dataset - number categories', () => {
     }
   ];
   const result = getFilteredDataset(fullDataset, filters);
+  if (result.type === 'regression') {
+    throw new Error('wrong dataset type');
+  }
 
-  assert.equal(result.columns, fullDataset.columns);
+  assert.equal(result.type, fullDataset.type);
   assert.equal(result.name, fullDataset.name);
-  assert.not.equal(result, fullDataset);
+  assert.equal(result.featureNames, fullDataset.featureNames);
+  assert.equal(result.labelValues, fullDataset.labelValues);
+  assert.equal(result.hasPredictions, fullDataset.hasPredictions);
+  assert.equal(result.size, result.rows.length);
 
-  const favoriteNumbers = result.map(d => d.favoriteNumber);
+  assert.ok(result.rows.length > 0);
+  assert.ok(result.size < fullDataset.size);
+
+  assert.not.equal(result.rows, fullDataset.rows);
+
+  const favoriteNumbers = result.rows.map(d => d.favoriteNumber);
 
   favoriteNumbers.forEach(d => {
     assert.ok(d === '1' || d === '5');
@@ -881,12 +944,23 @@ test('get filtered dataset - string categories', () => {
     }
   ];
   const result = getFilteredDataset(fullDataset, filters);
+  if (result.type === 'regression') {
+    throw new Error('wrong dataset type');
+  }
 
-  assert.equal(result.columns, fullDataset.columns);
+  assert.equal(result.type, fullDataset.type);
   assert.equal(result.name, fullDataset.name);
-  assert.not.equal(result, fullDataset);
+  assert.equal(result.featureNames, fullDataset.featureNames);
+  assert.equal(result.labelValues, fullDataset.labelValues);
+  assert.equal(result.hasPredictions, fullDataset.hasPredictions);
+  assert.equal(result.size, result.rows.length);
 
-  const jobs = result.map(d => d.job);
+  assert.ok(result.rows.length > 0);
+  assert.ok(result.size < fullDataset.size);
+
+  assert.not.equal(result.rows, fullDataset.rows);
+
+  const jobs = result.rows.map(d => d.job);
 
   jobs.forEach(d => {
     assert.ok(d === 'student' || d === 'teacher');
@@ -918,14 +992,24 @@ test('get filtered dataset - two filters', () => {
     }
   ];
   const result = getFilteredDataset(fullDataset, filters);
+  if (result.type === 'regression') {
+    throw new Error('wrong dataset type');
+  }
 
-  assert.equal(result.columns, fullDataset.columns);
+  assert.equal(result.type, fullDataset.type);
   assert.equal(result.name, fullDataset.name);
-  assert.not.equal(result, fullDataset);
-  assert.ok(result.length > 0);
-  assert.ok(result.length < fullDataset.length);
+  assert.equal(result.featureNames, fullDataset.featureNames);
+  assert.equal(result.labelValues, fullDataset.labelValues);
+  assert.equal(result.hasPredictions, fullDataset.hasPredictions);
+  assert.equal(result.size, result.rows.length);
 
-  result.forEach(d => {
+  assert.ok(result.rows.length > 0);
+  assert.ok(result.size < fullDataset.size);
+
+  assert.not.equal(result.rows, fullDataset.rows);
+
+
+  result.rows.forEach(d => {
     assert.ok(d['job'] === 'student' || d['job'] === 'teacher');
     assert.ok(d['age'] >= 30 && d['age'] <= 40);
   });

@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { getMetadata, getWholeDatasetFeatureExtents, parseDataset } from '../../DataTransformer.js';
-  import { dataset, fullDataset, selectedFeatures, metadata, filters } from '../../stores.js';
+  import { getFeatures, getWholeDatasetFeatureExtents, parseDataset } from '../../DataTransformer.js';
+  import { dataset, fullDataset, selectedFeatures, features, filters } from '../../stores.js';
   import QuestionBox from '../QuestionBox.svelte';
   import * as d3 from "d3";
   import { createEventDispatcher } from 'svelte';
-  import type { Metadata } from '../../types.js';
+  import type { Features } from '../../types.js';
 
   const dispatch = createEventDispatcher();
 
@@ -35,18 +35,18 @@
     d3.csv(path).then(data => {
       const ds = parseDataset(data, name);
       $filters = [];
-      const md: Metadata = getMetadata(ds);
+      const feat: Features = getFeatures(ds);
 
       // get the extent of quantitatve features
       // and unique values of categorical features
       // on the whole dataset with no filters.
       // this is used to bound the features that can be set
-      dispatch('load', getWholeDatasetFeatureExtents(md));
+      dispatch('load', getWholeDatasetFeatureExtents(feat));
 
       $selectedFeatures = [];
       $dataset = ds;
       $fullDataset = ds;
-      $metadata = md;
+      $features = feat;
     });
   }
 
@@ -85,14 +85,14 @@
 
       $filters = [];
 
-      const md = getMetadata(ds);
+      const feat = getFeatures(ds);
 
-      dispatch('load', getWholeDatasetFeatureExtents(md));
+      dispatch('load', getWholeDatasetFeatureExtents(feat));
 
       $selectedFeatures = [];
       $dataset = ds;
       $fullDataset = ds;
-      $metadata = md;
+      $features = feat;
     }
 
     reader.readAsText(file);

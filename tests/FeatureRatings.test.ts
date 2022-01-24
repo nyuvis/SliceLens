@@ -4,23 +4,18 @@ import sinon from "sinon";
 import { getFeatureRatings, normalize } from '../src/FeatureRatings';
 import * as metrics from '../src/RatingMetrics';
 import type { Rating } from '../src/RatingMetrics'
-import type { Metadata, Dataset } from '../src/types'
+import type { Dataset } from '../src/types'
 
-function getExampleMetadata(featureNames: string[] = []): Metadata {
+function getExampleDataset(featureNames: string[] = []): Dataset {
   return {
-    size: 0,
-    features: {},
+    type: 'classification',
+    rows: [],
+    name: '',
     featureNames: featureNames,
     labelValues: [],
-    hasPredictions: true
+    hasPredictions: false,
+    size: 0
   };
-}
-
-function getExampleDataset(): Dataset {
-  return Object.assign([], {
-    columns: [],
-    name: ''
-  });
 }
 
 const metricFakes = {
@@ -37,7 +32,7 @@ test('get feature ratings - none', () => {
   assert.equal(getFeatureRatings({
     criterion: 'none',
     selected: [],
-    metadata: getExampleMetadata(),
+    features: {},
     dataset: getExampleDataset()
   }, metricFakes), new Map());
 });
@@ -46,8 +41,8 @@ test('get feature ratings - entropy', () => {
   getFeatureRatings({
       criterion: 'entropy',
       selected: ['height'],
-      metadata: getExampleMetadata(['age', 'height', 'weight']),
-      dataset: getExampleDataset(),
+      features: {},
+      dataset: getExampleDataset(['age', 'height', 'weight']),
   }, metricFakes);
 
   assert.is(metricFakes.entropy.callCount, 1);
@@ -58,8 +53,8 @@ test('get feature ratings - errorCount', () => {
   getFeatureRatings({
     criterion: 'errorCount',
     selected: [],
-    metadata: getExampleMetadata(['age', 'height', 'weight']),
-    dataset: getExampleDataset(),
+    features: {},
+    dataset: getExampleDataset(['age', 'height', 'weight']),
   }, metricFakes);
 
   assert.is(metricFakes.errorCount.callCount, 1);
@@ -70,8 +65,8 @@ test('get feature ratings - errorPercent', () => {
   getFeatureRatings({
     criterion: 'errorPercent',
     selected: ['age', 'weight'],
-    metadata: getExampleMetadata(['age', 'height', 'weight']),
-    dataset: getExampleDataset(),
+    features: {},
+    dataset: getExampleDataset(['age', 'height', 'weight']),
   }, metricFakes);
 
   assert.is(metricFakes.errorPercent.callCount, 1);
@@ -82,8 +77,8 @@ test('get feature ratings - errorDeviation', () => {
   getFeatureRatings({
     criterion: 'errorDeviation',
     selected: [],
-    metadata: getExampleMetadata(),
-    dataset: getExampleDataset(),
+    features: {},
+    dataset: getExampleDataset(['age', 'height', 'weight']),
   }, metricFakes);
 
   assert.is(metricFakes.errorDeviation.callCount, 1);

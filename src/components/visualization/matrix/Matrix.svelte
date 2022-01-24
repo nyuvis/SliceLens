@@ -5,7 +5,7 @@
   import YAxis from "./YAxis.svelte";
   import Tooltip from "./Tooltip.svelte";
   import SizeLegend from "./SizeLegend.svelte";
-  import { data, metadata, selectedFeatures } from "../../../stores.js";
+  import { data, features, selectedFeatures } from "../../../stores.js";
   import { getScales, getPositionOfSquare } from "../../../DataTransformer.js"
   import { onMount } from 'svelte';
   import * as d3 from "d3";
@@ -33,12 +33,12 @@
   // feature objects that along the x axis
   $: xFeatures = $selectedFeatures
     .filter((_, i) => i % 2 === 0)
-    .map((feat) => $metadata.features[feat]);
+    .map((feat) => $features[feat]);
 
   // feature objects that are along the y axis
   $: yFeatures = $selectedFeatures
     .filter((_, i) => i % 2 !== 0)
-    .map((feat) => $metadata.features[feat]);
+    .map((feat) => $features[feat]);
 
   // extra space needed for labels
   $: axisSpace = {

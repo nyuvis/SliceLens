@@ -9,7 +9,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   import QuestionBox from '../QuestionBox.svelte';
   import FeatureRow from './FeatureRow.svelte';
   import FeatureEditor from './FeatureEditor.svelte';
-  import { dataset, metadata, selectedFeatures, logs } from '../../stores.js';
+  import {features, dataset, selectedFeatures, logs } from '../../stores.js';
   import * as d3 from 'd3';
   import { flip } from "svelte/animate";
 
@@ -17,10 +17,10 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   // defined in rollup.config.js
   const ratingsEnabled: boolean = RATINGS_ENABLED;
 
-  let features: string[] = [];
-  $: if ($metadata !== null) {
+  let featuresNames: string[] = [];
+  $: if ($dataset !== null) {
     // sort by alphabetical order
-    features = $metadata.featureNames.slice().sort((a, b) => a.localeCompare(b));
+    featuresNames = $dataset.featureNames.slice().sort((a, b) => a.localeCompare(b));
   }
 
   // suggestion criteria
@@ -48,7 +48,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   const defaultCriterion = ratingsEnabled ? criteria[0].options[0] : criteria[0].options[1];
   let criterion = defaultCriterion;
 
-  $: hasPredictions = $metadata !== null && $metadata.hasPredictions;
+  $: hasPredictions = $dataset !== null && $dataset.hasPredictions;
   // reset criterion if predictions are not available,
   // which would happen when changing datasets
   $: if (!hasPredictions && criterion.requiresPredictions) {
@@ -81,14 +81,14 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     logs.add({event: 'worker-done'});
   }
 
-  $: if ($dataset && $metadata !== null && canAddFeatures) {
+  $: if ($dataset && $features !== null && canAddFeatures) {
     // we don't want to have an explicit dependency on workersInProgress, otherwise
     // this will re-run every time workersInProgress is decremented above
     incrementWorkersInProgress();
     worker.postMessage({
       criterion: criterion.value,
       selected: $selectedFeatures,
-      metadata: $metadata,
+      features: $features,
       dataset: $dataset
     });
     logs.add({event: 'worker-start'});
@@ -103,7 +103,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     const item = JSON.parse(event.dataTransfer.getData("text"));
 
     /* make sure that a feature is being dragged in */
-    if (!features.includes(item.id)) {
+    if (!featuresNames.includes(item.id)) {
       return;
     }
 
@@ -116,7 +116,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         selected: $selectedFeatures,
         criterion: criterion.value,
         rank: featuresSortedByRatingDescending.indexOf(item.id) + 1,
-        choices: features.length - $selectedFeatures.length,
+        choices: featuresNames.length - $selectedFeatures.length,
         workersInProgress,
       });
     } else {
@@ -152,7 +152,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         selected: $selectedFeatures,
         criterion: criterion.value,
         rank: featuresSortedByRatingDescending.indexOf(feature) + 1,
-        choices: features.length - $selectedFeatures.length,
+        choices: featuresNames.length - $selectedFeatures.length,
         workersInProgress,
       });
 
@@ -181,7 +181,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   }
 
   // should this go in worker.onmessage?
-  $: featuresSortedByRatingDescending = features
+  $: featuresSortedByRatingDescending = featuresNames
       .slice()
       .sort((a, b) =>
         d3.descending(
@@ -191,7 +191,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         )
       );
 
-  $: featuresSortedByRatingAscending = features
+  $: featuresSortedByRatingAscending = featuresNames
       .slice()
       .sort((a, b) =>
         d3.ascending(
@@ -203,7 +203,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   let sortingOrders: Record<Order, string[]>;
   $: sortingOrders  = {
-    'alpha': features,
+    'alpha': featuresNames,
     'rating-ascending': featuresSortedByRatingAscending,
     'rating-descending': featuresSortedByRatingDescending,
   };
@@ -222,7 +222,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     logs.add({
       event: 'feature-edit',
       phase: 'open',
-      feature: $metadata.features[feature]
+      feature: $features[feature]
     });
   }
 </script>

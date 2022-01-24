@@ -4,7 +4,7 @@ import sinon from "sinon";
 import * as d3 from "d3";
 import { entropy, errorCount, errorPercent, errorDeviation, getErrorCountForSquare } from '../src/RatingMetrics';
 import type { Rating, RatingInput } from '../src/RatingMetrics'
-import type { Metadata, Node, Dataset } from '../src/types'
+import type { Features, Node, Dataset } from '../src/types'
 
 // data
 
@@ -184,31 +184,27 @@ const dataE: Node[] = [
   }
 ];
 
-function getExampleMetadata(size: number = 100): Metadata {
+
+function getExampleDataset(size: number = 100): Dataset {
   return {
-    size: size,
-    features: {},
+    type: 'classification',
+    rows: [],
+    name: '',
     featureNames: [],
     labelValues: [],
-    hasPredictions: true
+    hasPredictions: false,
+    size: size
   };
-}
-
-function getExampleDataset(): Dataset {
-  return Object.assign([], {
-    columns: [],
-    name: ''
-  });
 }
 
 
 // set up
 
-const fakeGetData = sinon.fake((metadata: Metadata, sel: string[], dataset: Dataset) => {
+const fakeGetData = sinon.fake((features: Features, sel: string[], dataset: Dataset) => {
   const [first, second] = sel;
 
   // ignore hints about not using values
-  metadata;
+  features;
   dataset;
 
   if (first === 'a' && second === 'b') {
@@ -246,8 +242,8 @@ test('entropy', () => {
 
   const args = {
     selected: ['a'],
-    metadata: getExampleMetadata(710),
-    dataset: getExampleDataset(),
+    features: {},
+    dataset: getExampleDataset(710),
     available: ['b', 'c', 'd']
   };
 
@@ -268,8 +264,8 @@ test('entropy one bin', () => {
 
   const args = {
     selected: [],
-    metadata: getExampleMetadata(400),
-    dataset: getExampleDataset(),
+    features: {},
+    dataset: getExampleDataset(400),
     available: ['e']
   };
 
@@ -290,7 +286,7 @@ test('error deviation', () => {
 
   const args = {
     selected: ['a'],
-    metadata: getExampleMetadata(),
+    features: {},
     dataset: getExampleDataset(),
     available: ['b', 'c', 'd']
   };
@@ -312,8 +308,8 @@ test('error deviation one bin', () => {
 
   const args = {
     selected: [],
-    metadata: getExampleMetadata(400),
-    dataset: getExampleDataset(),
+    features: {},
+    dataset: getExampleDataset(400),
     available: ['e']
   };
 
@@ -333,7 +329,7 @@ test('error count', () => {
 
   const args = {
     selected: ['a'],
-    metadata: getExampleMetadata(),
+    features: {},
     dataset: getExampleDataset(),
     available: ['b', 'c', 'd']
   };
@@ -346,8 +342,8 @@ test('error count one bin', () => {
 
   const args = {
     selected: [],
-    metadata: getExampleMetadata(400),
-    dataset: getExampleDataset(),
+    features: {},
+    dataset: getExampleDataset(400),
     available: ['e']
   };
 
@@ -367,7 +363,7 @@ test('error percent', () => {
 
   const args = {
     selected: ['a'],
-    metadata: getExampleMetadata(),
+    features: {},
     dataset: getExampleDataset(),
     available: ['b', 'c', 'd']
   };
@@ -380,8 +376,8 @@ test('error percent one bin', () => {
 
   const args: RatingInput = {
     selected: [],
-    metadata: getExampleMetadata(400),
-    dataset: getExampleDataset(),
+    features: {},
+    dataset: getExampleDataset(400),
     available: ['e']
   };
 

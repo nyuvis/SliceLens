@@ -5,7 +5,7 @@
   import VisualizationSettings from './controls/VisualizationSettings.svelte';
   import Chart from './visualization/matrix/Chart.svelte';
   import NotesSidebar from './notes/NotesSidebar.svelte';
-  import { metadata } from '../stores.js';
+  import { features } from '../stores.js';
   import type { FeatureExtent } from '../types';
 
   let showPredictions: boolean = false;
@@ -48,7 +48,7 @@
     <FeatureSelector/>
   </div>
 
-  {#if $metadata !== null}
+  {#if $features !== null}
     <Chart {showPredictions} {showSize} />
   {/if}
 

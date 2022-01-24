@@ -1,30 +1,30 @@
 import type { Metric, Rating } from './RatingMetrics';
-import type {Metadata, Dataset} from './types';
+import type {Features, Dataset} from './types';
 import * as d3 from "d3";
-import { getData } from './DataTransformer';
+import { getClassificationData } from './DataTransformer';
 
 export { getFeatureRatings, normalize };
 
 function getFeatureRatings(
-  {criterion, selected, metadata, dataset}: {criterion: any, selected: string[], metadata: Metadata, dataset: Dataset},
+  {criterion, selected, features, dataset}: {criterion: any, selected: string[], features: Features, dataset: Dataset},
   { entropy, errorDeviation, errorCount, errorPercent }: Record<string,Metric>
 ): Map<string, number> {
   if (criterion === 'none') {
     return new Map();
   }
 
-  const available: string[] = metadata.featureNames.filter(d => !selected.includes(d));
+  const available: string[] = dataset.featureNames.filter(d => !selected.includes(d));
 
   let ratings: Rating[] = [];
 
   if (criterion === 'entropy') {
-    ratings = entropy({selected, metadata, dataset, available}, getData);
+    ratings = entropy({selected, features, dataset, available}, getClassificationData);
   } else if (criterion === 'errorCount') {
-    ratings = errorCount({selected, metadata, dataset, available}, getData);
+    ratings = errorCount({selected, features, dataset, available}, getClassificationData);
   } else if (criterion === 'errorPercent') {
-    ratings = errorPercent({selected, metadata, dataset, available}, getData);
+    ratings = errorPercent({selected, features, dataset, available}, getClassificationData);
   } else if (criterion === 'errorDeviation') {
-    ratings = errorDeviation({selected, metadata, dataset, available}, getData)
+    ratings = errorDeviation({selected, features, dataset, available}, getClassificationData)
   }
 
   return normalize(ratings);

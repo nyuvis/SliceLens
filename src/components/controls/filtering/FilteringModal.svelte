@@ -9,10 +9,10 @@ refactored into a Modal.svelte.
 <script lang="ts">
   import QuantitativeFilterEditor from './QuantitativeFilterEditor.svelte';
   import CategoricalFilterEditor from './CategoricalFilterEditor.svelte';
-  import { filters, fullDataset, dataset, metadata } from '../../../stores.js';
-  import { getMetadata, getFilteredDataset } from '../../../DataTransformer.js';
+  import { filters, fullDataset, dataset, features } from '../../../stores.js';
+  import { getFeatures, getFilteredDataset } from '../../../DataTransformer.js';
   import { createEventDispatcher } from "svelte";
-  import type { Dataset, FeatureExtent, Metadata, QuantitativeExtent, CategoricalExtent, QuantitativeFilter, CategoricalFilter } from '../../../types';
+  import type { Dataset, FeatureExtent, Features, QuantitativeExtent, CategoricalExtent, QuantitativeFilter, CategoricalFilter } from '../../../types';
 
   export let featureExtents: Record<string, FeatureExtent>;
 
@@ -38,19 +38,19 @@ refactored into a Modal.svelte.
       return false;
     }
 
-    const data: Dataset = getFilteredDataset($fullDataset, $filters);
+    const ds: Dataset = getFilteredDataset($fullDataset, $filters);
 
     // don't allow the window to close if the filtered dataset is empty
-    if (data.length === 0) {
+    if (ds.size === 0) {
       emptyDataset = true;
       return;
     }
 
     emptyDataset = false;
 
-    const md: Metadata = getMetadata(data);
-    $dataset = data;
-    $metadata = md;
+    const feats: Features = getFeatures(ds);
+    $dataset = ds;
+    $features = feats;
 
     dispatch('close');
   }
@@ -118,7 +118,7 @@ refactored into a Modal.svelte.
 
     <div class="button-row sub-label">
       <button on:click={addFilter}
-        disabled={$metadata.featureNames.length === filteredFeatureNames.size}
+        disabled={$dataset.featureNames.length === filteredFeatureNames.size}
       >
         New Filter
       </button>
@@ -142,7 +142,7 @@ refactored into a Modal.svelte.
 
               <option disabled>{defaultOption}</option>
 
-              {#each $metadata.featureNames as name}
+              {#each $dataset.featureNames as name}
                 {#if !filteredFeatureNames.has(name) || name === filter.feature}
                   <option value={name}>{name}</option>
                 {/if}

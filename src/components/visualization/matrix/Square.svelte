@@ -1,6 +1,6 @@
 <script lang="ts">
   import * as d3 from 'd3';
-  import { metadata } from "../../../stores.js";
+  import { dataset } from "../../../stores.js";
   import type { Node } from "../../../types";
 
   export let showPredictions: boolean;
@@ -19,7 +19,7 @@
       .keys(color.domain())
       .value((d, key) => d.has(key) ? d.get(key) : 0);
 
-  $: counts = showPredictions && $metadata.hasPredictions ?
+  $: counts = showPredictions && $dataset.hasPredictions ?
       d.predictionCounts :
       d.groundTruth;
 
@@ -36,7 +36,7 @@
       incorrectHeight: 0,
     };
 
-    if (showPredictions && $metadata.hasPredictions) {
+    if (showPredictions && $dataset.hasPredictions) {
       const predictionResults: d3.InternMap<string,number> = d.predictionResults.get(label);
 
       if (predictionResults !== undefined && predictionResults.has('incorrect')) {

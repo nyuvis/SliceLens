@@ -3,8 +3,8 @@
   import NotesImporter from './NotesImporter.svelte';
   import NotesViewer from './NotesViewer.svelte';
   import LogExporter from './LogExporter.svelte';
-  import { selectedFeatures, metadata, dataset, filters } from '../../stores.js';
-  import { cloneSelectedFeaturesMetadata, cloneFilters } from '../../DataTransformer.js';
+  import { selectedFeatures, features, dataset, filters } from '../../stores.js';
+  import { cloneSelectedFeatures, cloneFilters } from '../../DataTransformer.js';
   import type { Note } from '../../types';
 
   let notes: Note[] = [];
@@ -60,7 +60,7 @@
   function linkNote() {
     selectedNote.state = {
       selectedFeatures: [...$selectedFeatures],
-      selectedFeaturesMetadata: cloneSelectedFeaturesMetadata($metadata.features, $selectedFeatures),
+      selectedFeaturesInfo: cloneSelectedFeatures($features, $selectedFeatures),
       dataset: $dataset.name,
       filters: cloneFilters($filters),
     };

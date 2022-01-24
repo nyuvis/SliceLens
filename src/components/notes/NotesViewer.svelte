@@ -1,10 +1,10 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { selectedFeatures, metadata, filters, fullDataset, dataset } from '../../stores.js';
-  import { cloneSelectedFeaturesMetadata, addSelectedSetToFilters, cloneFilters, getMetadata, getFilteredDataset } from '../../DataTransformer.js';
+  import { selectedFeatures, features, filters, fullDataset, dataset } from '../../stores.js';
+  import { cloneSelectedFeatures, addSelectedSetToFilters, cloneFilters, getFeatures, getFilteredDataset } from '../../DataTransformer.js';
   import { marked } from 'marked';
   import { sanitize } from 'dompurify';
-  import type { Dataset, Feature, Filter, Metadata, Note } from '../../types.js';
+  import type { Dataset, Filter, Features, Note } from '../../types.js';
 
   export let note: Note = null;
   export let edit: boolean = false;
@@ -14,17 +14,17 @@
   function gotoState() {
     const selected: string[] = [...note.state.selectedFeatures];
     const filts: Filter[] = addSelectedSetToFilters(cloneFilters(note.state.filters));
-    const features: Record<string,Feature> = cloneSelectedFeaturesMetadata(note.state.selectedFeaturesMetadata, selected);
+    const copiedFeatures: Features = cloneSelectedFeatures(note.state.selectedFeaturesInfo, selected);
 
     if(filts.length === 0 && $filters.length === 0) {
-      $metadata.features = Object.assign($metadata.features, features);
-      $metadata = $metadata;
+      // overwrite selected features
+      $features = Object.assign($features, copiedFeatures);
     } else {
       const data: Dataset = getFilteredDataset($fullDataset, filts);
-      const md: Metadata = getMetadata(data);
-      md.features = Object.assign(md.features, features)
+      const allFeatures: Features = getFeatures(data);
       $dataset = data;
-      $metadata = md;
+      // overwrite selected features
+      $features = Object.assign(allFeatures, copiedFeatures);
     }
 
     $selectedFeatures = selected;

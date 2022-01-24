@@ -1,6 +1,7 @@
 <!-- https://observablehq.com/@d3/histogram -->
 <script lang="ts">
   import { dataset } from '../../../stores.js';
+  import type { Row } from '../../../types.js';
   import * as d3 from 'd3';
 
   export let feature: string;
@@ -14,7 +15,7 @@
   $: visWidth = width - margin.left - margin.right;
   $: visHeight = height - margin.top - margin.bottom;
 
-  $: data = $dataset.map(d => d[feature]) as number[];
+  $: data = $dataset.rows.map((d: Row) => d[feature]) as number[];
 
   $: xScale = d3.scaleLinear()
       .domain(d3.extent(data)).nice()
