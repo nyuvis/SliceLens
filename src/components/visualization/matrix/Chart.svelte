@@ -11,6 +11,9 @@
   $: color = d3.scaleOrdinal()
       .domain($metadata.labelValues)
       .range(d3.schemeCategory10);
+
+  // $: console.log("Chart domain", JSON.stringify(color.domain()));
+  // $: console.log("Chart labelValues", $metadata.labelValues);
 </script>
 
 <div id="chart-container">

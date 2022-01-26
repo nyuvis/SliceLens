@@ -19,6 +19,8 @@
   export let color;
   export let visualizationType;
 
+  // $: console.log("Matrix domain", JSON.stringify(color.domain()));
+
   let div;
 
   // size of the div that the matrix is in

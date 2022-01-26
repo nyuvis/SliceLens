@@ -10,7 +10,11 @@
   export let y;
   export let d;
 
+  $: console.log("SquareBar domain", JSON.stringify(color.domain()));
+
   function getCounts(predictions, md, d) {
+    console.log("getCounts domain", JSON.stringify(color.domain()));
+
     if (!predictions) {
       const counts = md.labelValues.map(label => {
         const count = d.groundTruth.get(label) ?? 0;

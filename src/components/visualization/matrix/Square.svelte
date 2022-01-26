@@ -10,6 +10,10 @@
   export let y;
   export let d;
 
+  // $: console.log("Square domain", JSON.stringify(color.domain()));
+
+  $: console.log(`showPredictions: ${showPredictions}, hasPredictions: ${$metadata.hasPredictions}`);
+
   $: height = d3.scaleLinear()
       .domain([0, d.size])
       .range([0, sideLength]);
@@ -25,6 +29,8 @@
   $: stacked = stack([counts]);
 
   $: segments = stacked.map(b => {
+    // console.log("segmens domain", JSON.stringify(color.domain()));
+
     const label = b.key;
     const pos = b[0];
 
