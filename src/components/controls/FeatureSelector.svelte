@@ -10,6 +10,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   import FeatureRow from './FeatureRow.svelte';
   import FeatureEditor from './FeatureEditor.svelte';
   import {features, dataset, selectedFeatures, logs } from '../../stores.js';
+  import { getValidMetrics } from '../../RatingMetrics.js';
+  import type { MetricInfo, MetricGroup } from '../../RatingMetrics.js';
   import * as d3 from 'd3';
   import { flip } from "svelte/animate";
 
@@ -25,34 +27,25 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   // suggestion criteria
 
-  const criteria = [
-    {
-      title: 'Ground truth metrics',
-      requiresPredictions: false,
-      options: [
-        { value: 'entropy', display: 'Purity', requiresPredictions: false },
-        { value: 'none', display: 'None', requiresPredictions: false },
-      ],
-    },
-    {
-      title: 'Prediction metrics',
-      requiresPredictions: true,
-      options: [
-        { value: 'errorDeviation', display: 'Error deviation', requiresPredictions: true },
-        { value: 'errorCount', display: 'Error count', requiresPredictions: true },
-        { value: 'errorPercent', display: 'Error percent', requiresPredictions: true },
-      ],
-    },
-  ];
+  let criteria: MetricGroup[];
+  let defaultCriterion: MetricInfo;
+  let criterion: MetricInfo;
 
-  const defaultCriterion = ratingsEnabled ? criteria[0].options[0] : criteria[0].options[1];
-  let criterion = defaultCriterion;
+  $: {
+    let disabledSelected = criterion === undefined ? false : criterion.value === 'none';
+    let response = getValidMetrics($dataset.type, $dataset.hasPredictions, !ratingsEnabled || disabledSelected);
+    criteria = response.criteria;
+    defaultCriterion = response.defaultCriterion;
 
-  $: hasPredictions = $dataset !== null && $dataset.hasPredictions;
-  // reset criterion if predictions are not available,
-  // which would happen when changing datasets
-  $: if (!hasPredictions && criterion.requiresPredictions) {
-    criterion = defaultCriterion;
+    // reset criterion if it is undefined (on first load)
+    // or if the new dataset does not work with the current criterion
+    if (
+      (criterion === undefined) ||
+      (criterion.type !== $dataset.type) ||
+      (criterion.requiresPredictions && !$dataset.hasPredictions)
+    ) {
+      criterion = defaultCriterion;
+    }
   }
 
   function criterionChanged() {
@@ -266,9 +259,9 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   <div>
     <!-- svelte-ignore a11y-no-onchange -->
     <select bind:value={criterion} on:change={criterionChanged}>
-      {#each criteria.filter(d => (hasPredictions || !d.requiresPredictions)) as group}
+      {#each criteria as group}
         <optgroup label={group.title}>
-          {#each group.options.filter(d => (hasPredictions || !d.requiresPredictions)) as opt}
+          {#each group.options as opt}
             <option value={opt}>{opt.display}</option>
           {/each}
         </optgroup>

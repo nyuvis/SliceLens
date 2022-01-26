@@ -22,7 +22,9 @@ export const features: Writable<Features> = writable(null);
 export const data: Readable<Node[]> = derived(
   [features, selectedFeatures, dataset],
   ([$features, $selectedFeatures, $dataset]) => {
-    if ($dataset.type === 'classification') {
+    if ($dataset === null) {
+      return null;
+    } else if ($dataset.type === 'classification') {
       return getClassificationData($features, $selectedFeatures, $dataset);
     } else {
       return getRegressionData($features, $selectedFeatures, $dataset);

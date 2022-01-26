@@ -5,7 +5,7 @@
   import VisualizationSettings from './controls/VisualizationSettings.svelte';
   import Chart from './visualization/matrix/Chart.svelte';
   import NotesSidebar from './notes/NotesSidebar.svelte';
-  import { features } from '../stores.js';
+  import { dataset, features, data } from '../stores.js';
   import type { FeatureExtent } from '../types';
 
   let showPredictions: boolean = false;
@@ -13,7 +13,7 @@
   // feature name to feature values for categorical features
   // feature name to extent for quantitative features
   // on the whole dataset
-  let featureExtents: Record<string, FeatureExtent> = {};
+  let featureExtents: Record<string, FeatureExtent> = null;
 
   // @ts-ignore
   // defined in rollup.config.js
@@ -40,20 +40,27 @@
     </div>
     <DatasetSelector on:load={({detail}) => featureExtents = detail}/>
 
-    {#if filtersEnabled}
+    {#if filtersEnabled && featureExtents !== null && $dataset !== null && $features !== null}
       <FilteringButton {featureExtents}/>
     {/if}
 
-    <VisualizationSettings bind:showSize bind:showPredictions/>
-    <FeatureSelector/>
+    {#if $dataset !== null}
+      <VisualizationSettings bind:showSize bind:showPredictions/>
+    {/if}
+
+    {#if $features !== null && $dataset !== null}
+      <FeatureSelector/>
+    {/if}
   </div>
 
-  {#if $features !== null}
+  {#if $features !== null && $dataset !== null && $data !== null}
     <Chart {showPredictions} {showSize} />
   {/if}
 
   <div id="notes" class="sidebar">
-    <NotesSidebar/>
+    {#if $features !== null && $dataset !== null}
+      <NotesSidebar/>
+    {/if}
   </div>
 </div>
 

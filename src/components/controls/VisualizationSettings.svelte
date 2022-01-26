@@ -5,7 +5,7 @@
   let showPredictionsCheckBox: boolean = false;
   export let showPredictions: boolean = false;
 
-  $: if ($dataset !== null && $dataset.hasPredictions) {
+  $: if ($dataset.hasPredictions) {
     showPredictionsCheckBox = true;
   } else {
     showPredictionsCheckBox = false;

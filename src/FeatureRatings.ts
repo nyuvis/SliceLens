@@ -1,13 +1,13 @@
-import type { Metric, Rating } from './RatingMetrics';
+import type { Metric, MetricName, Rating } from './RatingMetrics';
 import type {Features, Dataset} from './types';
 import * as d3 from "d3";
-import { getClassificationData } from './DataTransformer';
+import { getClassificationData, getRegressionData } from './DataTransformer';
 
 export { getFeatureRatings, normalize };
 
 function getFeatureRatings(
-  {criterion, selected, features, dataset}: {criterion: any, selected: string[], features: Features, dataset: Dataset},
-  { entropy, errorDeviation, errorCount, errorPercent }: Record<string,Metric>
+  {criterion, selected, features, dataset}: {criterion: MetricName, selected: string[], features: Features, dataset: Dataset},
+  { entropy, errorDeviation, errorCount, errorPercent, random }: Record<Exclude<MetricName, "none">,Metric>
 ): Map<string, number> {
   if (criterion === 'none') {
     return new Map();
@@ -25,6 +25,8 @@ function getFeatureRatings(
     ratings = errorPercent({selected, features, dataset, available}, getClassificationData);
   } else if (criterion === 'errorDeviation') {
     ratings = errorDeviation({selected, features, dataset, available}, getClassificationData)
+  } else if (criterion === 'random') {
+    ratings = random({selected, features, dataset, available}, getRegressionData)
   }
 
   return normalize(ratings);
