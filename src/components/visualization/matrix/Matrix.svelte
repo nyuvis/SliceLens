@@ -5,6 +5,7 @@
   import XAxis from "./XAxis.svelte";
   import YAxis from "./YAxis.svelte";
   import Tooltip from "./Tooltip.svelte";
+  import ClassificationTooltipContent from "./ClassificationTooltipContent.svelte";
   import SizeLegend from "./SizeLegend.svelte";
   import { data, features, selectedFeatures, dataset } from "../../../stores.js";
   import { getScales, getPositionOfSquare } from "../../../DataTransformer.js"
@@ -207,13 +208,11 @@
     </g>
   </svg>
   {#if tooltipData}
-    <Tooltip
-      {...mouse}
-      {bounds}
-      {showPredictions}
-      d={tooltipData}
-      {color}
-    />
+    <Tooltip {...mouse} {bounds} d={tooltipData}>
+      {#if tooltipData.type === 'classification'}
+        <ClassificationTooltipContent {showPredictions} d={tooltipData} {color}/>
+      {/if}
+    </Tooltip>
   {/if}
 </div>
 

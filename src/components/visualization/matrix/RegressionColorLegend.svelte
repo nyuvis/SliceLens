@@ -24,6 +24,7 @@
   <div class="bold title">{showPredictions ? 'Ground Truth - Predicted Labels' : 'Ground Truth Labels'}</div>
 
   <svg {width} {height}>
+    <!-- i goes from 0 to color.range().length - 1-->
     {#each color.range() as c, i}
       <rect x={x(i - 1)} y={0} width={x(i) - x(i - 1)} height={height / 2} fill={c}/>
 

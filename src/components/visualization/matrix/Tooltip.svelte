@@ -1,32 +1,19 @@
 <script lang="ts">
   import { format } from 'd3';
-  import { features, dataset } from "../../../stores.js";
-  import { getTooltipAmounts } from "../../../DataTransformer.js";
-  import type { Node } from '../../../types';
+  import { features, dataset } from "../../../stores";
+  import type { Node } from "../../../types";
 
-  export let showPredictions: boolean;
-  export let d: Node;
   export let x: number;
   export let y: number;
   export let bounds: { left: number, right: number, top: number, bottom: number };
-  export let color: d3.ScaleOrdinal<string, string, string>;
-
-  const percentFormat = format('.1%');
+  export let d: Node;
 
   const padding: number = 10;
 
   let width: number = 100;
   let height: number = 100;
 
-  $: splits =
-    d.splits.size === 0
-      ? []
-      : Array.from(d.splits).map(([featureName, splitIndex]) => {
-          const split = $features[featureName].values[splitIndex];
-          return {featureName, split};
-        });
-
-  $: amounts = getTooltipAmounts(showPredictions && $dataset.hasPredictions, d, percentFormat);
+  const percentFormat = format('.1%');
 
   // keep the tool tip on the screen
 
@@ -39,6 +26,16 @@
 
   $: tooltipX = Math.min(Math.max(minX, x), maxX);
   $: tooltipY = Math.min(Math.max(minY, y), maxY);
+
+  // splits
+
+  $: splits =
+    d.splits.size === 0
+      ? []
+      : Array.from(d.splits).map(([featureName, splitIndex]) => {
+          const split = $features[featureName].values[splitIndex];
+          return {featureName, split};
+        });
 </script>
 
 <div
@@ -47,7 +44,7 @@
   style='left: {tooltipX - (width / 2)}px; top: {tooltipY + padding}px;'
 >
   {#if splits.length > 0}
-    <table class="splits-table">
+    <table class="tooltip-table">
       <thead>
         <tr>
           <th class="string">Feature</th>
@@ -64,43 +61,14 @@
       </tbody>
     </table>
 
-    <div class="divider"></div>
+    <div class="tooltip-divider"></div>
   {/if}
 
   <div class="size group">
     {d.size}/{$dataset.size} instances ({percentFormat(d.size / $dataset.size)})
   </div>
 
-  <div class="divider"></div>
-
-  <table class="counts-table">
-    <thead>
-      <tr>
-        <th></th>
-        <th class="string">Label</th>
-        <th class="number">Count</th>
-        <th class="number">Percent</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#each amounts as {label, count, percent, stripes, colorLabel}}
-        <tr>
-          <td>
-            {#if stripes}
-              <div class="legend-square"
-                style="background: repeating-linear-gradient(135deg, {color(colorLabel)}, {color(colorLabel)} 2px, white 2px, white 4px)">
-              </div>
-            {:else}
-              <div class="legend-square" style="background: {color(colorLabel)}"></div>
-            {/if}
-          </td>
-          <td class="string">{label}</td>
-          <td class="number">{count}</td>
-          <td class="number">{percent}</td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
+  <slot></slot>
 </div>
 
 <style>
@@ -111,55 +79,5 @@
     border: 1px solid black;
     pointer-events: none;
     box-sizing: border-box;
-  }
-
-  .divider {
-    width: 100%;
-    height: 2px;
-    margin: 0.25em 0;
-    background-color: var(--medium-gray);
-  }
-
-  .legend-square {
-    min-width: 14px;
-    min-height: 14px;
-  }
-
-  /* table stylings */
-
-  table {
-    border-collapse: collapse;
-  }
-
-  td, th {
-    padding: 0em 0.5em 0.25em 0em;
-    line-height: 1;
-    vertical-align: middle;
-  }
-
-  /* no right padding for last column in table */
-  tr > td:last-of-type, tr > th:last-of-type {
-    padding-right: 0;
-  }
-
-  /* no bottom padding for last row in table */
-  tbody > tr:last-of-type > td {
-    padding-bottom: 0;
-  }
-
-  th {
-    font-weight: 500;
-  }
-
-  .number {
-    text-align: right;
-  }
-
-  td.number {
-    font-variant-numeric: lining-nums tabular-nums;
-  }
-
-  .string {
-    text-align: left;
   }
 </style>

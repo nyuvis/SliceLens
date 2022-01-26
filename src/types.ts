@@ -122,7 +122,7 @@ export type Filter = QuantitativeFilter | CategoricalFilter;
 
 // tooltip
 
-export type TooltipData = {
+export type ClassificationTooltipData = {
   label: string | number,
   count: number,
   percent: string,

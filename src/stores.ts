@@ -11,7 +11,7 @@ export const dataset: Writable<Dataset> = writable(null);
 // filters applied to fullDataset to get filtered dataset
 export const filters: Writable<Filter[]> = writable([]);
 
-// features that are currently selected and visualized
+// feature names that are currently selected and visualized
 export const selectedFeatures: Writable<string[]> = writable([]);
 
 // information on the features and splits
@@ -25,10 +25,7 @@ export const data: Readable<Node[]> = derived(
     if ($dataset.type === 'classification') {
       return getClassificationData($features, $selectedFeatures, $dataset);
     } else {
-      const reg = getRegressionData($features, $selectedFeatures, $dataset);
-      console.log("test");
-      console.log('reg', reg);
-      return reg;
+      return getRegressionData($features, $selectedFeatures, $dataset);
     }
   }
 );

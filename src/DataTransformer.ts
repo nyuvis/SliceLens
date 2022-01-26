@@ -10,7 +10,7 @@ import type {
   Node,
   Filter,
   FeatureExtent,
-  TooltipData,
+  ClassificationTooltipData,
   ClassificationDataset,
   Row,
   RegressionDataset,
@@ -33,7 +33,7 @@ export {
   addSelectedSetToFilters,
   getScales,
   getPositionOfSquare,
-  getTooltipAmounts,
+  getClassificationTooltipAmounts,
   parseDataset,
 };
 
@@ -586,7 +586,7 @@ function getPositionOfSquare(d: Node, features: Feature[], scales: d3.ScaleBand<
 
 /* tooltip data */
 
-function getTooltipAmounts(showPredictions: boolean, d: Node, percentFormat: (n: number) => string): TooltipData {
+function getClassificationTooltipAmounts(showPredictions: boolean, d: ClassificationNode, percentFormat: (n: number) => string): ClassificationTooltipData {
   if (showPredictions) {
     return (
       Array.from(d.predictionResults)
