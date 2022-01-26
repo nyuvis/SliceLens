@@ -1,5 +1,5 @@
 import { writable, derived, Writable, Readable } from 'svelte/store';
-import { getClassificationData } from './DataTransformer.js';
+import { getClassificationData, getRegressionData } from './DataTransformer.js';
 import type { Dataset, Filter, Features, Node } from './types.js';
 
 // un-filtered dataset
@@ -24,6 +24,11 @@ export const data: Readable<Node[]> = derived(
   ([$features, $selectedFeatures, $dataset]) => {
     if ($dataset.type === 'classification') {
       return getClassificationData($features, $selectedFeatures, $dataset);
+    } else {
+      const reg = getRegressionData($features, $selectedFeatures, $dataset);
+      console.log("test");
+      console.log('reg', reg);
+      return reg;
     }
   }
 );

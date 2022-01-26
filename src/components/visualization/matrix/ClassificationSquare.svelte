@@ -1,7 +1,6 @@
 <script lang="ts">
   import * as d3 from 'd3';
   import { dataset } from "../../../stores.js";
-  import type { Node } from "../../../types";
 
   export let showPredictions: boolean;
   export let color: d3.ScaleOrdinal<string, string, string>;
@@ -9,7 +8,7 @@
   export let padding: number;
   export let x: number;
   export let y: number;
-  export let d: Node;
+  export let d: any;
 
   $: height = d3.scaleLinear()
       .domain([0, d.size])

@@ -12,7 +12,10 @@ import type {
   FeatureExtent,
   TooltipData,
   ClassificationDataset,
-  Row
+  Row,
+  RegressionDataset,
+  ClassificationNode,
+  RegressionNode
 } from "./types";
 
 export {
@@ -21,6 +24,7 @@ export {
   quantileThresholds,
   getFeatures,
   getClassificationData,
+  getRegressionData,
   getBinLabels,
   getFilteredDataset,
   isNumeric,
@@ -195,15 +199,42 @@ function parseDataset(data: d3.DSVRowArray<string>, name: string): Dataset {
       return row;
     });
 
-    return {
+    const approxNumBins = 20;
+
+    const groundTruth: number[] = rows.map((d: RegressionRow) => d.label);
+    const extactGTExtent = d3.extent(groundTruth);
+    const groundTruthExtent = d3.nice(extactGTExtent[0], extactGTExtent[1], approxNumBins);
+    // remove thresholds outside of the domain, as done when bin() is called:
+    // https://github.com/d3/d3-array/blob/2f28f41005de2fbb69e99439fabec5eb8bce26f0/src/bin.js#L62-L65
+    const groundTruthThresholds = d3.ticks(groundTruthExtent[0], groundTruthExtent[1], approxNumBins)
+      .filter(t => t > groundTruthExtent[0] && t < groundTruthExtent[1]);
+
+    const dataset: RegressionDataset = {
       type: "regression" as const,
       rows,
       name,
       featureNames,
-      labelValues: [],
+      approxNumBins,
+      groundTruthExtent,
+      groundTruthThresholds,
       hasPredictions,
       size
     };
+
+    if (hasPredictions) {
+      const predictions: number[] = rows.map((d: RegressionRow) => d.prediction);
+      const deltas: number[] = d3.zip<number>(groundTruth, predictions)
+        .map(([truth, pred]) => truth - pred);
+
+      const maxAbsDelta = d3.max(deltas, d => Math.abs(d));
+      const deltaExtent = d3.nice(-maxAbsDelta, maxAbsDelta, approxNumBins);;
+      dataset.deltaExtent = deltaExtent;
+      // remove thresholds outside of the domain, as done when bin() is called:
+      // https://github.com/d3/d3-array/blob/2f28f41005de2fbb69e99439fabec5eb8bce26f0/src/bin.js#L62-L65
+      dataset.deltaThresholds = d3.ticks(deltaExtent[0], deltaExtent[1], approxNumBins)
+        .filter(t => t > deltaExtent[0] && t < deltaExtent[1]);
+    }
+    return dataset;
   } else {
     quantitatveColumns.delete("label");
     quantitatveColumns.delete("prediction");
@@ -217,7 +248,7 @@ function parseDataset(data: d3.DSVRowArray<string>, name: string): Dataset {
 
     const labelValues: string[] = Array.from(new Set(data.map(d => d.label))).sort();
 
-    return {
+    const dataset: ClassificationDataset = {
       type: "classification" as const,
       rows,
       name,
@@ -226,6 +257,7 @@ function parseDataset(data: d3.DSVRowArray<string>, name: string): Dataset {
       hasPredictions,
       size
     };
+    return dataset;
   }
 }
 
@@ -294,17 +326,58 @@ function getFeatures(dataset: Dataset): Features {
   return features;
 }
 
-function getClassificationData(features: Features, selectedFeatures: string[], dataset: ClassificationDataset): Node[] {
+function getData(features: Features, selectedFeatures: string[], dataset: Dataset, reducer: (g: Row[]) => Node): Node[] {
   if (features === null) {
     return null;
   }
 
+  /* return the key that is used to group an instance
+     Ex: 0-2-1 means the first bin for the first selected feature,
+     the third bin for the second selected feature, and the second
+     bin for the third selected feature. */
+  function key(d: Row): string {
+    return selectedFeatures
+      .map(featureName => {
+        const feat = features[featureName];
+        if (feat.type === "Q") {
+          /* d3.bisect(array, x): "returns an insertion point which comes after
+            (to the right of) any existing entries of x in array"
+
+            if the instance's value for this feature is less than the first
+            threshold, then 0 is returned. if it's less than the second threshold,
+            then one is returned, etc.
+          */
+          return d3.bisect(feat.thresholds, d[featureName] as number);
+        } else if (feat.type === "C") {
+          /* values contains the names of the groups/bins */
+          return feat.values.indexOf(feat.valueToGroup[d[featureName]]);
+        }
+      })
+      .join(",");
+  }
+
+  return d3.rollups(dataset.rows, reducer, key)
+    .map(([key, value]) => {
+    // splits is a map from the name of the selected feature
+    // to the subset's bin index
+    // this is done after since reducer doesn't have access to group's key
+    const kvps: [string, number][] = d3.zip(selectedFeatures, key.split(','))
+        .map(([a, b]) => ([a, +b]));
+    const splits = new Map(kvps);
+    value.splits = splits;
+    return value;
+  });
+}
+
+
+function getClassificationData(features: Features, selectedFeatures: string[], dataset: ClassificationDataset): ClassificationNode[] {
   // g is an array of all of the instances belonging to the same subset
   function reducer(g: ClassificationRow[]) {
     // map from ground truth label to number of instances with that label
     const groundTruth = d3.rollup(g, v => v.length, d => d.label);
 
-    const node: Node = {
+    const node: ClassificationNode = {
+      type: 'classification',
       size: g.length,
       splits: new Map(),
       groundTruth,
@@ -337,42 +410,62 @@ function getClassificationData(features: Features, selectedFeatures: string[], d
     return node;
   }
 
-  /* return the key that is used to group an instance
-     Ex: 0-2-1 means the first bin for the first selected feature,
-     the third bin for the second selected feature, and the second
-     bin for the third selected feature. */
-  function key(d: ClassificationRow): string {
-    return selectedFeatures
-      .map(featureName => {
-        const feat = features[featureName];
-        if (feat.type === "Q") {
-          /* d3.bisect(array, x): "returns an insertion point which comes after
-            (to the right of) any existing entries of x in array"
+  return getData(features, selectedFeatures, dataset, reducer) as ClassificationNode[];
+}
 
-            if the instance's value for this feature is less than the first
-            threshold, then 0 is returned. if it's less than the second threshold,
-            then one is returned, etc.
-          */
-          return d3.bisect(feat.thresholds, d[featureName] as number);
-        } else if (feat.type === "C") {
-          /* values contains the names of the groups/bins */
-          return feat.values.indexOf(feat.valueToGroup[d[featureName]]);
-        }
-      })
-      .join(",");
+function getRegressionData(features: Features, selectedFeatures: string[], dataset: RegressionDataset): RegressionNode[] {
+  const groundTruthBinner = d3.bin()
+      .domain(dataset.groundTruthExtent)
+      .thresholds(dataset.groundTruthThresholds);
+
+  const predictionBinner = dataset.hasPredictions ?
+    d3.bin()
+      .domain(dataset.deltaExtent)
+      .thresholds(dataset.deltaThresholds) :
+    null;
+
+  // g is an array of all of the instances belonging to the same subset
+  function reducer(g: RegressionRow[]) {
+    const labels = g.map(d => d.label);
+    // do I need to check for bins where x0 === x1?
+    // is it possible the bins won't have exactly uniform widths?
+    const groundTruthBins = groundTruthBinner(labels)
+        .map(bin => ({ x0: bin.x0, x1: bin.x1, y0: 0, size: bin.length }));
+
+    let sum = 0;
+    for (let bin of groundTruthBins) {
+      bin.y0 = sum;
+      sum += bin.size;
+    }
+
+    // const groundTruthThresholds = (groundTruthBin.thresholds() as any)() as number[];
+
+    const node: RegressionNode = {
+      type: 'regression',
+      size: g.length,
+      splits: new Map(),
+      groundTruthBins,
+    };
+
+    if (predictionBinner !== null) {
+      const deltas = g.map(d => d.label - d.prediction);
+
+      const deltaBins = predictionBinner(deltas)
+        .map(bin => ({ x0: bin.x0, x1: bin.x1, y0: 0, size: bin.length }));
+
+      sum = 0;
+      for (let bin of deltaBins) {
+        bin.y0 = sum;
+        sum += bin.size;
+      }
+
+      node.deltaBins = deltaBins;
+    }
+
+    return node;
   }
 
-  return d3.rollups(dataset.rows, reducer, key)
-    .map(([key, value]) => {
-    // splits is a map from the name of the selected feature
-    // to the subset's bin index
-    // this is done after since reducer doesn't have access to group's key
-    const kvps: [string, number][] = d3.zip(selectedFeatures, key.split(','))
-        .map(([a, b]) => ([a, +b]));
-    const splits = new Map(kvps);
-    value.splits = splits;
-    return value;
-  });
+  return getData(features, selectedFeatures, dataset, reducer) as RegressionNode[];
 }
 
 /* https://stackoverflow.com/questions/175739/built-in-way-in-javascript-to-check-if-a-string-is-a-valid-number
@@ -429,15 +522,24 @@ function getFilteredDataset(dataset: Dataset, filters: Filter[]): Dataset {
     };
   } else {
     const rows = getFilteredRows(dataset.rows);
-    return {
+    const ds: RegressionDataset = {
       type: 'regression',
       rows: rows,
       name: dataset.name,
       featureNames: dataset.featureNames,
-      labelValues: dataset.labelValues,
+      approxNumBins: dataset.approxNumBins,
+      groundTruthExtent: dataset.groundTruthExtent,
+      groundTruthThresholds: dataset.groundTruthThresholds,
       hasPredictions: dataset.hasPredictions,
       size: rows.length
     };
+
+    if (ds.hasPredictions) {
+      ds.deltaExtent = dataset.deltaExtent;
+      ds.deltaThresholds = dataset.deltaThresholds;
+    }
+
+    return ds;
   }
 }
 

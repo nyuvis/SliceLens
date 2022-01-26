@@ -22,7 +22,11 @@ export type RegressionDataset = {
   rows: RegressionRow[],
   name: string,
   featureNames: string[],
-  labelValues: string[],
+  approxNumBins: number,
+  groundTruthExtent: [number, number],
+  groundTruthThresholds: number[],
+  deltaExtent?: [number, number],
+  deltaThresholds?: number[],
   hasPredictions: boolean,
   size: number
 };
@@ -32,7 +36,8 @@ export type Dataset = ClassificationDataset | RegressionDataset;
 
 // data
 
-export type Node = {
+export type ClassificationNode = {
+  type: 'classification',
   size: number,
   splits: Map<string, number>,
   groundTruth: InternMap<string, number>,
@@ -40,6 +45,17 @@ export type Node = {
   predictionResults?: InternMap<string, InternMap<string, number>>
 };
 
+export type RegressionNode = {
+  type: 'regression',
+  size: number,
+  splits: Map<string, number>,
+  groundTruthBins: { x0: number, x1: number, y0: number, size: number }[],
+  deltaBins?: { x0: number, x1: number, y0: number, size: number }[],
+};
+
+export type Node = ClassificationNode | RegressionNode;
+
+export type NodeArray = ClassificationNode[] | RegressionNode[];
 
 // features
 

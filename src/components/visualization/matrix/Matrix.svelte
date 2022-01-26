@@ -1,11 +1,12 @@
 <script lang="ts">
-  import Square from "./Square.svelte";
+  import ClassificationSquare from "./ClassificationSquare.svelte";
+  import RegressionSquare from "./RegressionSquare.svelte";
   import Grid from "./Grid.svelte";
   import XAxis from "./XAxis.svelte";
   import YAxis from "./YAxis.svelte";
   import Tooltip from "./Tooltip.svelte";
   import SizeLegend from "./SizeLegend.svelte";
-  import { data, features, selectedFeatures } from "../../../stores.js";
+  import { data, features, selectedFeatures, dataset } from "../../../stores.js";
   import { getScales, getPositionOfSquare } from "../../../DataTransformer.js"
   import { onMount } from 'svelte';
   import * as d3 from "d3";
@@ -13,7 +14,7 @@
 
   export let showPredictions: boolean;
   export let showSize: boolean;
-  export let color: d3.ScaleOrdinal<string, string, string>;
+  export let color: any;
 
   let div: HTMLDivElement;
 
@@ -169,21 +170,39 @@
       </g>
 
       <g class="squares">
-        {#each $data as d}
-          <Square
-            x={getPositionOfSquare(d, xFeatures, xScales)}
-            y={getPositionOfSquare(d, yFeatures, yScales)}
-            sideLength={showSize ? sideLength(d.size) : maxSideLength}
-            {color}
-            {showPredictions}
-            {d}
-            padding={showSize
-              ? padding + (maxSideLength - sideLength(d.size)) / 2
-              : padding}
-            on:mousemove={event => handleMousemove(event, d)}
-            on:mouseleave={handleMouseleave}
-          />
-        {/each}
+        {#if $dataset.type === 'classification'}
+          {#each $data as d}
+            <ClassificationSquare
+              x={getPositionOfSquare(d, xFeatures, xScales)}
+              y={getPositionOfSquare(d, yFeatures, yScales)}
+              sideLength={showSize ? sideLength(d.size) : maxSideLength}
+              {color}
+              {showPredictions}
+              {d}
+              padding={showSize
+                ? padding + (maxSideLength - sideLength(d.size)) / 2
+                : padding}
+              on:mousemove={event => handleMousemove(event, d)}
+              on:mouseleave={handleMouseleave}
+            />
+          {/each}
+        {:else}
+          {#each $data as d}
+            <RegressionSquare
+              x={getPositionOfSquare(d, xFeatures, xScales)}
+              y={getPositionOfSquare(d, yFeatures, yScales)}
+              sideLength={showSize ? sideLength(d.size) : maxSideLength}
+              {color}
+              {showPredictions}
+              {d}
+              padding={showSize
+                ? padding + (maxSideLength - sideLength(d.size)) / 2
+                : padding}
+              on:mousemove={event => handleMousemove(event, d)}
+              on:mouseleave={handleMouseleave}
+            />
+          {/each}
+        {/if}
       </g>
     </g>
   </svg>
