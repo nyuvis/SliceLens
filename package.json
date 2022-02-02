@@ -41,7 +41,7 @@
     "uvu": "^0.5.1"
   },
   "dependencies": {
-    "d3": "^6.7.0",
+    "d3": "^7.3.0",
     "dompurify": "^2.0.17",
     "marked": "^4.0.10",
     "rollup-plugin-web-worker-loader": "^1.6.0",

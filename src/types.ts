@@ -1,6 +1,3 @@
-import type {InternMap} from "d3";
-
-
 // dataset
 
 export type ClassificationRow = Record<string, string|number> & { label: string, prediction?: string };
@@ -40,17 +37,16 @@ export type ClassificationNode = {
   type: 'classification',
   size: number,
   splits: Map<string, number>,
-  groundTruth: InternMap<string, number>,
-  predictionCounts?: InternMap<string, number>,
-  predictionResults?: InternMap<string, InternMap<string, number>>
+  groundTruth: { label: string, size: number, correct: true, offset: number }[],
+  predictions?: { label: string, size: number, correct: boolean, offset: number }[],
 };
 
 export type RegressionNode = {
   type: 'regression',
   size: number,
   splits: Map<string, number>,
-  groundTruthBins: { x0: number, x1: number, y0: number, size: number }[],
-  deltaBins?: { x0: number, x1: number, y0: number, size: number }[],
+  groundTruthBins: { x0: number, x1: number, offset: number, size: number }[],
+  deltaBins?: { x0: number, x1: number, offset: number, size: number }[],
 };
 
 export type Node = ClassificationNode | RegressionNode;
@@ -123,11 +119,11 @@ export type Filter = QuantitativeFilter | CategoricalFilter;
 // tooltip
 
 export type ClassificationTooltipData = {
-  label: string | number,
-  count: number,
+  display: string,
+  size: number,
   percent: string,
-  stripes: boolean,
-  colorLabel: string
+  correct: boolean,
+  label: string
 }[];
 
 

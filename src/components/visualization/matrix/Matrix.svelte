@@ -7,15 +7,11 @@
   import Tooltip from "./Tooltip.svelte";
   import ClassificationTooltipContent from "./ClassificationTooltipContent.svelte";
   import SizeLegend from "./SizeLegend.svelte";
-  import { data, features, selectedFeatures, dataset } from "../../../stores.js";
-  import { getScales, getPositionOfSquare } from "../../../DataTransformer.js"
+  import { data, features, selectedFeatures, showSize } from "../../../stores";
+  import { getScales, getPositionOfSquare } from "../../../DataTransformer"
   import { onMount } from 'svelte';
   import * as d3 from "d3";
   import type { Node } from "../../../types";
-
-  export let showPredictions: boolean;
-  export let showSize: boolean;
-  export let color: any;
 
   let div: HTMLDivElement;
 
@@ -153,7 +149,7 @@
       <line x1="0" y1="0" x2="0" y2="3" style="stroke:white; stroke-width:3" />
     </pattern>
 
-    {#if showSize}
+    {#if $showSize}
       <g class="size-legend" transform="translate({leftSpace + padding},{height - margin.bottom})">
         <SizeLegend scale={sideLength}/>
       </g>
@@ -171,46 +167,40 @@
       </g>
 
       <g class="squares">
-        {#if $dataset.type === 'classification'}
-          {#each $data as d}
+        {#each $data as d}
+          {#if d.type === 'classification'}
             <ClassificationSquare
               x={getPositionOfSquare(d, xFeatures, xScales)}
               y={getPositionOfSquare(d, yFeatures, yScales)}
-              sideLength={showSize ? sideLength(d.size) : maxSideLength}
-              {color}
-              {showPredictions}
+              sideLength={$showSize ? sideLength(d.size) : maxSideLength}
               {d}
-              padding={showSize
+              padding={$showSize
                 ? padding + (maxSideLength - sideLength(d.size)) / 2
                 : padding}
               on:mousemove={event => handleMousemove(event, d)}
               on:mouseleave={handleMouseleave}
             />
-          {/each}
-        {:else}
-          {#each $data as d}
+          {:else if d.type === 'regression'}
             <RegressionSquare
               x={getPositionOfSquare(d, xFeatures, xScales)}
               y={getPositionOfSquare(d, yFeatures, yScales)}
-              sideLength={showSize ? sideLength(d.size) : maxSideLength}
-              {color}
-              {showPredictions}
+              sideLength={$showSize ? sideLength(d.size) : maxSideLength}
               {d}
-              padding={showSize
+              padding={$showSize
                 ? padding + (maxSideLength - sideLength(d.size)) / 2
                 : padding}
               on:mousemove={event => handleMousemove(event, d)}
               on:mouseleave={handleMouseleave}
             />
-          {/each}
-        {/if}
+          {/if}
+        {/each}
       </g>
     </g>
   </svg>
   {#if tooltipData}
     <Tooltip {...mouse} {bounds} d={tooltipData}>
       {#if tooltipData.type === 'classification'}
-        <ClassificationTooltipContent {showPredictions} d={tooltipData} {color}/>
+        <ClassificationTooltipContent d={tooltipData}/>
       {/if}
     </Tooltip>
   {/if}

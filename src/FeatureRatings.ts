@@ -1,4 +1,4 @@
-import type { Metric, MetricName, Rating } from './RatingMetrics';
+import type { MetricName, Metrics, Rating } from './RatingMetrics';
 import type {Features, Dataset} from './types';
 import * as d3 from "d3";
 import { getClassificationData, getRegressionData } from './DataTransformer';
@@ -7,7 +7,7 @@ export { getFeatureRatings, normalize };
 
 function getFeatureRatings(
   {criterion, selected, features, dataset}: {criterion: MetricName, selected: string[], features: Features, dataset: Dataset},
-  { entropy, errorDeviation, errorCount, errorPercent, random }: Record<Exclude<MetricName, "none">,Metric>
+  metrics: Metrics
 ): Map<string, number> {
   if (criterion === 'none') {
     return new Map();
@@ -17,16 +17,20 @@ function getFeatureRatings(
 
   let ratings: Rating[] = [];
 
-  if (criterion === 'entropy') {
-    ratings = entropy({selected, features, dataset, available}, getClassificationData);
-  } else if (criterion === 'errorCount') {
-    ratings = errorCount({selected, features, dataset, available}, getClassificationData);
-  } else if (criterion === 'errorPercent') {
-    ratings = errorPercent({selected, features, dataset, available}, getClassificationData);
-  } else if (criterion === 'errorDeviation') {
-    ratings = errorDeviation({selected, features, dataset, available}, getClassificationData)
-  } else if (criterion === 'random') {
-    ratings = random({selected, features, dataset, available}, getRegressionData)
+  if (dataset.type === 'classification') {
+    if (criterion === 'entropy') {
+      ratings = metrics.entropy({selected, features, dataset, available}, getClassificationData);
+    } else if (criterion === 'errorCount') {
+      ratings = metrics.errorCount({selected, features, dataset, available}, getClassificationData);
+    } else if (criterion === 'errorPercent') {
+      ratings = metrics.errorPercent({selected, features, dataset, available}, getClassificationData);
+    } else if (criterion === 'errorDeviation') {
+      ratings = metrics.errorDeviation({selected, features, dataset, available}, getClassificationData)
+    }
+  } else {
+    if (criterion === 'random') {
+      ratings = metrics.random({selected, features, dataset, available}, getRegressionData)
+    }
   }
 
   return normalize(ratings);

@@ -1,27 +1,25 @@
 <script lang="ts">
-  import { dataset } from '../../stores.js';
+  import { dataset, showPredictions, showSize } from '../../stores.js';
 
-  export let showSize: boolean = true;
   let showPredictionsCheckBox: boolean = false;
-  export let showPredictions: boolean = false;
 
   $: if ($dataset.hasPredictions) {
     showPredictionsCheckBox = true;
   } else {
     showPredictionsCheckBox = false;
-    showPredictions = false;
+    $showPredictions = false;
   }
 </script>
 
 <div>
   <p class="label bold">Visualization</p>
   <label class="sub-label small">
-      <input type="checkbox" bind:checked={showSize}>Scale by num. instances
+      <input type="checkbox" bind:checked={$showSize}>Scale by num. instances
   </label>
 
   {#if showPredictionsCheckBox}
     <label class="sub-label small">
-      <input type="checkbox" bind:checked={showPredictions}>Show predictions
+      <input type="checkbox" bind:checked={$showPredictions}>Show predictions
     </label>
   {/if}
 </div>

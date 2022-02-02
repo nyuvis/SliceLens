@@ -1,13 +1,5 @@
 import { getFeatureRatings } from './FeatureRatings';
-import {
-  entropy,
-  errorDeviation,
-  errorCount,
-  errorPercent,
-  random,
-} from './RatingMetrics';
-
-const metrics = { entropy, errorDeviation, errorCount, errorPercent, random };
+import { metrics } from './RatingMetrics';
 
 self.onmessage = (e: MessageEvent) => {
   const featureToRelevance = getFeatureRatings(e.data, metrics);

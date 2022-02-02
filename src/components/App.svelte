@@ -8,8 +8,6 @@
   import { dataset, features, data } from '../stores.js';
   import type { FeatureExtent } from '../types';
 
-  let showPredictions: boolean = false;
-  let showSize: boolean = true;
   // feature name to feature values for categorical features
   // feature name to extent for quantitative features
   // on the whole dataset
@@ -45,7 +43,7 @@
     {/if}
 
     {#if $dataset !== null}
-      <VisualizationSettings bind:showSize bind:showPredictions/>
+      <VisualizationSettings/>
     {/if}
 
     {#if $features !== null && $dataset !== null}
@@ -54,7 +52,7 @@
   </div>
 
   {#if $features !== null && $dataset !== null && $data !== null}
-    <Chart {showPredictions} {showSize} />
+    <Chart/>
   {/if}
 
   <div id="notes" class="sidebar">

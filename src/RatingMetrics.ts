@@ -1,26 +1,39 @@
-import type { Node, Features, Dataset, ClassificationNode } from './types';
+import type { Features, ClassificationNode, ClassificationDataset, RegressionNode, RegressionDataset } from './types';
 
 import * as d3 from "d3";
 
 export {
-  entropy,
-  errorDeviation,
-  errorCount,
-  errorPercent,
+  metrics,
   getErrorCountForSquare,
   getValidMetrics,
-  random
 };
 
 // types
 
-export type Metric = (input: RatingInput, getData: (features: Features, selectedFeatures: string[], dataset: Dataset) => Node[]) => Rating[];
-export type RatingInput = {selected: string[], features: Features, dataset: Dataset, available: string[]};
+export type ClassificationRatingInput = {selected: string[], features: Features, dataset: ClassificationDataset, available: string[]};
+export type RegressionRatingInput = {selected: string[], features: Features, dataset: RegressionDataset, available: string[]};
+
+export type ClassificationMetric = (input: ClassificationRatingInput, getData: (features: Features, selectedFeatures: string[], dataset: ClassificationDataset) => ClassificationNode[]) => Rating[];
+export type RegressionMetric = (input: RegressionRatingInput, getData: (features: Features, selectedFeatures: string[], dataset: RegressionDataset) => RegressionNode[]) => Rating[];
 export type Rating = {feature: string, value: number};
 
-export type MetricName = 'none' | 'entropy' | 'errorDeviation' | 'errorCount' | 'errorPercent' | 'random';
+export type Metrics = Record<ClassificationMetricName, ClassificationMetric> & Record<RegressionMetricName, RegressionMetric>;
+
+export type RegressionMetricName = 'random';
+export type ClassificationMetricName = 'entropy' | 'errorDeviation' | 'errorCount' | 'errorPercent'
+export type MetricName = RegressionMetricName | ClassificationMetricName | 'none';
 export type MetricInfo = { value: MetricName, display: string, type: 'classification' | 'regression', requiresPredictions: boolean };
 export type MetricGroup = { title: string, requiresPredictions: boolean, options: MetricInfo[] };
+
+// metrics
+
+const metrics: Metrics = {
+  entropy,
+  errorDeviation,
+  errorCount,
+  errorPercent,
+  random
+};
 
 // info for feature selector
 
@@ -88,7 +101,7 @@ function getValidMetrics(type: 'classification' | 'regression', hasPredictions: 
   Return the feature that results in the nodes with the
   lowest average entropy.
 */
-function entropy({selected, features, dataset, available}: RatingInput, getData: (features: Features, selectedFeatures: string[], dataset: Dataset) => Node[]): Rating[] {
+function entropy({selected, features, dataset, available}: ClassificationRatingInput, getData: (features: Features, selectedFeatures: string[], dataset: ClassificationDataset) => ClassificationNode[]): Rating[] {
   return available.map(feature => {
     const sel = [...selected, feature];
     const data = getData(features, sel, dataset);
@@ -102,9 +115,9 @@ function entropy({selected, features, dataset, available}: RatingInput, getData:
     return {feature, value};
   });
 
-  function H(square: Node) {
-    return -d3.sum(square.groundTruth.values(), v => {
-      const p = v / square.size;
+  function H(square: ClassificationNode) {
+    return -d3.sum(square.groundTruth, v => {
+      const p = v.size / square.size;
       return p * Math.log2(p);
     });
   }
@@ -114,7 +127,7 @@ function entropy({selected, features, dataset, available}: RatingInput, getData:
   Give a higher rating to features that result in the
   subsets with higher standard deviations of percent error
 */
-function errorDeviation({selected, features, dataset, available}: RatingInput, getData: (features: Features, selectedFeatures: string[], dataset: Dataset) => Node[]): Rating[] {
+function errorDeviation({selected, features, dataset, available}: ClassificationRatingInput, getData: (features: Features, selectedFeatures: string[], dataset: ClassificationDataset) => ClassificationNode[]): Rating[] {
   return available.map(feature => {
     const sel = [...selected, feature];
     const data = getData(features, sel, dataset);
@@ -130,7 +143,7 @@ function errorDeviation({selected, features, dataset, available}: RatingInput, g
   Give a higher rating to features that result in the
   single nodes that have the higher number of errors
 */
-function errorCount({selected, features, dataset, available}: RatingInput, getData: (features: Features, selectedFeatures: string[], dataset: Dataset) => Node[]): Rating[] {
+function errorCount({selected, features, dataset, available}: ClassificationRatingInput, getData: (features: Features, selectedFeatures: string[], dataset: ClassificationDataset) => ClassificationNode[]): Rating[] {
   return available.map(feature => {
     const sel = [...selected, feature];
     const data = getData(features, sel, dataset);
@@ -145,7 +158,7 @@ function errorCount({selected, features, dataset, available}: RatingInput, getDa
   Give a higher rating to features that result in the
   single nodes that have the higher percent of errors
 */
-function errorPercent({selected, features, dataset, available}: RatingInput, getData: (features: Features, selectedFeatures: string[], dataset: Dataset) => Node[]): Rating[] {
+function errorPercent({selected, features, dataset, available}: ClassificationRatingInput, getData: (features: Features, selectedFeatures: string[], dataset: ClassificationDataset) => ClassificationNode[]): Rating[] {
   return available.map(feature => {
     const sel = [...selected, feature];
     const data = getData(features, sel, dataset);
@@ -159,27 +172,16 @@ function errorPercent({selected, features, dataset, available}: RatingInput, get
 
 function getErrorCountForSquare(square: ClassificationNode): number {
   // this should not happen
-  if (square.predictionResults === undefined) {
+  if (square.predictions === undefined) {
     return 0;
   }
 
-  // predictionResults is a map map from predicted label to
-  // map from "correct" or "incorrect" to count
-  // one Map per class
-
-  // get sum of incorrect predictions for each class
-  const errorCount = d3.sum(square.predictionResults.values(),
-    p => p.has('incorrect') ?
-      p.get('incorrect') :
-      0
-  );
-
-  return errorCount;
+  return d3.sum(square.predictions, d => d.correct ? 0 : d.size);
 }
 
 // regression
 
-function random({selected, features, dataset, available}: RatingInput, getData: (features: Features, selectedFeatures: string[], dataset: Dataset) => Node[]): Rating[] {
+function random({selected, features, dataset, available}: RegressionRatingInput, getData: (features: Features, selectedFeatures: string[], dataset: RegressionDataset) => RegressionNode[]): Rating[] {
   return available.map(feature => ({
     feature,
     value: Math.random()

@@ -374,7 +374,19 @@ function getClassificationData(features: Features, selectedFeatures: string[], d
   // g is an array of all of the instances belonging to the same subset
   function reducer(g: ClassificationRow[]) {
     // map from ground truth label to number of instances with that label
-    const groundTruth = d3.rollup(g, v => v.length, d => d.label);
+    const groundTruth = d3.rollups(
+      g,
+      v => v.length,
+      d => d.label
+    )
+      .map(([label, size]) => ({label, size, correct: true as const, offset: 0}))
+      .sort((a, b) => d3.ascending(a.label, b.label));
+
+    let sum = 0;
+    for (let bin of groundTruth) {
+      bin.offset = sum;
+      sum += bin.size;
+    }
 
     const node: ClassificationNode = {
       type: 'classification',
@@ -384,27 +396,24 @@ function getClassificationData(features: Features, selectedFeatures: string[], d
     };
 
     if (dataset.hasPredictions) {
-      // if the dataset has model predictions,
-      // also count the number of each prediction
-      // and the amount correct and incorrect
-
-      // map from predicted label to number of instances with that prediction
-      const predictionCounts = d3.rollup(g, v => v.length, d => d.prediction);
-
       // map from predicted label to map from "correct" or "incorrect" to count
-      const predictionResults = d3.rollup(
+      const predictions = d3.flatRollup(
         g,
-        v =>
-          d3.rollup(
-            v,
-            g => g.length,
-            p => p.prediction === p.label ? "correct" : "incorrect"
-          ),
-        d => d.prediction
-      );
+        v => v.length,
+        d => d.prediction,
+        d => d.prediction === d.label
+      )
+        .map(([label, correct, size]) => ({label, correct, size, offset: 0}))
+        // sort primarily by label, secondarily by correctness
+        .sort((a, b) => d3.ascending(a.label, b.label) || d3.ascending(a.correct, b.correct));
 
-      node['predictionCounts'] = predictionCounts;
-      node['predictionResults'] = predictionResults;
+      let sum = 0;
+      for (let bin of predictions) {
+        bin.offset = sum;
+        sum += bin.size;
+      }
+
+      node.predictions = predictions;
     }
 
     return node;
@@ -430,11 +439,11 @@ function getRegressionData(features: Features, selectedFeatures: string[], datas
     // do I need to check for bins where x0 === x1?
     // is it possible the bins won't have exactly uniform widths?
     const groundTruthBins = groundTruthBinner(labels)
-        .map(bin => ({ x0: bin.x0, x1: bin.x1, y0: 0, size: bin.length }));
+        .map(bin => ({ x0: bin.x0, x1: bin.x1, offset: 0, size: bin.length }));
 
     let sum = 0;
     for (let bin of groundTruthBins) {
-      bin.y0 = sum;
+      bin.offset = sum;
       sum += bin.size;
     }
 
@@ -451,11 +460,11 @@ function getRegressionData(features: Features, selectedFeatures: string[], datas
       const deltas = g.map(d => d.label - d.prediction);
 
       const deltaBins = predictionBinner(deltas)
-        .map(bin => ({ x0: bin.x0, x1: bin.x1, y0: 0, size: bin.length }));
+        .map(bin => ({ x0: bin.x0, x1: bin.x1, offset: 0, size: bin.length }));
 
       sum = 0;
       for (let bin of deltaBins) {
-        bin.y0 = sum;
+        bin.offset = sum;
         sum += bin.size;
       }
 
@@ -588,29 +597,20 @@ function getPositionOfSquare(d: Node, features: Feature[], scales: d3.ScaleBand<
 
 function getClassificationTooltipAmounts(showPredictions: boolean, d: ClassificationNode, percentFormat: (n: number) => string): ClassificationTooltipData {
   if (showPredictions) {
-    return (
-      Array.from(d.predictionResults)
-        // sort by predicted label
-        .sort((a, b) => d3.ascending(a[0], b[0]))
-        .map(([label, counts]) =>
-          Array.from(counts, ([correct, count]) => ({
-            label: `${label} (${correct})`,
-            count: count,
-            percent: percentFormat(count / d.size),
-            stripes: correct === "incorrect",
-            colorLabel: label,
-            // put incorrect before correct to match order of layers in square
-          })).sort((a, b) => d3.descending(a.label, b.label))
-        )
-        .flat()
-    );
+    return d.predictions.map(({label, size, correct}) => ({
+        display: `${label} (${correct ? "correct" : "incorrect"})`,
+        size: size,
+        percent: percentFormat(size / d.size),
+        correct: correct,
+        label: label,
+      }));
   } else {
-    return Array.from(d.groundTruth, ([label, count]) => ({
-      label,
-      count,
-      percent: percentFormat(count / d.size),
-      stripes: false,
-      colorLabel: label,
-    })).sort((a, b) => d3.ascending(a.label, b.label));
+    return d.groundTruth.map(({label, size}) => ({
+      display: label,
+      size,
+      percent: percentFormat(size / d.size),
+      correct: true,
+      label: label,
+    }));
   }
 }
