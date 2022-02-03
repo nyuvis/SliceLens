@@ -1,13 +1,15 @@
 <script lang="ts">
   import ClassificationSquare from "./ClassificationSquare.svelte";
   import RegressionSquare from "./RegressionSquare.svelte";
+  import ClassificationBars from "./ClassificationBars.svelte";
+  import RegressionBars from "./RegressionBars.svelte";
   import Grid from "./Grid.svelte";
   import XAxis from "./XAxis.svelte";
   import YAxis from "./YAxis.svelte";
   import Tooltip from "./Tooltip.svelte";
   import ClassificationTooltipContent from "./ClassificationTooltipContent.svelte";
   import SizeLegend from "./SizeLegend.svelte";
-  import { data, features, selectedFeatures, showSize } from "../../../stores";
+  import { data, features, selectedFeatures, showPredictions, showSize, visKind, visOrientation } from "../../../stores";
   import { getScales, getPositionOfSquare } from "../../../DataTransformer"
   import { onMount } from 'svelte';
   import * as d3 from "d3";
@@ -90,6 +92,22 @@
     .range([0, maxSideLength])
     .unknown(0);
 
+  // maximum count of any slice
+  $: maxBarCount = d3.max(
+    $data,
+    node => {
+      const parts = $showPredictions ? node.predictions : node.groundTruth;
+      console.log(node);
+      // typescript doesn't like d3.max(parts, d => d.size)
+      return d3.max(parts.map(d => d.size));
+    }
+  );
+
+  $: barLength = d3.scaleLinear<number, number, number>()
+      .domain([0, maxBarCount])
+      .range([0, maxSideLength])
+      .unknown(0);
+
   // space between the top (left) of the div and the top (left) of the matrix
   // this centers the matrix in the div
   // this includes the space for margins
@@ -151,7 +169,10 @@
 
     {#if $showSize}
       <g class="size-legend" transform="translate({leftSpace + padding},{height - margin.bottom})">
-        <SizeLegend scale={sideLength}/>
+        <SizeLegend
+          scale={$visKind === 'squares' ? sideLength : barLength}
+          title={$visKind === 'squares' ? 'Side length to number of instances' : 'Bar length to number of instances'}
+        />
       </g>
     {/if}
 
@@ -169,29 +190,55 @@
       <g class="squares">
         {#each $data as d}
           {#if d.type === 'classification'}
-            <ClassificationSquare
-              x={getPositionOfSquare(d, xFeatures, xScales)}
-              y={getPositionOfSquare(d, yFeatures, yScales)}
-              sideLength={$showSize ? sideLength(d.size) : maxSideLength}
-              {d}
-              padding={$showSize
-                ? padding + (maxSideLength - sideLength(d.size)) / 2
-                : padding}
-              on:mousemove={event => handleMousemove(event, d)}
-              on:mouseleave={handleMouseleave}
-            />
+            {#if $visKind === 'squares'}
+              <ClassificationSquare
+                x={getPositionOfSquare(d, xFeatures, xScales)}
+                y={getPositionOfSquare(d, yFeatures, yScales)}
+                sideLength={$showSize ? sideLength(d.size) : maxSideLength}
+                {d}
+                padding={$showSize
+                  ? padding + (maxSideLength - sideLength(d.size)) / 2
+                  : padding}
+                on:mousemove={event => handleMousemove(event, d)}
+                on:mouseleave={handleMouseleave}
+              />
+            {:else}
+              <ClassificationBars
+                x={getPositionOfSquare(d, xFeatures, xScales)}
+                y={getPositionOfSquare(d, yFeatures, yScales)}
+                sideLength={maxSideLength}
+                length={barLength}
+                {d}
+                padding={padding}
+                on:mousemove={event => handleMousemove(event, d)}
+                on:mouseleave={handleMouseleave}
+              />
+            {/if}
           {:else if d.type === 'regression'}
-            <RegressionSquare
-              x={getPositionOfSquare(d, xFeatures, xScales)}
-              y={getPositionOfSquare(d, yFeatures, yScales)}
-              sideLength={$showSize ? sideLength(d.size) : maxSideLength}
-              {d}
-              padding={$showSize
-                ? padding + (maxSideLength - sideLength(d.size)) / 2
-                : padding}
-              on:mousemove={event => handleMousemove(event, d)}
-              on:mouseleave={handleMouseleave}
-            />
+            {#if $visKind === 'squares'}
+              <RegressionSquare
+                x={getPositionOfSquare(d, xFeatures, xScales)}
+                y={getPositionOfSquare(d, yFeatures, yScales)}
+                sideLength={$showSize ? sideLength(d.size) : maxSideLength}
+                {d}
+                padding={$showSize
+                  ? padding + (maxSideLength - sideLength(d.size)) / 2
+                  : padding}
+                on:mousemove={event => handleMousemove(event, d)}
+                on:mouseleave={handleMouseleave}
+              />
+            {:else}
+              <RegressionBars
+                x={getPositionOfSquare(d, xFeatures, xScales)}
+                y={getPositionOfSquare(d, yFeatures, yScales)}
+                sideLength={maxSideLength}
+                length={barLength}
+                {d}
+                padding={padding}
+                on:mousemove={event => handleMousemove(event, d)}
+                on:mouseleave={handleMouseleave}
+              />
+            {/if}
           {/if}
         {/each}
       </g>

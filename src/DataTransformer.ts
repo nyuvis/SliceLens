@@ -438,37 +438,35 @@ function getRegressionData(features: Features, selectedFeatures: string[], datas
     const labels = g.map(d => d.label);
     // do I need to check for bins where x0 === x1?
     // is it possible the bins won't have exactly uniform widths?
-    const groundTruthBins = groundTruthBinner(labels)
+    const groundTruth = groundTruthBinner(labels)
         .map(bin => ({ x0: bin.x0, x1: bin.x1, offset: 0, size: bin.length }));
 
     let sum = 0;
-    for (let bin of groundTruthBins) {
+    for (let bin of groundTruth) {
       bin.offset = sum;
       sum += bin.size;
     }
-
-    // const groundTruthThresholds = (groundTruthBin.thresholds() as any)() as number[];
 
     const node: RegressionNode = {
       type: 'regression',
       size: g.length,
       splits: new Map(),
-      groundTruthBins,
+      groundTruth,
     };
 
     if (predictionBinner !== null) {
       const deltas = g.map(d => d.label - d.prediction);
 
-      const deltaBins = predictionBinner(deltas)
+      const predictions = predictionBinner(deltas)
         .map(bin => ({ x0: bin.x0, x1: bin.x1, offset: 0, size: bin.length }));
 
       sum = 0;
-      for (let bin of deltaBins) {
+      for (let bin of predictions) {
         bin.offset = sum;
         sum += bin.size;
       }
 
-      node.deltaBins = deltaBins;
+      node.predictions = predictions;
     }
 
     return node;

@@ -45,13 +45,14 @@ export type RegressionNode = {
   type: 'regression',
   size: number,
   splits: Map<string, number>,
-  groundTruthBins: { x0: number, x1: number, offset: number, size: number }[],
-  deltaBins?: { x0: number, x1: number, offset: number, size: number }[],
+  groundTruth: { x0: number, x1: number, offset: number, size: number }[],
+  predictions?: { x0: number, x1: number, offset: number, size: number }[],
 };
 
 export type Node = ClassificationNode | RegressionNode;
 
 export type NodeArray = ClassificationNode[] | RegressionNode[];
+
 
 // features
 

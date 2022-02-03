@@ -39,6 +39,13 @@ export const showPredictions: Writable<boolean> = writable(false);
 // scale by number of instances
 export const showSize: Writable<boolean> = writable(true);
 
+// visualization type
+export const visKind: Writable<'squares'|'bars'> = writable('squares');
+
+// visualization orientation
+export const visOrientation: Writable<'horizontal'|'vertical'> = writable('vertical');
+
+
 // color scale
 export const color: Readable<d3.ScaleOrdinal<string, string, string>|d3.ScaleThreshold<number, string, string>> = derived(
   [dataset, showPredictions],

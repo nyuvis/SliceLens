@@ -14,8 +14,8 @@
       .range([0, sideLength]);
 
   $: bins = $showPredictions ?
-      d.deltaBins :
-      d.groundTruthBins;
+      d.predictions :
+      d.groundTruth;
 </script>
 
 {#if "invertExtent" in $color}
