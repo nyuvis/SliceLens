@@ -3,7 +3,7 @@
   import { showPredictions, color, dataset, visOrientation } from "../../../stores";
   import type { RegressionNode, RegressionDataset } from '../../../types';
 
-  export let length: d3.ScaleLinear<number,number>;
+  export let length: d3.ScaleLinear<number, number, number>;
   export let sideLength: number;
   export let padding: number;
   export let x: number;
