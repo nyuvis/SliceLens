@@ -43,7 +43,7 @@
       // this is used to bound the features that can be set
       dispatch('load', getWholeDatasetFeatureExtents(feat));
 
-      $selectedFeatures = [];
+      selectedFeatures.reset();
       $dataset = ds;
       $fullDataset = ds;
       $features = feat;
@@ -89,7 +89,7 @@
 
       dispatch('load', getWholeDatasetFeatureExtents(feat));
 
-      $selectedFeatures = [];
+      selectedFeatures.reset();
       $dataset = ds;
       $fullDataset = ds;
       $features = feat;

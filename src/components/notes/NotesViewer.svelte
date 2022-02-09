@@ -27,7 +27,7 @@
       $features = Object.assign(allFeatures, copiedFeatures);
     }
 
-    $selectedFeatures = selected;
+    selectedFeatures.put(selected);
     $filters = filts;
   }
 </script>

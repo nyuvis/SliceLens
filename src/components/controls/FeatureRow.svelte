@@ -5,16 +5,24 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 -->
 
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-
-  const dispatch = createEventDispatcher();
+  import FeatureEditor from './FeatureEditor.svelte';
+  import { selectedFeatures } from '../../stores';
 
   export let feature: string;
   export let canAddFeatures: boolean;
   export let isSelected: boolean;
   export let relevance: number = 0;
   export let draggingOver: boolean = false;
+
+  let showFeatureEditor: boolean = false;
 </script>
+
+{#if showFeatureEditor}
+  <FeatureEditor
+    featureName={feature}
+    on:close={() => showFeatureEditor = false}
+  />
+{/if}
 
 <div class="feature small"
   class:draggingOver
@@ -37,7 +45,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       width="24" height="24" viewBox="0 0 24 24"
       stroke-width="2" stroke="currentColor" fill="none"
       stroke-linecap="round" stroke-linejoin="round"
-      on:click={() => dispatch('remove')}
+      on:click={() => selectedFeatures.remove(feature)}
     >
       <path stroke="none" d="M0 0h24v24H0z"/>
       <line x1="4" y1="7" x2="20" y2="7" />
@@ -53,7 +61,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       width="24" height="24" viewBox="0 0 24 24"
       stroke-width="2" stroke="currentColor" fill="none"
       stroke-linecap="round" stroke-linejoin="round"
-      on:click={() => dispatch('add')}
+      on:click={() => selectedFeatures.add(feature)}
     >
       <path stroke="none" d="M0 0h24v24H0z"/>
       <line x1="12" y1="5" x2="12" y2="19" />
@@ -68,12 +76,37 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     <p class="cutoff feature-name">{feature}</p>
   </div>
 
+  {#if isSelected}
+    <svg xmlns="http://www.w3.org/2000/svg"
+      class="icon icon-tabler icon-tabler-circle-minus"
+      width="24" height="24" viewBox="0 0 24 24"
+      stroke-width="2" stroke="currentColor" fill="none"
+      stroke-linecap="round" stroke-linejoin="round"
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <line x1="9" y1="12" x2="15" y2="12" />
+    </svg>
+
+    <svg xmlns="http://www.w3.org/2000/svg"
+      class="icon icon-tabler icon-tabler-circle-plus"
+      width="24" height="24" viewBox="0 0 24 24"
+      stroke-width="2" stroke="currentColor" fill="none"
+      stroke-linecap="round" stroke-linejoin="round"
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <line x1="9" y1="12" x2="15" y2="12" />
+      <line x1="12" y1="9" x2="12" y2="15" />
+    </svg>
+  {/if}
+
   <!-- edit icon -->
   <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-edit"
     width="24" height="24" viewBox="0 0 24 24"
     stroke-width="2" stroke="currentColor" fill="none"
     stroke-linecap="round" stroke-linejoin="round"
-    on:click={() => dispatch('edit')}
+    on:click={() => showFeatureEditor = true}
   >
     <path stroke="none" d="M0 0h24v24H0z"/>
     <path d="M9 7 h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-3" />
@@ -132,11 +165,17 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   /* icons */
 
-  .icon-tabler-trash, .icon-tabler-plus, .icon-tabler-edit {
+  .icon-tabler-trash,
+  .icon-tabler-plus,
+  .icon-tabler-edit,
+  .icon-tabler-circle-minus,
+  .icon-tabler-circle-plus {
     visibility: hidden;
     cursor: pointer;
   }
 
+  .selected:hover .icon-tabler-circle-plus,
+  .selected:hover .icon-tabler-circle-minus,
   .selected:hover .icon-tabler-edit,
   .selected:hover .icon-tabler-trash,
   .all:hover .icon-tabler-plus,
@@ -149,12 +188,11 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     color: var(--red);
   }
 
-  .all:hover .icon-tabler-plus:hover {
-    color: var(--blue);
-  }
-
   .selected:hover .icon-tabler-edit:hover,
-  .all:hover .icon-tabler-edit:hover {
+  .selected:hover .icon-tabler-circle-plus:hover,
+  .selected:hover .icon-tabler-circle-minus:hover,
+  .all:hover .icon-tabler-edit:hover
+  .all:hover .icon-tabler-plus:hover {
     color: var(--blue);
   }
 </style>

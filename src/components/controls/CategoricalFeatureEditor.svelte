@@ -4,8 +4,8 @@
   import Dropdown from './Dropdown.svelte';
   import MenuItem from './MenuItem.svelte';
   import QuestionBox from "../QuestionBox.svelte";
-  import { dataset, features } from "../../stores.js";
-  import { getClassificationData } from "../../DataTransformer.js";
+  import { changeSinceGeneratingSuggestion, dataset, features } from "../../stores";
+  import { getClassificationData, cloneCategoricalFeature, areFeaturesEqual } from "../../DataTransformer";
   import * as d3 from "d3";
   import type { CategoricalFeature, Node } from "../../types";
 
@@ -13,8 +13,14 @@
 
   export let feature: CategoricalFeature;
 
+  const original = cloneCategoricalFeature(feature);
+
   export function onWindowClose() {
     updateFeature();
+
+    if (!areFeaturesEqual(original, feature)) {
+      $changeSinceGeneratingSuggestion = true;
+    }
   }
 
   function updateFeature() {

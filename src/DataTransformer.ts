@@ -19,7 +19,11 @@ import type {
 } from "./types";
 
 export {
+  cloneCategoricalFeature,
+  cloneQuantitativeFeature,
   cloneSelectedFeatures,
+  areFeaturesEqual,
+  areFiltersEqual,
   equalIntervalThresholds,
   quantileThresholds,
   getFeatures,
@@ -35,7 +39,72 @@ export {
   getPositionOfSquare,
   getClassificationTooltipAmounts,
   parseDataset,
+  areArraysEqual
 };
+
+function cloneCategoricalFeature(feature: CategoricalFeature) : CategoricalFeature {
+  return {
+    name: feature.name,
+    type: feature.type,
+    values: [...feature.values],
+    categories: [...feature.categories],
+    valueToGroup: Object.assign({}, feature.valueToGroup)
+  };
+}
+
+
+function cloneQuantitativeFeature(feature: QuantitativeFeature) : QuantitativeFeature {
+  return {
+    name: feature.name,
+    type: feature.type,
+    values: [...feature.values],
+    extent: [...feature.extent],
+    splitType: feature.splitType,
+    numBins: feature.numBins,
+    thresholds: [...feature.thresholds],
+    format: feature.format
+  };
+}
+
+function areArraysEqual<T>(a: T[], b: T[], eq: (a: T, b: T) => boolean = (a: T, b: T) => a === b): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+
+  for (let i = 0; i < a.length; i++) {
+    if (!eq(a[i], b[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function areFeaturesEqual(a: Feature, b: Feature): boolean {
+  if (a.type === 'C' && b.type === 'C') {
+    return (
+      a.type === b.type &&
+      a.name === b.name &&
+      areArraysEqual(a.values, b.values) &&
+      areArraysEqual(a.categories, b.categories) &&
+      areArraysEqual(Object.keys(a.valueToGroup), Object.keys(b.categories)) &&
+      areArraysEqual(Object.values(a.valueToGroup), Object.values(b.categories))
+    );
+  } else if (a.type === 'Q' && b.type === 'Q') {
+    return (
+      a.type === b.type &&
+      a.name === b.name &&
+      areArraysEqual(a.extent, b.extent) &&
+      a.splitType === b.splitType &&
+      a.numBins === b.numBins &&
+      areArraysEqual(a.thresholds, b.thresholds) &&
+      areArraysEqual(a.values, b.values) &&
+      a.format === b.format
+    );
+  } else {
+    return false;
+  }
+}
 
 function cloneSelectedFeatures(features: Features, selectedFeatures: string[]): Features {
   const copyOfFeatures = {};
@@ -44,29 +113,9 @@ function cloneSelectedFeatures(features: Features, selectedFeatures: string[]): 
     const feature = features[featureName];
 
     if (feature.type === 'Q') {
-      const copy: QuantitativeFeature = {
-        name: feature.name,
-        type: feature.type,
-        values: [...feature.values],
-        extent: [...feature.extent],
-        splitType: feature.splitType,
-        numBins: feature.numBins,
-        thresholds: [...feature.thresholds],
-        format: feature.format
-      };
-
-      copyOfFeatures[featureName] = copy;
-
+      copyOfFeatures[featureName] = cloneQuantitativeFeature(feature);
     } else {
-      const copy: CategoricalFeature = {
-        name: feature.name,
-        type: feature.type,
-        values: [...feature.values],
-        categories: [...feature.categories],
-        valueToGroup: Object.assign({}, feature.valueToGroup)
-      }
-
-      copyOfFeatures[featureName] = copy;
+      copyOfFeatures[featureName] = cloneCategoricalFeature(feature);
     }
 
   });
@@ -96,6 +145,26 @@ function cloneFilters(filters: Filter[]): Filter[] {
       }
     }
   });
+}
+
+function areFiltersEqual(a: Filter, b: Filter) {
+  if (a.type === 'Q' && b.type === 'Q') {
+    return (
+      a.feature === b.feature &&
+      a.min === b.min &&
+      a.max === b.max &&
+      a.rightInclusive === b.rightInclusive &&
+      a.valid === b.valid
+    );
+  } else if (a.type === 'C' && b.type === 'C') {
+    return (
+      a.feature === b.feature &&
+      areArraysEqual(a.selected, b.selected) &&
+      a.valid === b.valid
+    );
+  } else {
+    return false;
+  }
 }
 
 /* after reading filters from JSON, the selectedSet needs to be

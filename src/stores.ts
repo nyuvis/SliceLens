@@ -13,7 +13,51 @@ export const dataset: Writable<Dataset> = writable(null);
 export const filters: Writable<Filter[]> = writable([]);
 
 // feature names that are currently selected and visualized
-export const selectedFeatures: Writable<string[]> = writable([]);
+function createSelectedFeatures() {
+  const { subscribe, set, update }: Writable<string[]> = writable([]);
+
+
+  function addAtIndex(feature: string, index: number): void {
+    update(selected => {
+      const filtered = selected.filter(d => d !== feature);
+      filtered.splice(index, 0, feature);
+      return filtered;
+    });
+  }
+
+  function add(feature: string): void {
+    update(selected => {
+      if (!selected.includes(feature)) {
+        selected.push(feature);
+      }
+      return selected;
+    });
+
+  }
+
+  function remove(feature: string): void {
+    update(selected => selected.filter(d => d !== feature));
+  }
+
+  function put(features: string[]): void {
+    set(features);
+  }
+
+  function reset(): void {
+    set([]);
+  }
+
+  return {
+    subscribe,
+    addAtIndex,
+    add,
+    remove,
+    reset,
+    put
+  };
+}
+
+export const selectedFeatures = createSelectedFeatures();
 
 // information on the features and splits
 export const features: Writable<Features> = writable(null);
@@ -45,7 +89,6 @@ export const visKind: Writable<'squares'|'bars'> = writable('squares');
 // visualization orientation
 export const visOrientation: Writable<'horizontal'|'vertical'> = writable('vertical');
 
-
 // color scale
 export const color: Readable<d3.ScaleOrdinal<string, string, string>|d3.ScaleThreshold<number, string, string>> = derived(
   [dataset, showPredictions],
@@ -66,6 +109,9 @@ export const color: Readable<d3.ScaleOrdinal<string, string, string>|d3.ScaleThr
     }
   }
 );
+
+// has there been a change to the filters or features or metric since generating the suggestions
+export const changeSinceGeneratingSuggestion: Writable<boolean> = writable(false);
 
 // logging user interactions
 function createLog() {

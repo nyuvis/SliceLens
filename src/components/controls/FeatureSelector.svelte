@@ -5,11 +5,11 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 -->
 
 <script lang="ts">
-  import FeatureSuggesterWorker from 'web-worker:../../FeatureSuggesterWorker';
+  import FeatureRatingWorker from 'web-worker:../../FeatureRatingWorker';
   import QuestionBox from '../QuestionBox.svelte';
   import FeatureRow from './FeatureRow.svelte';
-  import FeatureEditor from './FeatureEditor.svelte';
-  import {features, dataset, selectedFeatures, logs } from '../../stores.js';
+  import SuggestCombos from './SuggestCombos.svelte';
+  import {features, dataset, selectedFeatures, logs, changeSinceGeneratingSuggestion } from '../../stores.js';
   import { getValidMetrics } from '../../RatingMetrics.js';
   import type { MetricInfo, MetricGroup } from '../../RatingMetrics.js';
   import * as d3 from 'd3';
@@ -49,6 +49,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   }
 
   function criterionChanged() {
+    $changeSinceGeneratingSuggestion = true;
     logs.add({
       event: 'criterion-change',
       criterion: criterion.value,
@@ -66,7 +67,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   let featureToRelevance: Map<string, number> = new Map();
 
-  const worker = new FeatureSuggesterWorker();
+  const worker = new FeatureRatingWorker();
 
   worker.onmessage = (e: MessageEvent) => {
     featureToRelevance = e.data;
@@ -100,28 +101,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       return;
     }
 
-    const filtered = $selectedFeatures.filter(d => d !== item.id);
-
-    if (filtered.length === $selectedFeatures.length) {
-      logs.add({
-        event: 'feature-add',
-        feature: item.id,
-        selected: $selectedFeatures,
-        criterion: criterion.value,
-        rank: featuresSortedByRatingDescending.indexOf(item.id) + 1,
-        choices: featuresNames.length - $selectedFeatures.length,
-        workersInProgress,
-      });
-    } else {
-      logs.add({
-        event: 'feature-reorder',
-        feature: item.id,
-        selected: $selectedFeatures
-      });
-    }
-
-    filtered.splice(i, 0, item.id);
-    $selectedFeatures = filtered;
+    selectedFeatures.addAtIndex(item.id, i);
   }
 
   function startHandler(event: DragEvent, feature: string) {
@@ -133,34 +113,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   function endHandler() {
     dragInProgress = false;
     draggingOverFeature = null;
-  }
-
-  // adding and removing features
-
-  function plusClickHandler(feature: string) {
-    if (!$selectedFeatures.includes(feature)) {
-      logs.add({
-        event: 'feature-add',
-        feature,
-        selected: $selectedFeatures,
-        criterion: criterion.value,
-        rank: featuresSortedByRatingDescending.indexOf(feature) + 1,
-        choices: featuresNames.length - $selectedFeatures.length,
-        workersInProgress,
-      });
-
-      $selectedFeatures = [...$selectedFeatures, feature];
-    }
-  }
-
-  function trashClickHandler(feature: string) {
-    logs.add({
-      event: 'feature-remove',
-      feature,
-      selected: $selectedFeatures
-    });
-
-    $selectedFeatures = $selectedFeatures.filter(d => d !== feature);
   }
 
   // sorting features
@@ -202,33 +154,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   };
 
   $: featuresToShow = sortingOrders[sortBy];
-
-  // editing features
-
-  let showFeatureEditor: boolean = false;
-  let featureToEdit: string = null;
-
-  function onFeatureEdit(feature: string) {
-    featureToEdit = feature;
-    showFeatureEditor = true;
-
-    logs.add({
-      event: 'feature-edit',
-      phase: 'open',
-      feature: $features[feature]
-    });
-  }
 </script>
-
-{#if showFeatureEditor}
-  <FeatureEditor
-    featureName={featureToEdit}
-    on:close={() => {
-      showFeatureEditor = false;
-      featureToEdit = null;
-    }}
-  />
-{/if}
 
 {#if ratingsEnabled}
   <div class="label help-row">
@@ -268,6 +194,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       {/each}
     </select>
   </div>
+
+  <SuggestCombos {criterion}/>
 {/if}
 
 <div class="label help-row">
@@ -292,8 +220,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       on:dragend={endHandler}
       on:dragenter={() => draggingOverFeature = feature}
       on:dragleave={() => draggingOverFeature = null}
-      on:remove={() => trashClickHandler(feature)}
-      on:edit={() => onFeatureEdit(feature)}
     />
   {/each}
   {#if canAddFeatures}
@@ -394,8 +320,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         relevance={featureToRelevance.get(feature) ?? 0}
         on:dragstart={(e) => startHandler(e, feature)}
         on:dragend={endHandler}
-        on:add={() => plusClickHandler(feature)}
-        on:edit={() => onFeatureEdit(feature)}
       />
     </div>
   {/each}
@@ -435,6 +359,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   .icon-tabler-sort-ascending-numbers:hover,
   .icon-tabler-sort-descending-numbers:hover {
     color: var(--blue);
+    cursor: pointer;
   }
 
   .icon-tabler + .icon-tabler {

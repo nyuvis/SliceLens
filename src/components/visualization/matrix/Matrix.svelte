@@ -97,7 +97,6 @@
     $data,
     node => {
       const parts = $showPredictions ? node.predictions : node.groundTruth;
-      console.log(node);
       // typescript doesn't like d3.max(parts, d => d.size)
       return d3.max(parts.map(d => d.size));
     }

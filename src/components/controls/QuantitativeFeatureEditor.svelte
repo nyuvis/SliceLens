@@ -1,17 +1,23 @@
 <script lang="ts">
   import { onMount, createEventDispatcher } from "svelte";
-  import { dataset } from "../../stores.js";
-  import { equalIntervalThresholds, quantileThresholds, getBinLabels } from "../../DataTransformer.js";
+  import { dataset, changeSinceGeneratingSuggestion } from "../../stores";
+  import { equalIntervalThresholds, quantileThresholds, getBinLabels, cloneQuantitativeFeature, areFeaturesEqual } from "../../DataTransformer";
   import Histogram from '../visualization/histogram/Histogram.svelte';
   import * as d3 from "d3";
-  import type { QuantitativeFeature, Row } from "../../types.js";
+  import type { QuantitativeFeature, Row } from "../../types";
 
   export let feature: QuantitativeFeature;
+
+  const original = cloneQuantitativeFeature(feature);
 
   export function onWindowClose() {
     if (feature.splitType === 'custom' ||
       originalFormatSpecifier !== feature.format) {
       setAxisValues();
+    }
+
+    if (!areFeaturesEqual(original, feature)) {
+      $changeSinceGeneratingSuggestion = true;
     }
   }
 

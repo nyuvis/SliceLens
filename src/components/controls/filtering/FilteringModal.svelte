@@ -9,8 +9,8 @@ refactored into a Modal.svelte.
 <script lang="ts">
   import QuantitativeFilterEditor from './QuantitativeFilterEditor.svelte';
   import CategoricalFilterEditor from './CategoricalFilterEditor.svelte';
-  import { filters, fullDataset, dataset, features } from '../../../stores.js';
-  import { getFeatures, getFilteredDataset } from '../../../DataTransformer.js';
+  import { filters, fullDataset, dataset, features, changeSinceGeneratingSuggestion } from '../../../stores';
+  import { areArraysEqual, areFiltersEqual, cloneFilters, getFeatures, getFilteredDataset } from '../../../DataTransformer';
   import { createEventDispatcher } from "svelte";
   import type { Dataset, FeatureExtent, Features, QuantitativeExtent, CategoricalExtent, QuantitativeFilter, CategoricalFilter } from '../../../types';
 
@@ -18,6 +18,10 @@ refactored into a Modal.svelte.
 
   const dispatch = createEventDispatcher();
   const defaultOption: string = 'Select a feature';
+
+  const original = cloneFilters($filters);
+
+  console.log("creating FilteringModal");
 
   let emptyDataset: boolean = false;
 
@@ -44,6 +48,10 @@ refactored into a Modal.svelte.
     if (ds.size === 0) {
       emptyDataset = true;
       return;
+    }
+
+    if (!areArraysEqual(original, $filters, areFiltersEqual)) {
+      $changeSinceGeneratingSuggestion = true;
     }
 
     emptyDataset = false;
