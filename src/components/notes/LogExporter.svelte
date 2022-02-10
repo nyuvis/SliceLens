@@ -6,7 +6,7 @@
 -->
 
 <script lang="ts">
-  import { logs } from '../../stores.js';
+  import { logs } from '../../stores';
 
   let download: HTMLAnchorElement;
 

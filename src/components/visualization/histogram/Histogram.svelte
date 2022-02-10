@@ -1,7 +1,7 @@
 <!-- https://observablehq.com/@d3/histogram -->
 <script lang="ts">
-  import { dataset } from '../../../stores.js';
-  import type { Row } from '../../../types.js';
+  import { dataset } from '../../../stores';
+  import type { Row } from '../../../types';
   import * as d3 from 'd3';
 
   export let feature: string;

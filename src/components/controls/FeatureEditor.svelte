@@ -6,7 +6,7 @@ https://www.w3schools.com/howto/howto_css_modals.asp
 <script lang="ts">
   import CategoricalFeatureEditor from "./CategoricalFeatureEditor.svelte";
   import QuantitativeFeatureEditor from "./QuantitativeFeatureEditor.svelte";
-  import { features, logs } from "../../stores.js";
+  import { features, logs } from "../../stores";
   import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();

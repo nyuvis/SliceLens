@@ -5,7 +5,7 @@
   import VisualizationSettings from './controls/VisualizationSettings.svelte';
   import Chart from './visualization/matrix/Chart.svelte';
   import NotesSidebar from './notes/NotesSidebar.svelte';
-  import { dataset, features, data } from '../stores.js';
+  import { dataset, features, data } from '../stores';
   import type { FeatureExtent } from '../types';
 
   // feature name to feature values for categorical features

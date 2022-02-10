@@ -13,8 +13,17 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   export let isSelected: boolean;
   export let relevance: number = 0;
   export let draggingOver: boolean = false;
+  export let highlight: boolean = false;
 
   let showFeatureEditor: boolean = false;
+
+  function add() {
+    selectedFeatures.add(feature)
+  }
+
+  function remove() {
+    selectedFeatures.remove(feature);
+  }
 </script>
 
 {#if showFeatureEditor}
@@ -45,7 +54,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       width="24" height="24" viewBox="0 0 24 24"
       stroke-width="2" stroke="currentColor" fill="none"
       stroke-linecap="round" stroke-linejoin="round"
-      on:click={() => selectedFeatures.remove(feature)}
+      on:click={remove}
     >
       <path stroke="none" d="M0 0h24v24H0z"/>
       <line x1="4" y1="7" x2="20" y2="7" />
@@ -61,7 +70,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       width="24" height="24" viewBox="0 0 24 24"
       stroke-width="2" stroke="currentColor" fill="none"
       stroke-linecap="round" stroke-linejoin="round"
-      on:click={() => selectedFeatures.add(feature)}
+      on:click={add}
     >
       <path stroke="none" d="M0 0h24v24H0z"/>
       <line x1="12" y1="5" x2="12" y2="19" />
@@ -74,6 +83,21 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       <div class="bar" style="width: {relevance * 100}%;"></div>
     {/if}
     <p class="cutoff feature-name">{feature}</p>
+    {#if highlight}
+      <!-- lightbulb icon indicates that this feature was added by the tool -->
+      <svg xmlns="http://www.w3.org/2000/svg"
+        class="icon icon-tabler icon-tabler-bulb"
+        width="24" height="24" viewBox="0 0 24 24"
+        stroke-width="2" stroke="currentColor" fill="none"
+        stroke-linecap="round" stroke-linejoin="round"
+      >
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+        <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+        <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+        <line x1="9.7" y1="17" x2="14.3" y2="17" />
+      </svg>
+
+    {/if}
   </div>
 
   {#if isSelected}

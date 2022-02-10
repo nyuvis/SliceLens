@@ -16,7 +16,6 @@ export const filters: Writable<Filter[]> = writable([]);
 function createSelectedFeatures() {
   const { subscribe, set, update }: Writable<string[]> = writable([]);
 
-
   function addAtIndex(feature: string, index: number): void {
     update(selected => {
       const filtered = selected.filter(d => d !== feature);
@@ -32,7 +31,6 @@ function createSelectedFeatures() {
       }
       return selected;
     });
-
   }
 
   function remove(feature: string): void {

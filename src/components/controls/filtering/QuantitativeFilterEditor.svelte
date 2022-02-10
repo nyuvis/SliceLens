@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { filters } from '../../../stores.js';
-  import { isNumeric } from '../../../DataTransformer.js';
-  import type { QuantitativeFilter } from '../../../types.js';
+  import { filters } from '../../../stores';
+  import { isNumeric } from '../../../DataTransformer';
+  import type { QuantitativeFilter } from '../../../types';
 
   export let filter: QuantitativeFilter;
   export let extent: [number, number];

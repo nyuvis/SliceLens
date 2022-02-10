@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { getFeatures, getWholeDatasetFeatureExtents, parseDataset } from '../../DataTransformer.js';
-  import { dataset, fullDataset, selectedFeatures, features, filters } from '../../stores.js';
+  import { getFeatures, getWholeDatasetFeatureExtents, parseDataset } from '../../DataTransformer';
+  import { dataset, fullDataset, selectedFeatures, features, filters } from '../../stores';
   import QuestionBox from '../QuestionBox.svelte';
   import * as d3 from "d3";
   import { createEventDispatcher } from 'svelte';
-  import type { Features } from '../../types.js';
+  import type { Features } from '../../types';
 
   const dispatch = createEventDispatcher();
 

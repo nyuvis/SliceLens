@@ -3,8 +3,8 @@
   import NotesImporter from './NotesImporter.svelte';
   import NotesViewer from './NotesViewer.svelte';
   import LogExporter from './LogExporter.svelte';
-  import { selectedFeatures, features, dataset, filters } from '../../stores.js';
-  import { cloneSelectedFeatures, cloneFilters } from '../../DataTransformer.js';
+  import { selectedFeatures, features, dataset, filters } from '../../stores';
+  import { cloneSelectedFeatures, cloneFilters } from '../../DataTransformer';
   import type { Note } from '../../types';
 
   let notes: Note[] = [];

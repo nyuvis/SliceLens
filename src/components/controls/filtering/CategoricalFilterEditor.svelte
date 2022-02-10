@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { filters } from '../../../stores.js';
-  import type { CategoricalFilter } from '../../../types.js';
+  import { filters } from '../../../stores';
+  import type { CategoricalFilter } from '../../../types';
 
   export let filter: CategoricalFilter;
   export let categories: string[];

@@ -1,10 +1,10 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { selectedFeatures, features, filters, fullDataset, dataset } from '../../stores.js';
-  import { cloneSelectedFeatures, addSelectedSetToFilters, cloneFilters, getFeatures, getFilteredDataset } from '../../DataTransformer.js';
+  import { selectedFeatures, features, filters, fullDataset, dataset } from '../../stores';
+  import { cloneSelectedFeatures, addSelectedSetToFilters, cloneFilters, getFeatures, getFilteredDataset } from '../../DataTransformer';
   import { marked } from 'marked';
   import { sanitize } from 'dompurify';
-  import type { Dataset, Filter, Features, Note } from '../../types.js';
+  import type { Dataset, Filter, Features, Note } from '../../types';
 
   export let note: Note = null;
   export let edit: boolean = false;

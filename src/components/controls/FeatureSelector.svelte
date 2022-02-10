@@ -9,9 +9,9 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   import QuestionBox from '../QuestionBox.svelte';
   import FeatureRow from './FeatureRow.svelte';
   import SuggestCombos from './SuggestCombos.svelte';
-  import {features, dataset, selectedFeatures, logs, changeSinceGeneratingSuggestion } from '../../stores.js';
-  import { getValidMetrics } from '../../RatingMetrics.js';
-  import type { MetricInfo, MetricGroup } from '../../RatingMetrics.js';
+  import {features, dataset, selectedFeatures, logs, changeSinceGeneratingSuggestion } from '../../stores';
+  import { getValidMetrics } from '../../RatingMetrics';
+  import type { MetricInfo, MetricGroup } from '../../RatingMetrics';
   import * as d3 from 'd3';
   import { flip } from "svelte/animate";
 
