@@ -2,30 +2,47 @@
   import FeatureComboWorker from 'web-worker:../../FeatureComboWorker';
   import QuestionBox from '../QuestionBox.svelte';
   import { selectedFeatures, features, dataset, changeSinceGeneratingSuggestion } from '../../stores'
+  import { createEventDispatcher } from 'svelte';
 
   const worker = new FeatureComboWorker();
 
   export let criterion;
+
+  const dispatch = createEventDispatcher();
+
+  let previouslySelected: string[] = [];
 
   let combos: string[][] = [];
   let index: number = 0;
 
   let currentDataset = $dataset.name;
 
+  function setFeaturesToHighlight(): void {
+    const features = new Set($selectedFeatures.filter(d => !previouslySelected.includes(d)));
+
+    dispatch('set', features);
+  }
+
   // when switching to a new dataset, reset the suggestions
   $: if(currentDataset !== $dataset.name) {
     combos = [];
     index = 0;
     currentDataset = $dataset.name;
+    // reset the features to highlight
+    dispatch('set', new Set());
   }
 
   worker.onmessage = (e: MessageEvent) => {
     combos = Array.isArray(e.data) ? e.data : [];
     index = 0;
 
+    previouslySelected = [...$selectedFeatures];
+
     if (combos.length > 0) {
       selectedFeatures.put(combos[index]);
     }
+
+    setFeaturesToHighlight();
 
     $changeSinceGeneratingSuggestion = false;
   }
@@ -42,17 +59,17 @@
   function increment() {
     if (index < combos.length - 1) {
       index++;
+      selectedFeatures.put(combos[index]);
+      setFeaturesToHighlight();
     }
-
-    selectedFeatures.put(combos[index]);
   }
 
   function decrement() {
     if (index > 0) {
       index--;
+      selectedFeatures.put(combos[index]);
+      setFeaturesToHighlight();
     }
-
-    selectedFeatures.put(combos[index]);
   }
 
   function onkeydown(ev) {

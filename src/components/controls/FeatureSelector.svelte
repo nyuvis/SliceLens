@@ -88,6 +88,13 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     logs.add({event: 'worker-start'});
   }
 
+  // features that were automatically added by the suggestions
+  let featuresToHighlight: Set<string> = new Set();
+
+  function setFeatureToHighlight({ detail }: { detail: Set<string> }) {
+    featuresToHighlight = detail;
+  }
+
   // drag and drop
 
   let dragInProgress: boolean = false;
@@ -195,7 +202,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     </select>
   </div>
 
-  <SuggestCombos {criterion}/>
+  <SuggestCombos {criterion} on:set={setFeatureToHighlight}/>
 {/if}
 
 <div class="label help-row">
@@ -213,6 +220,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     <FeatureRow
       {feature}
       {canAddFeatures}
+      highlight={featuresToHighlight.has(feature)}
       isSelected={true}
       draggingOver={draggingOverFeature === feature}
       on:drop={e => dropHandler(e, i)}
@@ -311,7 +319,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 </div>
 
 <div class="all-features feature-box">
-  {#each featuresToShow as feature  (feature)}
+  {#each featuresToShow as feature (feature)}
     <div animate:flip={{ duration: 300 }}>
       <FeatureRow
         {feature}
