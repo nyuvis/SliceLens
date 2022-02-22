@@ -8,6 +8,7 @@
   const worker = new FeatureComboWorker();
 
   export let criterion: MetricInfo;
+  export let canAddFeatures: boolean;
 
   const dispatch = createEventDispatcher();
 
@@ -88,7 +89,7 @@
 
 <div class='small'>
   <div id='button-row' class='sub-label'>
-    <button on:click={getSuggestedCombos}>Suggest Combos</button>
+    <button on:click={getSuggestedCombos} disabled={!canAddFeatures}>Suggest Combos</button>
     {#if $changeSinceGeneratingSuggestion}
       <QuestionBox kind="alert">
         You may have modified the filters, features, or rating metric since generating these suggestions.
