@@ -54,9 +54,9 @@
           <g transform="translate({xScale(tick) + xScale.bandwidth() / 2 + 0.5},{visHeight})">
             <g transform="translate(0,7) rotate(-45)">
               {#if tick.length < 20}
-                <text>{tick}</text>
+                <text dominant-baseline="hanging">{tick}</text>
               {:else}
-                <text>
+                <text dominant-baseline="hanging">
                   {tick.slice(0, 20)}...
                   <title>{tick}</title>
                 </text>
@@ -71,7 +71,7 @@
         {#each yScale.ticks(3) as tick}
           <g transform="translate(-5,{yScale(tick)})">
             <line x2=5 stroke="black"/>
-            <text x="-5">{yFormat(tick)}</text>
+            <text x="-5" dominant-baseline="middle">{yFormat(tick)}</text>
           </g>
         {/each}
       </g>
@@ -91,13 +91,11 @@
     }
 
     .x-axis text {
-      dominant-baseline: hanging;
       text-anchor: end;
       font-size: 10px;
     }
 
     .y-axis text {
-      dominant-baseline: middle;
       text-anchor: end;
       font-size: 10px;
     }

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { getFeatures, getWholeDatasetFeatureExtents, parseDataset } from '../../DataTransformer';
+  import { getFeatures, getWholeDatasetFeatureExtents } from '../../lib/Features';
+  import { parseDataset } from '../../lib/Dataset';
   import { dataset, fullDataset, selectedFeatures, features, filters } from '../../stores';
   import QuestionBox from '../QuestionBox.svelte';
   import * as d3 from "d3";

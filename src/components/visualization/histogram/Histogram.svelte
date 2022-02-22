@@ -58,7 +58,7 @@
           <line y1={visHeight} y2={visHeight} x2={visWidth} stroke="black"/>
           <g transform="translate({xScale(tick) + 0.5},{visHeight})">
             <line y2=5 stroke="black"/>
-            <text y=7>{xFormat(tick)}</text>
+            <text y=7 dominant-baseline="hanging">{xFormat(tick)}</text>
           </g>
         {/each}
 
@@ -78,7 +78,7 @@
         {#each yScale.ticks(3) as tick}
           <g transform="translate(-5,{yScale(tick)})">
             <line x2=5 stroke="black"/>
-            <text x="-5">{yFormat(tick)}</text>
+            <text x="-5" dominant-baseline="middle">{yFormat(tick)}</text>
           </g>
         {/each}
       </g>
@@ -98,13 +98,11 @@
     }
 
     .x-axis text {
-      dominant-baseline: hanging;
       text-anchor: middle;
       font-size: 10px;
     }
 
     .y-axis text {
-      dominant-baseline: middle;
       text-anchor: end;
       font-size: 10px;
     }

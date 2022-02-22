@@ -5,7 +5,8 @@
   import MenuItem from './MenuItem.svelte';
   import QuestionBox from "../QuestionBox.svelte";
   import { changeSinceGeneratingSuggestion, dataset, features } from "../../stores";
-  import { getClassificationData, cloneCategoricalFeature, areFeaturesEqual } from "../../DataTransformer";
+  import { cloneCategoricalFeature, areFeaturesEqual } from "../../lib/Features";
+  import { getClassificationData } from "../../lib/Data";
   import * as d3 from "d3";
   import type { CategoricalFeature, Node } from "../../types";
 

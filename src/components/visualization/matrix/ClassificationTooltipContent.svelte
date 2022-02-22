@@ -1,7 +1,7 @@
 <script lang="ts">
   import { format } from 'd3';
   import { color, showPredictions } from "../../../stores";
-  import { getClassificationTooltipAmounts } from "../../../DataTransformer";
+  import { getClassificationTooltipAmounts } from "../../../lib/Squares";
   import type { ClassificationNode } from '../../../types';
 
   export let d: ClassificationNode;

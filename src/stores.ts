@@ -1,5 +1,5 @@
 import { writable, derived, Writable, Readable } from 'svelte/store';
-import { getClassificationData, getRegressionData } from './DataTransformer';
+import { getClassificationData, getRegressionData } from './lib/Data';
 import type { Dataset, Filter, Features, Node } from './types';
 import * as d3 from 'd3';
 

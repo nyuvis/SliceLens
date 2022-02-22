@@ -10,7 +10,7 @@
   import ClassificationTooltipContent from "./ClassificationTooltipContent.svelte";
   import SizeLegend from "./SizeLegend.svelte";
   import { data, features, selectedFeatures, showPredictions, showSize, visKind, visOrientation } from "../../../stores";
-  import { getScales, getPositionOfSquare } from "../../../DataTransformer"
+  import { getScales, getPositionOfSquare } from "../../../lib/Squares"
   import { onMount } from 'svelte';
   import * as d3 from "d3";
   import type { Node } from "../../../types";
@@ -97,8 +97,10 @@
     $data,
     node => {
       const parts = $showPredictions ? node.predictions : node.groundTruth;
-      // typescript doesn't like d3.max(parts, d => d.size)
-      return d3.max(parts.map(d => d.size));
+      type Part =
+        | { x0: number, x1: number, offset: number, size: number }
+        | { label: string, size: number, correct: boolean, offset: number };
+      return d3.max(parts, (d: Part) => d.size)
     }
   );
 
@@ -191,8 +193,8 @@
           {#if d.type === 'classification'}
             {#if $visKind === 'squares'}
               <ClassificationSquare
-                x={getPositionOfSquare(d, xFeatures, xScales)}
-                y={getPositionOfSquare(d, yFeatures, yScales)}
+                x={getPositionOfSquare(d.splits, xFeatures, xScales)}
+                y={getPositionOfSquare(d.splits, yFeatures, yScales)}
                 sideLength={$showSize ? sideLength(d.size) : maxSideLength}
                 {d}
                 padding={$showSize
@@ -203,8 +205,8 @@
               />
             {:else}
               <ClassificationBars
-                x={getPositionOfSquare(d, xFeatures, xScales)}
-                y={getPositionOfSquare(d, yFeatures, yScales)}
+                x={getPositionOfSquare(d.splits, xFeatures, xScales)}
+                y={getPositionOfSquare(d.splits, yFeatures, yScales)}
                 sideLength={maxSideLength}
                 length={barLength}
                 {d}
@@ -216,8 +218,8 @@
           {:else if d.type === 'regression'}
             {#if $visKind === 'squares'}
               <RegressionSquare
-                x={getPositionOfSquare(d, xFeatures, xScales)}
-                y={getPositionOfSquare(d, yFeatures, yScales)}
+                x={getPositionOfSquare(d.splits, xFeatures, xScales)}
+                y={getPositionOfSquare(d.splits, yFeatures, yScales)}
                 sideLength={$showSize ? sideLength(d.size) : maxSideLength}
                 {d}
                 padding={$showSize
@@ -228,8 +230,8 @@
               />
             {:else}
               <RegressionBars
-                x={getPositionOfSquare(d, xFeatures, xScales)}
-                y={getPositionOfSquare(d, yFeatures, yScales)}
+                x={getPositionOfSquare(d.splits, xFeatures, xScales)}
+                y={getPositionOfSquare(d.splits, yFeatures, yScales)}
                 sideLength={maxSideLength}
                 length={barLength}
                 {d}

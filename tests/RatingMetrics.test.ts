@@ -2,59 +2,76 @@ import { test } from 'uvu';
 import * as assert from 'uvu/assert';
 import sinon from "sinon";
 import * as d3 from "d3";
-import { entropy, errorCount, errorPercent, errorDeviation, getErrorCountForSquare } from '../src/RatingMetrics';
-import type { Rating, RatingInput } from '../src/RatingMetrics'
-import type { Features, Node, Dataset } from '../src/types'
+import { metrics, getErrorCountForSquare, getValidMetrics } from '../src/RatingMetrics';
+import type { Rating, ClassificationRatingInput } from '../src/RatingMetrics'
+import type { Features, Node, ClassificationNode, Dataset, ClassificationDataset } from '../src/types'
 
 // data
 
-const dataAB: Node[] = [
+const dataAB: ClassificationNode[] = [
   {
-    groundTruth: new d3.InternMap([["no", 200], ["yes", 200]]),
+    type: 'classification',
+    groundTruth: [
+      { label: "no", size: 200, correct: true, offset: 0 },
+      { label: "yes", size: 200, correct: true, offset: 200 },
+    ],
     size: 400,
-    predictionCounts: new d3.InternMap([["no", 150], ["yes", 250]]),
-    predictionResults: new d3.InternMap([
-      ["no", new d3.InternMap([["incorrect", 50], ["correct", 100]])],
-      ["yes", new d3.InternMap([["incorrect", 50], ["correct", 200]])],
-    ]),
+    predictions: [
+      { label: "no", size: 50, correct: false, offset: 0 },
+      { label: "no", size: 100, correct: true, offset: 50 },
+      { label: "yes", size: 50, correct: false, offset: 150 },
+      { label: "yes", size: 200, correct: true, offset: 200 },
+    ],
     splits: new Map([
       ['a', 0],
       ['b', 0]
     ])
   },
   {
-    groundTruth: new d3.InternMap([["no", 50], ["yes", 50]]),
+    type: 'classification',
+    groundTruth: [
+      { label: "no", size: 50, correct: true, offset: 0 },
+      { label: "yes", size: 50, correct: true, offset: 50 },
+    ],
     size: 100,
-    predictionCounts: new d3.InternMap([["no", 100]]),
-    predictionResults: new d3.InternMap([
-      ["no", new d3.InternMap([["incorrect", 50], ["correct", 50]])],
-    ]),
+    predictions: [
+      { label: "no", size: 50, correct: false, offset: 0 },
+      { label: "no", size: 50, correct: true, offset: 50 },
+    ],
     splits: new Map([
       ['a', 0],
       ['b', 1]
     ])
   },
   {
-    groundTruth: new d3.InternMap([["no", 100], ["yes", 100]]),
+    type: 'classification',
+    groundTruth: [
+      { label: "no", size: 100, correct: true, offset: 0 },
+      { label: "yes", size: 100, correct: true, offset: 100 },
+    ],
     size: 200,
-    predictionCounts: new d3.InternMap([["no", 100], ["yes", 100]]),
-    predictionResults: new d3.InternMap([
-      ["no", new d3.InternMap([["incorrect", 75], ["correct", 25]])],
-      ["yes", new d3.InternMap([["incorrect", 10], ["correct", 90]])],
-    ]),
+    predictions: [
+      { label: "no", size: 75, correct: false, offset: 0 },
+      { label: "no", size: 25, correct: true, offset: 75 },
+      { label: "yes", size: 10, correct: false, offset: 100 },
+      { label: "yes", size: 90, correct: true, offset: 110 },
+    ],
     splits: new Map([
       ['a', 1],
       ['b', 0]
     ])
   },
   {
-    groundTruth: new d3.InternMap([["no", 5], ["yes", 5]]),
+    type: 'classification',
+    groundTruth: [
+      { label: "no", size: 5, correct: true, offset: 0 },
+      { label: "yes", size: 5, correct: true, offset: 10 },
+    ],
     size: 10,
-    predictionCounts: new d3.InternMap([["no", 5], ["yes", 5]]),
-    predictionResults: new d3.InternMap([
-      ["no", new d3.InternMap([["incorrect", 5]])],
-      ["yes", new d3.InternMap([["incorrect", 5]])],
-    ]),
+    predictions: [
+      { label: "no", size: 5, correct: false, offset: 0 },
+      { label: "yes", size: 5, correct: false, offset: 5 },
+    ],
     splits: new Map([
       ['a', 1],
       ['b', 1]
@@ -64,52 +81,72 @@ const dataAB: Node[] = [
 
 const dataAC: Node[] = [
   {
-    groundTruth: new d3.InternMap([["no", 100], ["yes", 300]]),
+    type: 'classification',
+    groundTruth: [
+      { label: "no", size: 100, correct: true, offset: 0 },
+      { label: "yes", size: 300, correct: true, offset: 300 },
+    ],
     size: 400,
-    predictionCounts: new d3.InternMap([["no", 110], ["yes", 290]]),
-    predictionResults: new d3.InternMap([
-      ["no", new d3.InternMap([["incorrect", 30], ["correct", 80]])],
-      ["yes", new d3.InternMap([["incorrect", 45], ["correct", 245]])],
-    ]),
+    predictions: [
+      { label: "no", size: 30, correct: false, offset: 0 },
+      { label: "no", size: 80, correct: true, offset: 30 },
+      { label: "yes", size: 45, correct: false, offset: 110 },
+      { label: "yes", size: 245, correct: true, offset: 155 },
+    ],
     splits: new Map([
       ['a', 0],
       ['c', 0]
     ])
   },
   {
-    groundTruth: new d3.InternMap([["no", 70], ["yes", 30]]),
+    type: 'classification',
+    groundTruth: [
+      { label: "no", size: 70, correct: true, offset: 0 },
+      { label: "yes", size: 30, correct: true, offset: 70 },
+    ],
     size: 100,
-    predictionCounts: new d3.InternMap([["no", 50], ["yes", 50]]),
-    predictionResults: new d3.InternMap([
-      ["no", new d3.InternMap([["incorrect", 30], ["correct", 20]])],
-      ["yes", new d3.InternMap([["incorrect", 10], ["correct", 40]])],
-    ]),
+    predictions: [
+      { label: "no", size: 30, correct: false, offset: 0 },
+      { label: "no", size: 20, correct: true, offset: 30 },
+      { label: "yes", size: 10, correct: false, offset: 50 },
+      { label: "yes", size: 40, correct: true, offset: 60 },
+    ],
     splits: new Map([
       ['a', 0],
       ['c', 1]
     ])
   },
   {
-    groundTruth: new d3.InternMap([["no", 20], ["yes", 180]]),
+    type: 'classification',
+    groundTruth: [
+      { label: "no", size: 20, correct: true, offset: 0 },
+      { label: "yes", size: 180, correct: true, offset: 20 },
+    ],
     size: 200,
-    predictionCounts: new d3.InternMap([["no", 25], ["yes", 175]]),
-    predictionResults: new d3.InternMap([
-      ["no", new d3.InternMap([["incorrect", 5], ["correct", 20]])],
-      ["yes", new d3.InternMap([["incorrect", 25], ["correct", 150]])],
-    ]),
+    predictions: [
+      { label: "no", size: 5, correct: false, offset: 0 },
+      { label: "no", size: 20, correct: true, offset: 5 },
+      { label: "yes", size: 25, correct: false, offset: 25 },
+      { label: "yes", size: 150, correct: true, offset: 50 },
+    ],
     splits: new Map([
       ['a', 1],
       ['c', 0]
     ])
   },
   {
-    groundTruth: new d3.InternMap([["no", 8], ["yes", 2]]),
+    type: 'classification',
+    groundTruth: [
+      { label: "no", size: 8, correct: true, offset: 0 },
+      { label: "yes", size: 2, correct: true, offset: 8 },
+    ],
     size: 10,
-    predictionCounts: new d3.InternMap([["no", 8], ["yes", 2]]),
-    predictionResults: new d3.InternMap([
-      ["no", new d3.InternMap([["incorrect", 1], ["correct", 7]])],
-      ["yes", new d3.InternMap([["incorrect", 1], ["correct", 1]])],
-    ]),
+    predictions: [
+      { label: "no", size: 1, correct: false, offset: 0 },
+      { label: "no", size: 7, correct: true, offset: 1 },
+      { label: "yes", size: 1, correct: false, offset: 8 },
+      { label: "yes", size: 1, correct: true, offset: 9 },
+    ],
     splits: new Map([
       ['a', 1],
       ['c', 1]
@@ -119,48 +156,56 @@ const dataAC: Node[] = [
 
 const dataAD: Node[] = [
   {
-    groundTruth: new d3.InternMap([["yes", 400]]),
+    type: 'classification',
+    groundTruth: [
+      { label: "yes", size: 400, correct: true, offset: 0 },
+    ],
     size: 400,
-    predictionCounts: new d3.InternMap([["yes", 400]]),
-    predictionResults: new d3.InternMap([
-      ["yes", new d3.InternMap([["correct", 400]])],
-    ]),
+    predictions: [
+      { label: "yes", size: 400, correct: true, offset: 0 },
+    ],
     splits: new Map([
       ['a', 0],
       ['b', 0]
     ])
   },
   {
-    groundTruth: new d3.InternMap([["no", 100]]),
+    type: 'classification',
+    groundTruth: [
+      { label: "no", size: 100, correct: true, offset: 0 },
+    ],
     size: 100,
-    predictionCounts: new d3.InternMap([["no", 100]]),
-    predictionResults: new d3.InternMap([
-      ["no", new d3.InternMap([["correct", 100]])],
-    ]),
+    predictions: [
+      { label: "no", size: 100, correct: true, offset: 0 },
+    ],
     splits: new Map([
       ['a', 0],
       ['b', 1]
     ])
   },
   {
-    groundTruth: new d3.InternMap([["no", 200]]),
+    type: 'classification',
+    groundTruth: [
+      { label: "no", size: 200, correct: true, offset: 0 },
+    ],
     size: 200,
-    predictionCounts: new d3.InternMap([["no", 200]]),
-    predictionResults: new d3.InternMap([
-      ["no", new d3.InternMap([["correct", 200]])],
-    ]),
+    predictions: [
+      { label: "no", size: 200, correct: true, offset: 0 },
+    ],
     splits: new Map([
       ['a', 1],
       ['b', 0]
     ])
   },
   {
-    groundTruth: new d3.InternMap([["yes", 10]]),
+    type: 'classification',
+    groundTruth: [
+      { label: "yes", size: 10, correct: true, offset: 0 },
+    ],
     size: 10,
-    predictionCounts: new d3.InternMap([["yes", 10]]),
-    predictionResults: new d3.InternMap([
-      ["yes", new d3.InternMap([["correct", 10]])],
-    ]),
+    predictions: [
+      { label: "yes", size: 10, correct: true, offset: 0 },
+    ],
     splits: new Map([
       ['a', 1],
       ['b', 1]
@@ -171,13 +216,18 @@ const dataAD: Node[] = [
 // when the entire dataset is in one bin with a feature selected
 const dataE: Node[] = [
   {
-    groundTruth: new d3.InternMap([["no", 100], ["yes", 300]]),
+    type: 'classification',
+    groundTruth: [
+      { label: "no", size: 100, correct: true, offset: 0 },
+      { label: "yes", size: 300, correct: true, offset: 8 },
+    ],
     size: 400,
-    predictionCounts: new d3.InternMap([["no", 150], ["yes", 250]]),
-    predictionResults: new d3.InternMap([
-      ["no", new d3.InternMap([["incorrect", 50], ["correct", 100]])],
-      ["yes", new d3.InternMap([["incorrect", 50], ["correct", 200]])],
-    ]),
+    predictions: [
+      { label: "no", size: 50, correct: false, offset: 0 },
+      { label: "no", size: 100, correct: true, offset: 50 },
+      { label: "yes", size: 50, correct: false, offset: 150 },
+      { label: "yes", size: 200, correct: true, offset: 200 },
+    ],
     splits: new Map([
       ['e', 0],
     ])
@@ -185,7 +235,7 @@ const dataE: Node[] = [
 ];
 
 
-function getExampleDataset(size: number = 100): Dataset {
+function getExampleClassificationDataset(size: number = 100): ClassificationDataset {
   return {
     type: 'classification',
     rows: [],
@@ -240,14 +290,14 @@ test('entropy', () => {
     { feature: 'd', value: -0 }
   ];
 
-  const args = {
+  const args: ClassificationRatingInput = {
     selected: ['a'],
     features: {},
-    dataset: getExampleDataset(710),
+    dataset: getExampleClassificationDataset(710),
     available: ['b', 'c', 'd']
   };
 
-  const actual = entropy(args, fakeGetData);
+  const actual = metrics.entropy(args, fakeGetData);
 
   assert.is(actual[0].value, expected[0].value);
   assert.is(actual[0].feature, expected[0].feature);
@@ -262,14 +312,14 @@ test('entropy', () => {
 test('entropy one bin', () => {
   const expectedValue = -((100 / 400) * Math.log2(100 / 400)) - ((300 / 400) * Math.log2(300 / 400));
 
-  const args = {
+  const args: ClassificationRatingInput = {
     selected: [],
     features: {},
-    dataset: getExampleDataset(400),
+    dataset: getExampleClassificationDataset(400),
     available: ['e']
   };
 
-  const actual = entropy(args, fakeGetData);
+  const actual = metrics.entropy(args, fakeGetData);
 
   assert.equal(actual[0].value, -expectedValue);
   assert.equal(actual[0].feature, 'e');
@@ -284,14 +334,14 @@ test('error deviation', () => {
     { feature: 'd', value: 0 }
   ];
 
-  const args = {
+  const args: ClassificationRatingInput = {
     selected: ['a'],
     features: {},
-    dataset: getExampleDataset(),
+    dataset: getExampleClassificationDataset(),
     available: ['b', 'c', 'd']
   };
 
-  const actual = errorDeviation(args, fakeGetData);
+  const actual = metrics.errorDeviation(args, fakeGetData);
 
   assert.is(actual[0].value, expected[0].value);
   assert.is(actual[0].feature, expected[0].feature);
@@ -306,14 +356,14 @@ test('error deviation', () => {
 test('error deviation one bin', () => {
   const expected = [ {feature: 'e', value: 0} ];
 
-  const args = {
+  const args: ClassificationRatingInput = {
     selected: [],
     features: {},
-    dataset: getExampleDataset(400),
+    dataset: getExampleClassificationDataset(400),
     available: ['e']
   };
 
-  const actual = errorDeviation(args, fakeGetData);
+  const actual = metrics.errorDeviation(args, fakeGetData);
 
   assert.equal(actual, expected);
 });
@@ -330,11 +380,11 @@ test('error count', () => {
   const args = {
     selected: ['a'],
     features: {},
-    dataset: getExampleDataset(),
+    dataset: getExampleClassificationDataset(),
     available: ['b', 'c', 'd']
   };
 
-  assert.equal(errorCount(args, fakeGetData), expected);
+  assert.equal(metrics.errorCount(args, fakeGetData), expected);
 });
 
 test('error count one bin', () => {
@@ -343,11 +393,11 @@ test('error count one bin', () => {
   const args = {
     selected: [],
     features: {},
-    dataset: getExampleDataset(400),
+    dataset: getExampleClassificationDataset(400),
     available: ['e']
   };
 
-  const actual = errorCount(args, fakeGetData);
+  const actual = metrics.errorCount(args, fakeGetData);
 
   assert.equal(actual, expected);
 });
@@ -364,24 +414,24 @@ test('error percent', () => {
   const args = {
     selected: ['a'],
     features: {},
-    dataset: getExampleDataset(),
+    dataset: getExampleClassificationDataset(),
     available: ['b', 'c', 'd']
   };
 
-  assert.equal(errorPercent(args, fakeGetData), expected);
+  assert.equal(metrics.errorPercent(args, fakeGetData), expected);
 });
 
 test('error percent one bin', () => {
   const expected: Rating[] = [ {feature: 'e', value: 0.25} ];
 
-  const args: RatingInput = {
+  const args: ClassificationRatingInput = {
     selected: [],
     features: {},
-    dataset: getExampleDataset(400),
+    dataset: getExampleClassificationDataset(400),
     available: ['e']
   };
 
-  const actual = errorPercent(args, fakeGetData);
+  const actual = metrics.errorPercent(args, fakeGetData);
 
   assert.equal(actual, expected);
 });
@@ -389,60 +439,71 @@ test('error percent one bin', () => {
 // get error count for square
 
 test('get error count for no predictionResults', () => {
-  const square: Node = { size: 1, splits: new Map(), groundTruth: new d3.InternMap() };
+  const square: ClassificationNode = { type: 'classification', size: 1, splits: new Map(), groundTruth: [] };
 
   assert.is(getErrorCountForSquare(square), 0);
 });
 
 test('get error count for no classes', () => {
-  const square: Node = {
+  const square: ClassificationNode = {
+    type: 'classification',
     size: 1,
     splits: new Map(),
-    groundTruth: new d3.InternMap(),
-    predictionResults: new d3.InternMap()
+    groundTruth: [],
+    predictions: []
   };
 
   assert.is(getErrorCountForSquare(square), 0);
 });
 
 test('get error count for one class', () => {
-  const square: Node = {
+  const square: ClassificationNode = {
+    type: 'classification',
     size: 1,
     splits: new Map(),
-    groundTruth: new d3.InternMap(),
-    predictionResults: new d3.InternMap([
-      ["no", new d3.InternMap([["correct", 10], ["incorrect", 7]])],
-    ])
+    groundTruth: [],
+    predictions: [
+      { label: "no", size: 7, correct: false, offset: 0 },
+      { label: "no", size: 10, correct: true, offset: 7 },
+    ],
   };
 
   assert.is(getErrorCountForSquare(square), 7);
 });
 
 test('get error count for two classes', () => {
-  const square: Node = {
+  const square: ClassificationNode = {
+    type: 'classification',
     size: 1,
     splits: new Map(),
-    groundTruth: new d3.InternMap(),
-    predictionResults: new d3.InternMap([
-      ["no", new d3.InternMap([["correct", 10], ["incorrect", 7]])],
-      ["yes", new d3.InternMap([["correct", 20], ["incorrect", 9]])],
-    ])
+    groundTruth: [],
+    predictions: [
+      { label: "no", size: 7, correct: false, offset: 0 },
+      { label: "no", size: 10, correct: true, offset: 7 },
+      { label: "yes", size: 9, correct: false, offset: 17 },
+      { label: "yes", size: 20, correct: true, offset: 26 },
+    ],
   };
 
   assert.is(getErrorCountForSquare(square), 16);
 });
 
 test('get error count for three classes', () => {
-  const square: Node = {
+  const square: ClassificationNode = {
+    type: 'classification',
     size: 1,
     splits: new Map(),
-    groundTruth: new d3.InternMap(),
-    predictionResults: new d3.InternMap([
-      ["no", new d3.InternMap([["correct", 10], ["incorrect", 7]])],
-      ["yes", new d3.InternMap([["correct", 20], ["incorrect", 9]])],
-      ["I don't know", new d3.InternMap([["correct", 20], ["incorrect", 0]])],
-      ["maybe", new d3.InternMap([["correct", 20], ["incorrect", 10]])],
-    ])
+    groundTruth: [],
+    predictions: [
+      { label: "no", size: 7, correct: false, offset: 0 },
+      { label: "no", size: 10, correct: true, offset: 7 },
+      { label: "yes", size: 9, correct: false, offset: 17 },
+      { label: "yes", size: 20, correct: true, offset: 26 },
+      { label: "I don't know", size: 0, correct: false, offset: 46 },
+      { label: "I don't know", size: 20, correct: true, offset: 46 },
+      { label: "maybe", size: 10, correct: false, offset: 66 },
+      { label: "maybe", size: 20, correct: true, offset: 76 },
+    ],
   };
 
   assert.is(getErrorCountForSquare(square), 26);

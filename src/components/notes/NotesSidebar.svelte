@@ -4,7 +4,8 @@
   import NotesViewer from './NotesViewer.svelte';
   import LogExporter from './LogExporter.svelte';
   import { selectedFeatures, features, dataset, filters } from '../../stores';
-  import { cloneSelectedFeatures, cloneFilters } from '../../DataTransformer';
+  import { cloneSelectedFeatures } from '../../lib/Features';
+  import { cloneFilters } from '../../lib/Filters';
   import type { Note } from '../../types';
 
   let notes: Note[] = [];

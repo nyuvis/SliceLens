@@ -3,10 +3,11 @@
   import QuestionBox from '../QuestionBox.svelte';
   import { selectedFeatures, features, dataset, changeSinceGeneratingSuggestion } from '../../stores'
   import { createEventDispatcher } from 'svelte';
+  import type { MetricInfo } from '../../RatingMetrics';
 
   const worker = new FeatureComboWorker();
 
-  export let criterion;
+  export let criterion: MetricInfo;
 
   const dispatch = createEventDispatcher();
 
@@ -72,7 +73,7 @@
     }
   }
 
-  function onkeydown(ev) {
+  function onkeydown(ev: KeyboardEvent) {
     if (combos.length === 0) {
       return;
     }

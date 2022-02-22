@@ -1,7 +1,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { selectedFeatures, features, filters, fullDataset, dataset } from '../../stores';
-  import { cloneSelectedFeatures, addSelectedSetToFilters, cloneFilters, getFeatures, getFilteredDataset } from '../../DataTransformer';
+  import { cloneSelectedFeatures, getFeatures } from '../../lib/Features';
+  import { addSelectedSetToFilters, cloneFilters, getFilteredDataset } from '../../lib/Filters';
   import { marked } from 'marked';
   import { sanitize } from 'dompurify';
   import type { Dataset, Filter, Features, Note } from '../../types';

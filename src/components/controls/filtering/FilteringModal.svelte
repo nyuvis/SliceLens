@@ -10,7 +10,9 @@ refactored into a Modal.svelte.
   import QuantitativeFilterEditor from './QuantitativeFilterEditor.svelte';
   import CategoricalFilterEditor from './CategoricalFilterEditor.svelte';
   import { filters, fullDataset, dataset, features, changeSinceGeneratingSuggestion } from '../../../stores';
-  import { areArraysEqual, areFiltersEqual, cloneFilters, getFeatures, getFilteredDataset } from '../../../DataTransformer';
+  import { getFeatures } from '../../../lib/Features';
+  import { areFiltersEqual, cloneFilters, getFilteredDataset } from '../../../lib/Filters';
+  import { areArraysEqual } from '../../../lib/Utils';
   import { createEventDispatcher } from "svelte";
   import type { Dataset, FeatureExtent, Features, QuantitativeExtent, CategoricalExtent, QuantitativeFilter, CategoricalFilter } from '../../../types';
 

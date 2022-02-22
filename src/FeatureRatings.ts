@@ -1,7 +1,7 @@
 import type { MetricName, Metrics, Rating } from './RatingMetrics';
 import type {Features, Dataset} from './types';
 import * as d3 from "d3";
-import { getClassificationData, getRegressionData } from './DataTransformer';
+import { getClassificationData, getRegressionData } from './lib/Data';
 
 export { getFeatureRatings, normalize };
 

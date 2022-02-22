@@ -1,6 +1,6 @@
 <script lang="ts">
   import { filters } from '../../../stores';
-  import { isNumeric } from '../../../DataTransformer';
+  import { isNumeric } from '../../../lib/Utils';
   import type { QuantitativeFilter } from '../../../types';
 
   export let filter: QuantitativeFilter;

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, createEventDispatcher } from "svelte";
   import { dataset, changeSinceGeneratingSuggestion } from "../../stores";
-  import { equalIntervalThresholds, quantileThresholds, getBinLabels, cloneQuantitativeFeature, areFeaturesEqual } from "../../DataTransformer";
+  import { equalIntervalThresholds, quantileThresholds, getBinLabels, cloneQuantitativeFeature, areFeaturesEqual } from "../../lib/Features";
   import Histogram from '../visualization/histogram/Histogram.svelte';
   import * as d3 from "d3";
   import type { QuantitativeFeature, Row } from "../../types";

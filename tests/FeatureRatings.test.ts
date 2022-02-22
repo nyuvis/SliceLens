@@ -2,7 +2,7 @@ import { test } from 'uvu';
 import * as assert from 'uvu/assert';
 import sinon from "sinon";
 import { getFeatureRatings, normalize } from '../src/FeatureRatings';
-import * as metrics from '../src/RatingMetrics';
+import { metrics } from '../src/RatingMetrics';
 import type { Rating } from '../src/RatingMetrics'
 import type { Dataset } from '../src/types'
 
@@ -23,6 +23,7 @@ const metricFakes = {
   errorCount: sinon.fake(metrics.errorCount),
   errorPercent: sinon.fake(metrics.errorPercent),
   errorDeviation: sinon.fake(metrics.errorDeviation),
+  random: sinon.fake(metrics.random),
 };
 
 // get feature ratings
