@@ -20,7 +20,7 @@
   $: {
     if ($showPredictions) {
       if ('invertExtent' in $color) {
-        title = 'Ground Truth - Predicted Labels';
+        title = 'Predicted - Ground Truth Labels';
       } else {
         title = 'Predicted Labels';
       }

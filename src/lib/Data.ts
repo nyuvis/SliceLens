@@ -146,7 +146,7 @@ function getRegressionData(features: Features, selectedFeatures: string[], datas
     };
 
     if (predictionBinner !== null) {
-      const deltas = g.map(d => d.label - d.prediction);
+      const deltas = g.map(d => d.prediction - d.label);
 
       const predictions = predictionBinner(deltas)
         .map(bin => ({ x0: bin.x0, x1: bin.x1, offset: 0, size: bin.length }));

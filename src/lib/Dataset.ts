@@ -59,7 +59,7 @@ function parseDataset(data: d3.DSVRowArray<string>, name: string): Dataset {
     if (hasPredictions) {
       const predictions: number[] = rows.map((d: RegressionRow) => d.prediction);
       const deltas: number[] = d3.zip<number>(groundTruth, predictions)
-        .map(([truth, pred]) => truth - pred);
+        .map(([truth, pred]) => pred - truth);
 
       const maxAbsDelta = d3.max(deltas, d => Math.abs(d));
       const deltaExtent = d3.nice(-maxAbsDelta, maxAbsDelta, approxNumBins);;
