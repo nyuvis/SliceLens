@@ -106,6 +106,7 @@
         stroke-width="2" stroke="currentColor" fill="none"
         stroke-linecap="round" stroke-linejoin="round"
         on:click={decrement}
+        class:disabled="{index <= 0}"
       >
         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
         <line x1="5" y1="12" x2="19" y2="12" />
@@ -122,6 +123,7 @@
         stroke-width="2" stroke="currentColor" fill="none"
         stroke-linecap="round" stroke-linejoin="round"
         on:click={increment}
+        class:disabled="{index >= combos.length - 1}"
       >
         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
         <line x1="5" y1="12" x2="19" y2="12" />
@@ -155,5 +157,10 @@
   .icon-tabler-arrow-right:hover, .icon-tabler-arrow-left:hover {
     color: var(--blue);
     cursor: pointer;
+  }
+
+  .disabled:hover {
+    cursor: not-allowed;
+    color: var(--dark-gray)
   }
 </style>
