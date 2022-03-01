@@ -9,7 +9,7 @@
   import Tooltip from "./Tooltip.svelte";
   import ClassificationTooltipContent from "./ClassificationTooltipContent.svelte";
   import SizeLegend from "./SizeLegend.svelte";
-  import { data, features, selectedFeatures, showPredictions, showSize, visKind, visOrientation } from "../../../stores";
+  import { data, features, selectedFeatures, showPredictions, showSize, visKind } from "../../../stores";
   import { getScales, getPositionOfSquare } from "../../../lib/Squares"
   import { onMount } from 'svelte';
   import * as d3 from "d3";

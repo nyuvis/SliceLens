@@ -127,13 +127,13 @@ test('get tooltip amounts with predictions', () => {
       ['favoriteNumber', 2]
     ]),
     groundTruth: [
-      { label: "no", size: 100, correct: true, offset: 0 },
-      { label: "yes", size: 200, correct: true, offset: 100 },
+      { label: "no", size: 100, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 200, correct: true, offset: 100, pctPtDiffFromWhole: 0 },
     ],
     predictions: [
-      { label: "no", size: 150, correct: false, offset: 0 },
-      { label: "yes", size: 50, correct: false, offset: 150 },
-      { label: "yes", size: 100, correct: true, offset: 200 },
+      { label: "no", size: 150, correct: false, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 50, correct: false, offset: 150, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 100, correct: true, offset: 200, pctPtDiffFromWhole: 0 },
     ]
   };
 
@@ -175,13 +175,13 @@ test('get tooltip amounts no predictions', () => {
       ['favoriteNumber', 2]
     ]),
     groundTruth: [
-      { label: "no", size: 100, correct: true, offset: 0 },
-      { label: "yes", size: 200, correct: true, offset: 100 },
+      { label: "no", size: 100, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 200, correct: true, offset: 100, pctPtDiffFromWhole: 0 },
     ],
     predictions: [
-      { label: "no", size: 150, correct: false, offset: 0 },
-      { label: "yes", size: 50, correct: false, offset: 150 },
-      { label: "yes", size: 100, correct: true, offset: 200 },
+      { label: "no", size: 150, correct: false, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 50, correct: false, offset: 150, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 100, correct: true, offset: 200, pctPtDiffFromWhole: 0 },
     ]
   };
 

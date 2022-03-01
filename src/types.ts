@@ -11,7 +11,9 @@ export type ClassificationDataset = {
   featureNames: string[],
   labelValues: string[],
   hasPredictions: boolean,
-  size: number
+  size: number,
+  groundTruthDistribution: d3.InternMap<string,number>,
+  predictionDistribution?: d3.InternMap<string,d3.InternMap<boolean,number>>
 };
 
 export type RegressionDataset = {
@@ -37,8 +39,8 @@ export type ClassificationNode = {
   type: 'classification',
   size: number,
   splits: Map<string, number>,
-  groundTruth: { label: string, size: number, correct: true, offset: number }[],
-  predictions?: { label: string, size: number, correct: boolean, offset: number }[],
+  groundTruth: { label: string, size: number, correct: true, offset: number, pctPtDiffFromWhole: number }[],
+  predictions?: { label: string, size: number, correct: boolean, offset: number, pctPtDiffFromWhole: number }[],
 };
 
 export type RegressionNode = {

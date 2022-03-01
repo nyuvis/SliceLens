@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { dataset, showPredictions, showSize, visKind, visOrientation } from '../../stores';
+  import { dataset, showPredictions, compareToWhole, showSize, visKind, visOrientation } from '../../stores';
 
   let showPredictionsCheckBox: boolean = false;
 
@@ -20,6 +20,12 @@
   {#if showPredictionsCheckBox}
     <label class="sub-label small">
       <input type="checkbox" bind:checked={$showPredictions}>Show predictions
+    </label>
+  {/if}
+
+  {#if $visKind === 'squares' && $dataset.type === 'classification'}
+    <label class="sub-label small">
+      <input type="checkbox" bind:checked={$compareToWhole}>Compare to whole
     </label>
   {/if}
 

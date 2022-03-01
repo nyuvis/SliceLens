@@ -5,6 +5,7 @@ import { getFeatureRatings, normalize } from '../src/FeatureRatings';
 import { metrics } from '../src/RatingMetrics';
 import type { Rating } from '../src/RatingMetrics'
 import type { Dataset } from '../src/types'
+import * as d3 from "d3";
 
 function getExampleDataset(featureNames: string[] = []): Dataset {
   return {
@@ -14,7 +15,8 @@ function getExampleDataset(featureNames: string[] = []): Dataset {
     featureNames: featureNames,
     labelValues: [],
     hasPredictions: false,
-    size: 0
+    size: 0,
+    groundTruthDistribution: new d3.InternMap()
   };
 }
 

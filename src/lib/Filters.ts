@@ -1,8 +1,10 @@
 import type {
+  ClassificationDataset,
   Dataset,
   Filter,
   RegressionDataset,
 } from "../types";
+import { getGroundTruthDistribution, getPredictionDistribution } from "./Dataset";
 
 import { areArraysEqual } from "./Utils";
 
@@ -105,15 +107,25 @@ function getFilteredDataset(dataset: Dataset, filters: Filter[]): Dataset {
 
   if (dataset.type === 'classification') {
     const rows = getFilteredRows(dataset.rows);
-    return {
+    const groundTruthDistribution = getGroundTruthDistribution(rows);
+
+    const filteredDs: ClassificationDataset = {
       type: 'classification',
       rows: rows,
       name: dataset.name,
       featureNames: dataset.featureNames,
       labelValues: dataset.labelValues,
       hasPredictions: dataset.hasPredictions,
-      size: rows.length
+      size: rows.length,
+      groundTruthDistribution,
     };
+
+    if (dataset.hasPredictions) {
+      const predictionDistribution = getPredictionDistribution(rows);
+      dataset.predictionDistribution = predictionDistribution;
+    }
+
+    return filteredDs;
   } else {
     const rows = getFilteredRows(dataset.rows);
     const ds: RegressionDataset = {

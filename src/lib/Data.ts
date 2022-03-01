@@ -64,13 +64,23 @@ function getData(features: Features, selectedFeatures: string[], dataset: Datase
 function getClassificationData(features: Features, selectedFeatures: string[], dataset: ClassificationDataset): ClassificationNode[] {
   // g is an array of all of the instances belonging to the same subset
   function reducer(g: ClassificationRow[]) {
+    const numInstancesInSubset: number = g.length;
+
     // map from ground truth label to number of instances with that label
     const groundTruth = d3.rollups(
       g,
       v => v.length,
       d => d.label
     )
-      .map(([label, size]) => ({label, size, correct: true as const, offset: 0}))
+      .map(([label, size]) => {
+        // percent of instances in the root node with this label
+        const wholeDatasetPct: number = dataset.groundTruthDistribution.get(label) ?? 0;
+        // percent of instances int his subset with this label
+        const subsetPct: number = size / numInstancesInSubset;
+        // percentage point difference between the two
+        const pctPtDiffFromWhole: number = subsetPct - wholeDatasetPct;
+        return {label, size, correct: true as const, offset: 0, pctPtDiffFromWhole};
+      })
       .sort((a, b) => d3.ascending(a.label, b.label));
 
     let sum = 0;
@@ -81,7 +91,7 @@ function getClassificationData(features: Features, selectedFeatures: string[], d
 
     const node: ClassificationNode = {
       type: 'classification',
-      size: g.length,
+      size: numInstancesInSubset,
       splits: new Map(),
       groundTruth,
     };
@@ -94,7 +104,15 @@ function getClassificationData(features: Features, selectedFeatures: string[], d
         d => d.prediction,
         d => d.prediction === d.label
       )
-        .map(([label, correct, size]) => ({label, correct, size, offset: 0}))
+        .map(([label, correct, size]) => {
+          // percent of instances in the root node with this predicted label and correctness
+          const wholeDatasetPct: number = dataset.predictionDistribution.get(label)?.get(correct) ?? 0;
+          // percent of instances in the this subset with this predicted label and correctness
+          const subsetPct: number = size / numInstancesInSubset;
+          // percentage point difference between the two
+          const pctPtDiffFromWhole: number = subsetPct - wholeDatasetPct;
+          return {label, correct, size, offset: 0, pctPtDiffFromWhole};
+        })
         // sort primarily by label, secondarily by correctness
         .sort((a, b) => d3.ascending(a.label, b.label) || d3.ascending(a.correct, b.correct));
 

@@ -10,7 +10,36 @@ import type {
 
 export {
   parseDataset,
+  getGroundTruthDistribution,
+  getPredictionDistribution
 };
+
+/**
+ *
+ * @param rows rows in the dataset
+ * @returns map from ground truth class label to the percentage of rows with that label
+ */
+function getGroundTruthDistribution(rows: ClassificationRow[]): d3.InternMap<string,number> {
+  return d3.rollup(
+    rows,
+    v => v.length / rows.length,
+    d => d.label
+  );
+}
+
+/**
+ *
+ * @param rows rows in the dataset
+ * @returns map from predicted class label to whether or not the prediction is correct to the percentage of rows with that label and correctness
+ */
+function getPredictionDistribution(rows: ClassificationRow[]): d3.InternMap<string,d3.InternMap<boolean,number>> {
+  return d3.rollup(
+    rows,
+    v => v.length / rows.length,
+    d => d.prediction,
+    d => d.prediction === d.label
+  );
+}
 
 function parseDataset(data: d3.DSVRowArray<string>, name: string): Dataset {
   const size = data.length;
@@ -81,7 +110,9 @@ function parseDataset(data: d3.DSVRowArray<string>, name: string): Dataset {
       return row;
     });
 
-    const labelValues: string[] = Array.from(new Set(data.map(d => d.label))).sort();
+    const groundTruthDistribution = getGroundTruthDistribution(rows);
+
+    const labelValues: string[] = Array.from(groundTruthDistribution.keys()).sort();
 
     const dataset: ClassificationDataset = {
       type: "classification" as const,
@@ -90,8 +121,15 @@ function parseDataset(data: d3.DSVRowArray<string>, name: string): Dataset {
       featureNames,
       labelValues,
       hasPredictions,
-      size
+      size,
+      groundTruthDistribution
     };
+
+    if (hasPredictions) {
+      const predictionDistribution = getPredictionDistribution(rows);
+      dataset.predictionDistribution = predictionDistribution;
+    }
+
     return dataset;
   }
 }

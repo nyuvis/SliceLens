@@ -81,6 +81,9 @@ export const showPredictions: Writable<boolean> = writable(false);
 // scale by number of instances
 export const showSize: Writable<boolean> = writable(true);
 
+// show bars to compare to root node
+export const compareToWhole: Writable<boolean> = writable(true);
+
 // visualization type
 export const visKind: Writable<'squares'|'bars'> = writable('squares');
 

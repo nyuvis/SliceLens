@@ -12,15 +12,15 @@ const dataAB: ClassificationNode[] = [
   {
     type: 'classification',
     groundTruth: [
-      { label: "no", size: 200, correct: true, offset: 0 },
-      { label: "yes", size: 200, correct: true, offset: 200 },
+      { label: "no", size: 200, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 200, correct: true, offset: 200, pctPtDiffFromWhole: 0 },
     ],
     size: 400,
     predictions: [
-      { label: "no", size: 50, correct: false, offset: 0 },
-      { label: "no", size: 100, correct: true, offset: 50 },
-      { label: "yes", size: 50, correct: false, offset: 150 },
-      { label: "yes", size: 200, correct: true, offset: 200 },
+      { label: "no", size: 50, correct: false, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "no", size: 100, correct: true, offset: 50,pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 50, correct: false, offset: 150, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 200, correct: true, offset: 200, pctPtDiffFromWhole: 0 },
     ],
     splits: new Map([
       ['a', 0],
@@ -30,13 +30,13 @@ const dataAB: ClassificationNode[] = [
   {
     type: 'classification',
     groundTruth: [
-      { label: "no", size: 50, correct: true, offset: 0 },
-      { label: "yes", size: 50, correct: true, offset: 50 },
+      { label: "no", size: 50, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 50, correct: true, offset: 50, pctPtDiffFromWhole: 0 },
     ],
     size: 100,
     predictions: [
-      { label: "no", size: 50, correct: false, offset: 0 },
-      { label: "no", size: 50, correct: true, offset: 50 },
+      { label: "no", size: 50, correct: false, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "no", size: 50, correct: true, offset: 50, pctPtDiffFromWhole: 0 },
     ],
     splits: new Map([
       ['a', 0],
@@ -46,15 +46,15 @@ const dataAB: ClassificationNode[] = [
   {
     type: 'classification',
     groundTruth: [
-      { label: "no", size: 100, correct: true, offset: 0 },
-      { label: "yes", size: 100, correct: true, offset: 100 },
+      { label: "no", size: 100, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 100, correct: true, offset: 100, pctPtDiffFromWhole: 0 },
     ],
     size: 200,
     predictions: [
-      { label: "no", size: 75, correct: false, offset: 0 },
-      { label: "no", size: 25, correct: true, offset: 75 },
-      { label: "yes", size: 10, correct: false, offset: 100 },
-      { label: "yes", size: 90, correct: true, offset: 110 },
+      { label: "no", size: 75, correct: false, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "no", size: 25, correct: true, offset: 75, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 10, correct: false, offset: 100, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 90, correct: true, offset: 110, pctPtDiffFromWhole: 0 },
     ],
     splits: new Map([
       ['a', 1],
@@ -64,13 +64,13 @@ const dataAB: ClassificationNode[] = [
   {
     type: 'classification',
     groundTruth: [
-      { label: "no", size: 5, correct: true, offset: 0 },
-      { label: "yes", size: 5, correct: true, offset: 10 },
+      { label: "no", size: 5, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 5, correct: true, offset: 10, pctPtDiffFromWhole: 0 },
     ],
     size: 10,
     predictions: [
-      { label: "no", size: 5, correct: false, offset: 0 },
-      { label: "yes", size: 5, correct: false, offset: 5 },
+      { label: "no", size: 5, correct: false, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 5, correct: false, offset: 5, pctPtDiffFromWhole: 0 },
     ],
     splits: new Map([
       ['a', 1],
@@ -83,15 +83,15 @@ const dataAC: Node[] = [
   {
     type: 'classification',
     groundTruth: [
-      { label: "no", size: 100, correct: true, offset: 0 },
-      { label: "yes", size: 300, correct: true, offset: 300 },
+      { label: "no", size: 100, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 300, correct: true, offset: 300, pctPtDiffFromWhole: 0 },
     ],
     size: 400,
     predictions: [
-      { label: "no", size: 30, correct: false, offset: 0 },
-      { label: "no", size: 80, correct: true, offset: 30 },
-      { label: "yes", size: 45, correct: false, offset: 110 },
-      { label: "yes", size: 245, correct: true, offset: 155 },
+      { label: "no", size: 30, correct: false, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "no", size: 80, correct: true, offset: 30, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 45, correct: false, offset: 110, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 245, correct: true, offset: 155, pctPtDiffFromWhole: 0 },
     ],
     splits: new Map([
       ['a', 0],
@@ -101,15 +101,15 @@ const dataAC: Node[] = [
   {
     type: 'classification',
     groundTruth: [
-      { label: "no", size: 70, correct: true, offset: 0 },
-      { label: "yes", size: 30, correct: true, offset: 70 },
+      { label: "no", size: 70, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 30, correct: true, offset: 70, pctPtDiffFromWhole: 0 },
     ],
     size: 100,
     predictions: [
-      { label: "no", size: 30, correct: false, offset: 0 },
-      { label: "no", size: 20, correct: true, offset: 30 },
-      { label: "yes", size: 10, correct: false, offset: 50 },
-      { label: "yes", size: 40, correct: true, offset: 60 },
+      { label: "no", size: 30, correct: false, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "no", size: 20, correct: true, offset: 30, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 10, correct: false, offset: 50, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 40, correct: true, offset: 60, pctPtDiffFromWhole: 0 },
     ],
     splits: new Map([
       ['a', 0],
@@ -119,15 +119,15 @@ const dataAC: Node[] = [
   {
     type: 'classification',
     groundTruth: [
-      { label: "no", size: 20, correct: true, offset: 0 },
-      { label: "yes", size: 180, correct: true, offset: 20 },
+      { label: "no", size: 20, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 180, correct: true, offset: 20, pctPtDiffFromWhole: 0 },
     ],
     size: 200,
     predictions: [
-      { label: "no", size: 5, correct: false, offset: 0 },
-      { label: "no", size: 20, correct: true, offset: 5 },
-      { label: "yes", size: 25, correct: false, offset: 25 },
-      { label: "yes", size: 150, correct: true, offset: 50 },
+      { label: "no", size: 5, correct: false, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "no", size: 20, correct: true, offset: 5, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 25, correct: false, offset: 25, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 150, correct: true, offset: 50, pctPtDiffFromWhole: 0 },
     ],
     splits: new Map([
       ['a', 1],
@@ -137,15 +137,15 @@ const dataAC: Node[] = [
   {
     type: 'classification',
     groundTruth: [
-      { label: "no", size: 8, correct: true, offset: 0 },
-      { label: "yes", size: 2, correct: true, offset: 8 },
+      { label: "no", size: 8, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 2, correct: true, offset: 8, pctPtDiffFromWhole: 0 },
     ],
     size: 10,
     predictions: [
-      { label: "no", size: 1, correct: false, offset: 0 },
-      { label: "no", size: 7, correct: true, offset: 1 },
-      { label: "yes", size: 1, correct: false, offset: 8 },
-      { label: "yes", size: 1, correct: true, offset: 9 },
+      { label: "no", size: 1, correct: false, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "no", size: 7, correct: true, offset: 1, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 1, correct: false, offset: 8, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 1, correct: true, offset: 9, pctPtDiffFromWhole: 0 },
     ],
     splits: new Map([
       ['a', 1],
@@ -158,11 +158,11 @@ const dataAD: Node[] = [
   {
     type: 'classification',
     groundTruth: [
-      { label: "yes", size: 400, correct: true, offset: 0 },
+      { label: "yes", size: 400, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
     ],
     size: 400,
     predictions: [
-      { label: "yes", size: 400, correct: true, offset: 0 },
+      { label: "yes", size: 400, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
     ],
     splits: new Map([
       ['a', 0],
@@ -172,11 +172,11 @@ const dataAD: Node[] = [
   {
     type: 'classification',
     groundTruth: [
-      { label: "no", size: 100, correct: true, offset: 0 },
+      { label: "no", size: 100, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
     ],
     size: 100,
     predictions: [
-      { label: "no", size: 100, correct: true, offset: 0 },
+      { label: "no", size: 100, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
     ],
     splits: new Map([
       ['a', 0],
@@ -186,11 +186,11 @@ const dataAD: Node[] = [
   {
     type: 'classification',
     groundTruth: [
-      { label: "no", size: 200, correct: true, offset: 0 },
+      { label: "no", size: 200, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
     ],
     size: 200,
     predictions: [
-      { label: "no", size: 200, correct: true, offset: 0 },
+      { label: "no", size: 200, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
     ],
     splits: new Map([
       ['a', 1],
@@ -200,11 +200,11 @@ const dataAD: Node[] = [
   {
     type: 'classification',
     groundTruth: [
-      { label: "yes", size: 10, correct: true, offset: 0 },
+      { label: "yes", size: 10, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
     ],
     size: 10,
     predictions: [
-      { label: "yes", size: 10, correct: true, offset: 0 },
+      { label: "yes", size: 10, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
     ],
     splits: new Map([
       ['a', 1],
@@ -218,15 +218,15 @@ const dataE: Node[] = [
   {
     type: 'classification',
     groundTruth: [
-      { label: "no", size: 100, correct: true, offset: 0 },
-      { label: "yes", size: 300, correct: true, offset: 8 },
+      { label: "no", size: 100, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 300, correct: true, offset: 8, pctPtDiffFromWhole: 0 },
     ],
     size: 400,
     predictions: [
-      { label: "no", size: 50, correct: false, offset: 0 },
-      { label: "no", size: 100, correct: true, offset: 50 },
-      { label: "yes", size: 50, correct: false, offset: 150 },
-      { label: "yes", size: 200, correct: true, offset: 200 },
+      { label: "no", size: 50, correct: false, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "no", size: 100, correct: true, offset: 50, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 50, correct: false, offset: 150, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 200, correct: true, offset: 200, pctPtDiffFromWhole: 0 },
     ],
     splits: new Map([
       ['e', 0],
@@ -243,7 +243,8 @@ function getExampleClassificationDataset(size: number = 100): ClassificationData
     featureNames: [],
     labelValues: [],
     hasPredictions: false,
-    size: size
+    size: size,
+    groundTruthDistribution: new d3.InternMap()
   };
 }
 
@@ -463,8 +464,8 @@ test('get error count for one class', () => {
     splits: new Map(),
     groundTruth: [],
     predictions: [
-      { label: "no", size: 7, correct: false, offset: 0 },
-      { label: "no", size: 10, correct: true, offset: 7 },
+      { label: "no", size: 7, correct: false, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "no", size: 10, correct: true, offset: 7, pctPtDiffFromWhole: 0 },
     ],
   };
 
@@ -478,10 +479,10 @@ test('get error count for two classes', () => {
     splits: new Map(),
     groundTruth: [],
     predictions: [
-      { label: "no", size: 7, correct: false, offset: 0 },
-      { label: "no", size: 10, correct: true, offset: 7 },
-      { label: "yes", size: 9, correct: false, offset: 17 },
-      { label: "yes", size: 20, correct: true, offset: 26 },
+      { label: "no", size: 7, correct: false, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "no", size: 10, correct: true, offset: 7, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 9, correct: false, offset: 17, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 20, correct: true, offset: 26, pctPtDiffFromWhole: 0 },
     ],
   };
 
@@ -495,14 +496,14 @@ test('get error count for three classes', () => {
     splits: new Map(),
     groundTruth: [],
     predictions: [
-      { label: "no", size: 7, correct: false, offset: 0 },
-      { label: "no", size: 10, correct: true, offset: 7 },
-      { label: "yes", size: 9, correct: false, offset: 17 },
-      { label: "yes", size: 20, correct: true, offset: 26 },
-      { label: "I don't know", size: 0, correct: false, offset: 46 },
-      { label: "I don't know", size: 20, correct: true, offset: 46 },
-      { label: "maybe", size: 10, correct: false, offset: 66 },
-      { label: "maybe", size: 20, correct: true, offset: 76 },
+      { label: "no", size: 7, correct: false, offset: 0, pctPtDiffFromWhole: 0 },
+      { label: "no", size: 10, correct: true, offset: 7, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 9, correct: false, offset: 17, pctPtDiffFromWhole: 0 },
+      { label: "yes", size: 20, correct: true, offset: 26, pctPtDiffFromWhole: 0 },
+      { label: "I don't know", size: 0, correct: false, offset: 46, pctPtDiffFromWhole: 0 },
+      { label: "I don't know", size: 20, correct: true, offset: 46, pctPtDiffFromWhole: 0 },
+      { label: "maybe", size: 10, correct: false, offset: 66, pctPtDiffFromWhole: 0 },
+      { label: "maybe", size: 20, correct: true, offset: 76, pctPtDiffFromWhole: 0 },
     ],
   };
 
