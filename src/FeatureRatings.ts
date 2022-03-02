@@ -1,39 +1,45 @@
 import type { MetricName, Metrics, Rating } from './RatingMetrics';
-import type {Features, Dataset} from './types';
+import type {Features, ClassificationDataset, ClassificationNode, RegressionNode, Dataset} from './types';
 import * as d3 from "d3";
 import { getClassificationData, getRegressionData } from './lib/Data';
 
-export { getFeatureRatings, normalize };
+export { getFeatureRatings, getFeatureRatingsForMetric, normalize };
 
-function getFeatureRatings(
-  {criterion, selected, features, dataset}: {criterion: MetricName, selected: string[], features: Features, dataset: Dataset},
-  metrics: Metrics
-): Map<string, number> {
+type Metric<T extends Dataset> = (data: Subset<T>[]) => number;
+type Subset<T extends Dataset> = T extends ClassificationDataset ? ClassificationNode : RegressionNode;
+type GetData<T extends Dataset> = (features: Features, selectedFeatures: string[], dataset: T) => Subset<T>[];
+
+function getFeatureRatings(criterion: MetricName, metrics: Metrics, selected: string[], features: Features, dataset: Dataset): Map<string, number> {
   if (criterion === 'none') {
     return new Map();
   }
 
+  const metric = metrics[criterion];
+
+  if (dataset.type === 'classification' && metric.type === 'classification') {
+    return normalize(getFeatureRatingsForMetric(dataset, metric.metric, selected, features, getClassificationData));
+  } else if (dataset.type === 'regression' && metric.type === 'regression') {
+    return normalize(getFeatureRatingsForMetric(dataset, metric.metric, selected, features, getRegressionData));
+  } else {
+    return new Map();
+  }
+}
+
+function getFeatureRatingsForMetric<T extends Dataset>(
+  dataset: T,
+  metric: Metric<T>,
+  selected: string[],
+  features: Features,
+  getData: GetData<T>
+): {feature: string, value: number}[] {
   const available: string[] = dataset.featureNames.filter(d => !selected.includes(d));
 
-  let ratings: Rating[] = [];
-
-  if (dataset.type === 'classification') {
-    if (criterion === 'entropy') {
-      ratings = metrics.entropy({selected, features, dataset, available}, getClassificationData);
-    } else if (criterion === 'errorCount') {
-      ratings = metrics.errorCount({selected, features, dataset, available}, getClassificationData);
-    } else if (criterion === 'errorPercent') {
-      ratings = metrics.errorPercent({selected, features, dataset, available}, getClassificationData);
-    } else if (criterion === 'errorDeviation') {
-      ratings = metrics.errorDeviation({selected, features, dataset, available}, getClassificationData)
-    }
-  } else {
-    if (criterion === 'random') {
-      ratings = metrics.random({selected, features, dataset, available}, getRegressionData)
-    }
-  }
-
-  return normalize(ratings);
+  return available.map(feature => {
+    const sel = [...selected, feature];
+    const data = getData(features, sel, dataset);
+    const value = metric(data);
+    return {feature, value};
+  });
 }
 
 // normalize values between 0 and 1

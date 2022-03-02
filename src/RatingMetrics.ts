@@ -1,4 +1,4 @@
-import type { Features, ClassificationNode, ClassificationDataset, RegressionNode, RegressionDataset } from './types';
+import type { ClassificationNode, RegressionNode } from './types';
 
 import * as d3 from "d3";
 
@@ -10,29 +10,29 @@ export {
 
 // types
 
-export type ClassificationRatingInput = {selected: string[], features: Features, dataset: ClassificationDataset, available: string[]};
-export type RegressionRatingInput = {selected: string[], features: Features, dataset: RegressionDataset, available: string[]};
-
-export type ClassificationMetric = (input: ClassificationRatingInput, getData: (features: Features, selectedFeatures: string[], dataset: ClassificationDataset) => ClassificationNode[]) => Rating[];
-export type RegressionMetric = (input: RegressionRatingInput, getData: (features: Features, selectedFeatures: string[], dataset: RegressionDataset) => RegressionNode[]) => Rating[];
+type ClassificationMetric = (data: ClassificationNode[]) => number;
+type RegressionMetric = (data: RegressionNode[]) => number;
 export type Rating = {feature: string, value: number};
 
-export type Metrics = Record<ClassificationMetricName, ClassificationMetric> & Record<RegressionMetricName, RegressionMetric>;
-
-export type RegressionMetricName = 'random';
-export type ClassificationMetricName = 'entropy' | 'errorDeviation' | 'errorCount' | 'errorPercent'
+type RegressionMetricName = 'random';
+type ClassificationMetricName = 'entropy' | 'errorDeviation' | 'errorCount' | 'errorPercent'
 export type MetricName = RegressionMetricName | ClassificationMetricName | 'none';
+
 export type MetricInfo = { value: MetricName, display: string, type: 'classification' | 'regression', requiresPredictions: boolean };
 export type MetricGroup = { title: string, requiresPredictions: boolean, options: MetricInfo[] };
+
+export type Metrics =
+  Record<ClassificationMetricName, {type: 'classification', metric: ClassificationMetric}> &
+  Record<RegressionMetricName, {type: 'regression', metric: RegressionMetric}>
 
 // metrics
 
 const metrics: Metrics = {
-  entropy,
-  errorDeviation,
-  errorCount,
-  errorPercent,
-  random
+  entropy: { type: 'classification', metric: entropy},
+  errorDeviation: { type: 'classification', metric: errorDeviation},
+  errorCount: { type: 'classification', metric: errorCount},
+  errorPercent: { type: 'classification', metric: errorPercent},
+  random: { type: 'regression', metric: random}
 };
 
 // info for feature selector
@@ -101,72 +101,47 @@ function getValidMetrics(type: 'classification' | 'regression', hasPredictions: 
   Return the feature that results in the nodes with the
   lowest average entropy.
 */
-function entropy({selected, features, dataset, available}: ClassificationRatingInput, getData: (features: Features, selectedFeatures: string[], dataset: ClassificationDataset) => ClassificationNode[]): Rating[] {
-  return available.map(feature => {
-    const sel = [...selected, feature];
-    const data = getData(features, sel, dataset);
-
-    // give higher rating to lower entropy, so negate it
-    const value = -d3.sum(data, square => {
-      const weight = square.size / dataset.size;
-      return weight * H(square);
-    });
-
-    return {feature, value};
-  });
-
-  function H(square: ClassificationNode) {
+function entropy(data: ClassificationNode[]): number {
+  function H(square: ClassificationNode): number {
     return -d3.sum(square.groundTruth, v => {
       const p = v.size / square.size;
       return p * Math.log2(p);
     });
   }
+
+  const datasetSize = d3.sum(data, square => square.size);
+
+  // give higher rating to lower entropy, so negate it
+  const value = -d3.sum(data, square => {
+    const weight = square.size / datasetSize;
+    return weight * H(square);
+  });
+
+  return value;
 }
 
 /*
   Give a higher rating to features that result in the
   subsets with higher standard deviations of percent error
 */
-function errorDeviation({selected, features, dataset, available}: ClassificationRatingInput, getData: (features: Features, selectedFeatures: string[], dataset: ClassificationDataset) => ClassificationNode[]): Rating[] {
-  return available.map(feature => {
-    const sel = [...selected, feature];
-    const data = getData(features, sel, dataset);
-
-    // d3.deviation returns undefined if there are fewer than two numbers
-    const value = data.length < 2 ? 0 : d3.deviation(data, d => getErrorCountForSquare(d) / d.size);
-
-    return {feature, value};
-  });
+function errorDeviation(data: ClassificationNode[]): number {
+  return data.length < 2 ? 0 : d3.deviation(data, d => getErrorCountForSquare(d) / d.size);
 }
 
 /*
   Give a higher rating to features that result in the
   single nodes that have the higher number of errors
 */
-function errorCount({selected, features, dataset, available}: ClassificationRatingInput, getData: (features: Features, selectedFeatures: string[], dataset: ClassificationDataset) => ClassificationNode[]): Rating[] {
-  return available.map(feature => {
-    const sel = [...selected, feature];
-    const data = getData(features, sel, dataset);
-
-    const value = d3.max(data, getErrorCountForSquare);
-
-    return {feature, value};
-  });
+function errorCount(data: ClassificationNode[]): number {
+  return d3.max(data, getErrorCountForSquare);;
 }
 
 /*
   Give a higher rating to features that result in the
   single nodes that have the higher percent of errors
 */
-function errorPercent({selected, features, dataset, available}: ClassificationRatingInput, getData: (features: Features, selectedFeatures: string[], dataset: ClassificationDataset) => ClassificationNode[]): Rating[] {
-  return available.map(feature => {
-    const sel = [...selected, feature];
-    const data = getData(features, sel, dataset);
-
-    const value = d3.max(data, d => getErrorCountForSquare(d) / d.size);
-
-    return {feature, value};
-  });
+function errorPercent(data: ClassificationNode[]): number {
+  return d3.max(data, d => getErrorCountForSquare(d) / d.size);
 }
 
 
@@ -181,9 +156,6 @@ function getErrorCountForSquare(square: ClassificationNode): number {
 
 // regression
 
-function random({selected, features, dataset, available}: RegressionRatingInput, getData: (features: Features, selectedFeatures: string[], dataset: RegressionDataset) => RegressionNode[]): Rating[] {
-  return available.map(feature => ({
-    feature,
-    value: Math.random()
-  }));
+function random(data: RegressionNode[]): number {
+  return Math.random();
 }

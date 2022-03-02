@@ -7,7 +7,7 @@ import {
   cloneFilters,
   addSelectedSetToFilters,
 } from '../src/lib/Filters';
-import { parseDataset } from '../src/lib/Dataset';
+import { getGroundTruthDistribution, getPredictionDistribution, parseDataset } from '../src/lib/Dataset';
 import * as fs from "fs";
 import type {Filter, Dataset, CategoricalFilter, QuantitativeFilter} from '../src/types';
 
@@ -188,6 +188,8 @@ test('get filtered dataset - quantitative feature right inclusive', () => {
   assert.equal(result.labelValues, fullDataset.labelValues);
   assert.equal(result.hasPredictions, fullDataset.hasPredictions);
   assert.equal(result.size, result.rows.length);
+  assert.equal(result.groundTruthDistribution, getGroundTruthDistribution(result.rows));
+  assert.equal(result.predictionDistribution, getPredictionDistribution(result.rows));
 
   assert.ok(result.rows.length > 0);
   assert.ok(result.size < fullDataset.size);
@@ -231,6 +233,8 @@ test('get filtered dataset - quantitative feature right exclusive', () => {
   assert.equal(result.labelValues, fullDataset.labelValues);
   assert.equal(result.hasPredictions, fullDataset.hasPredictions);
   assert.equal(result.size, result.rows.length);
+  assert.equal(result.groundTruthDistribution, getGroundTruthDistribution(result.rows));
+  assert.equal(result.predictionDistribution, getPredictionDistribution(result.rows));
 
   assert.ok(result.rows.length > 0);
   assert.ok(result.size < fullDataset.size);
@@ -274,6 +278,8 @@ test('get filtered classification dataset - number categories', () => {
   assert.equal(result.labelValues, fullDataset.labelValues);
   assert.equal(result.hasPredictions, fullDataset.hasPredictions);
   assert.equal(result.size, result.rows.length);
+  assert.equal(result.groundTruthDistribution, getGroundTruthDistribution(result.rows));
+  assert.equal(result.predictionDistribution, getPredictionDistribution(result.rows));
 
   assert.ok(result.rows.length > 0);
   assert.ok(result.size < fullDataset.size);
@@ -316,6 +322,8 @@ test('get filtered classification dataset - string categories', () => {
   assert.equal(result.labelValues, fullDataset.labelValues);
   assert.equal(result.hasPredictions, fullDataset.hasPredictions);
   assert.equal(result.size, result.rows.length);
+  assert.equal(result.groundTruthDistribution, getGroundTruthDistribution(result.rows));
+  assert.equal(result.predictionDistribution, getPredictionDistribution(result.rows));
 
   assert.ok(result.rows.length > 0);
   assert.ok(result.size < fullDataset.size);
@@ -368,6 +376,8 @@ test('get filtered classification dataset - two filters', () => {
   assert.equal(result.labelValues, fullDataset.labelValues);
   assert.equal(result.hasPredictions, fullDataset.hasPredictions);
   assert.equal(result.size, result.rows.length);
+  assert.equal(result.groundTruthDistribution, getGroundTruthDistribution(result.rows));
+  assert.equal(result.predictionDistribution, getPredictionDistribution(result.rows));
 
   assert.ok(result.rows.length > 0);
   assert.ok(result.size < fullDataset.size);

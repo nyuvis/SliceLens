@@ -122,7 +122,7 @@ function getFilteredDataset(dataset: Dataset, filters: Filter[]): Dataset {
 
     if (dataset.hasPredictions) {
       const predictionDistribution = getPredictionDistribution(rows);
-      dataset.predictionDistribution = predictionDistribution;
+      filteredDs.predictionDistribution = predictionDistribution;
     }
 
     return filteredDs;

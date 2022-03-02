@@ -1,10 +1,8 @@
 import { test } from 'uvu';
 import * as assert from 'uvu/assert';
-import sinon from "sinon";
 import * as d3 from "d3";
 import { metrics, getErrorCountForSquare, getValidMetrics } from '../src/RatingMetrics';
-import type { Rating, ClassificationRatingInput } from '../src/RatingMetrics'
-import type { Features, Node, ClassificationNode, Dataset, ClassificationDataset } from '../src/types'
+import type { ClassificationNode } from '../src/types'
 
 // data
 
@@ -79,7 +77,7 @@ const dataAB: ClassificationNode[] = [
   }
 ];
 
-const dataAC: Node[] = [
+const dataAC: ClassificationNode[] = [
   {
     type: 'classification',
     groundTruth: [
@@ -154,67 +152,8 @@ const dataAC: Node[] = [
   }
 ];
 
-const dataAD: Node[] = [
-  {
-    type: 'classification',
-    groundTruth: [
-      { label: "yes", size: 400, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
-    ],
-    size: 400,
-    predictions: [
-      { label: "yes", size: 400, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
-    ],
-    splits: new Map([
-      ['a', 0],
-      ['b', 0]
-    ])
-  },
-  {
-    type: 'classification',
-    groundTruth: [
-      { label: "no", size: 100, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
-    ],
-    size: 100,
-    predictions: [
-      { label: "no", size: 100, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
-    ],
-    splits: new Map([
-      ['a', 0],
-      ['b', 1]
-    ])
-  },
-  {
-    type: 'classification',
-    groundTruth: [
-      { label: "no", size: 200, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
-    ],
-    size: 200,
-    predictions: [
-      { label: "no", size: 200, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
-    ],
-    splits: new Map([
-      ['a', 1],
-      ['b', 0]
-    ])
-  },
-  {
-    type: 'classification',
-    groundTruth: [
-      { label: "yes", size: 10, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
-    ],
-    size: 10,
-    predictions: [
-      { label: "yes", size: 10, correct: true, offset: 0, pctPtDiffFromWhole: 0 },
-    ],
-    splits: new Map([
-      ['a', 1],
-      ['b', 1]
-    ])
-  }
-];
-
 // when the entire dataset is in one bin with a feature selected
-const dataE: Node[] = [
+const dataE: ClassificationNode[] = [
   {
     type: 'classification',
     groundTruth: [
@@ -234,43 +173,6 @@ const dataE: Node[] = [
   }
 ];
 
-
-function getExampleClassificationDataset(size: number = 100): ClassificationDataset {
-  return {
-    type: 'classification',
-    rows: [],
-    name: '',
-    featureNames: [],
-    labelValues: [],
-    hasPredictions: false,
-    size: size,
-    groundTruthDistribution: new d3.InternMap()
-  };
-}
-
-
-// set up
-
-const fakeGetData = sinon.fake((features: Features, sel: string[], dataset: Dataset) => {
-  const [first, second] = sel;
-
-  // ignore hints about not using values
-  features;
-  dataset;
-
-  if (first === 'a' && second === 'b') {
-    return dataAB;
-  } else if(first === 'a' && second === 'c') {
-    return dataAC;
-  } else if (first === 'a' && second === 'd') {
-    return dataAD;
-  } else if (first === 'e' && second === undefined) {
-    return dataE;
-  } else {
-    throw new Error('getData passed wrong selected features');
-  }
-});
-
 // tests
 
 // entropy
@@ -283,157 +185,56 @@ test('entropy', () => {
   const thirdSquareEntropy = -((20 / 200) * Math.log2(20 / 200)) - ((180 / 200) * Math.log2(180 / 200));
   const fourthSquareEntropy = -((8 / 10) * Math.log2(8 / 10)) - ((2 / 10) * Math.log2(2 / 10));
 
-  const weightedAverage = (400 / 710) * firstSquareEntropy + (100 / 710) * secondSquareEntropy + (200 / 710) * thirdSquareEntropy + (10 / 710) * fourthSquareEntropy;
-
-  const expected = [
-    { feature: 'b', value: -1 },
-    { feature: 'c', value: -weightedAverage },
-    { feature: 'd', value: -0 }
-  ];
-
-  const args: ClassificationRatingInput = {
-    selected: ['a'],
-    features: {},
-    dataset: getExampleClassificationDataset(710),
-    available: ['b', 'c', 'd']
-  };
-
-  const actual = metrics.entropy(args, fakeGetData);
-
-  assert.is(actual[0].value, expected[0].value);
-  assert.is(actual[0].feature, expected[0].feature);
-
-  assert.is(actual[1].value, expected[1].value);
-  assert.is(actual[1].feature, expected[1].feature);
-
-  assert.is(actual[2].value, expected[2].value);
-  assert.is(actual[2].feature, expected[2].feature);
+  const expected = -((400 / 710) * firstSquareEntropy + (100 / 710) * secondSquareEntropy + (200 / 710) * thirdSquareEntropy + (10 / 710) * fourthSquareEntropy);
+  const actual = metrics.entropy.metric(dataAC);
+  assert.equal(actual, expected);
 });
 
 test('entropy one bin', () => {
-  const expectedValue = -((100 / 400) * Math.log2(100 / 400)) - ((300 / 400) * Math.log2(300 / 400));
-
-  const args: ClassificationRatingInput = {
-    selected: [],
-    features: {},
-    dataset: getExampleClassificationDataset(400),
-    available: ['e']
-  };
-
-  const actual = metrics.entropy(args, fakeGetData);
-
-  assert.equal(actual[0].value, -expectedValue);
-  assert.equal(actual[0].feature, 'e');
+  const expected = -(-((100 / 400) * Math.log2(100 / 400)) - ((300 / 400) * Math.log2(300 / 400)));
+  const actual = metrics.entropy.metric(dataE);
+  assert.equal(actual, expected);
 });
 
 // error deviation
 
 test('error deviation', () => {
-  const expected = [
-    { feature: 'b', value: d3.deviation([0.25, .5, 85 / 200, 1]) },
-    { feature: 'c', value: d3.deviation([75 / 400, .4, 30 / 200, .2]) },
-    { feature: 'd', value: 0 }
-  ];
-
-  const args: ClassificationRatingInput = {
-    selected: ['a'],
-    features: {},
-    dataset: getExampleClassificationDataset(),
-    available: ['b', 'c', 'd']
-  };
-
-  const actual = metrics.errorDeviation(args, fakeGetData);
-
-  assert.is(actual[0].value, expected[0].value);
-  assert.is(actual[0].feature, expected[0].feature);
-
-  assert.is(actual[1].value, expected[1].value);
-  assert.is(actual[1].feature, expected[1].feature);
-
-  assert.is(actual[2].value, expected[2].value);
-  assert.is(actual[2].feature, expected[2].feature);
+  const expected = d3.deviation([0.25, .5, 85 / 200, 1]);
+  const actual = metrics.errorDeviation.metric(dataAB);
+  assert.equal(actual, expected);
 });
 
 test('error deviation one bin', () => {
-  const expected = [ {feature: 'e', value: 0} ];
-
-  const args: ClassificationRatingInput = {
-    selected: [],
-    features: {},
-    dataset: getExampleClassificationDataset(400),
-    available: ['e']
-  };
-
-  const actual = metrics.errorDeviation(args, fakeGetData);
-
+  const expected = 0;
+  const actual = metrics.errorDeviation.metric(dataE);
   assert.equal(actual, expected);
 });
 
 // error count
 
 test('error count', () => {
-  const expected = [
-    { feature: 'b', value: 100 },
-    { feature: 'c', value: 75 },
-    { feature: 'd', value: 0 }
-  ];
-
-  const args = {
-    selected: ['a'],
-    features: {},
-    dataset: getExampleClassificationDataset(),
-    available: ['b', 'c', 'd']
-  };
-
-  assert.equal(metrics.errorCount(args, fakeGetData), expected);
+  const expected =  75;
+  const actual = metrics.errorCount.metric(dataAC);
+  assert.equal(actual, expected);
 });
 
 test('error count one bin', () => {
-  const expected = [ {feature: 'e', value: 100} ];
-
-  const args = {
-    selected: [],
-    features: {},
-    dataset: getExampleClassificationDataset(400),
-    available: ['e']
-  };
-
-  const actual = metrics.errorCount(args, fakeGetData);
-
+  const expected =  100;
+  const actual = metrics.errorCount.metric(dataE);
   assert.equal(actual, expected);
 });
 
 // error percent
 
 test('error percent', () => {
-  const expected = [
-    { feature: 'b', value: 1 },
-    { feature: 'c', value: .4 },
-    { feature: 'd', value: 0 }
-  ];
-
-  const args = {
-    selected: ['a'],
-    features: {},
-    dataset: getExampleClassificationDataset(),
-    available: ['b', 'c', 'd']
-  };
-
-  assert.equal(metrics.errorPercent(args, fakeGetData), expected);
+  const expected =  0.4;
+  const actual = metrics.errorPercent.metric(dataAC);
+  assert.equal(actual, expected);
 });
 
 test('error percent one bin', () => {
-  const expected: Rating[] = [ {feature: 'e', value: 0.25} ];
-
-  const args: ClassificationRatingInput = {
-    selected: [],
-    features: {},
-    dataset: getExampleClassificationDataset(400),
-    available: ['e']
-  };
-
-  const actual = metrics.errorPercent(args, fakeGetData);
-
+  const expected =  0.25;
+  const actual = metrics.errorPercent.metric(dataE);
   assert.equal(actual, expected);
 });
 
