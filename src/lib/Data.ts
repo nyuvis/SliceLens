@@ -161,6 +161,7 @@ function getRegressionData(features: Features, selectedFeatures: string[], datas
       size: g.length,
       splits: new Map(),
       groundTruth,
+      groundTruthLabels: labels
     };
 
     if (predictionBinner !== null) {
@@ -176,6 +177,7 @@ function getRegressionData(features: Features, selectedFeatures: string[], datas
       }
 
       node.predictions = predictions;
+      node.predictedLabels = g.map(d => d.prediction);
     }
 
     return node;

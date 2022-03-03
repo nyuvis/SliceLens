@@ -25,7 +25,7 @@
   let divBoundingBox = { left: 0, right: 0, top: 0, bottom: 0 };
 
   // space between rows and columns in the matrix
-  const padding: number = 5;
+  const padding: number = 6;
 
   // height of one line of axis labels
   const axisLineHeight: number = 20;

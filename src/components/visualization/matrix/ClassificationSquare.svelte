@@ -10,6 +10,7 @@
   export let d: ClassificationNode;
 
   const compareToWholeBarWidth: number = 5;
+  const spaceBetweenSquareAndBar: number = 2;
 
   $: height = d3.scaleLinear()
       .domain([0, d.size])
@@ -31,7 +32,7 @@
       </g>
 
       {#if pctPtDiffFromWhole > 0 && $compareToWhole}
-        <g transform="translate({sideLength + 3},{height(offset)})">
+        <g transform="translate({sideLength + spaceBetweenSquareAndBar},{height(offset)})">
           <rect height={pctPtDiffFromWhole * sideLength} width={compareToWholeBarWidth} fill={$color(label)}/>
           {#if !correct}
             <rect height={pctPtDiffFromWhole * sideLength} width={compareToWholeBarWidth} fill="url(#stripes)"/>

@@ -14,7 +14,7 @@ type ClassificationMetric = (data: ClassificationNode[]) => number;
 type RegressionMetric = (data: RegressionNode[]) => number;
 export type Rating = {feature: string, value: number};
 
-type RegressionMetricName = 'random';
+type RegressionMetricName = 'mseDeviation' | 'similarity';
 type ClassificationMetricName = 'entropy' | 'errorDeviation' | 'errorCount' | 'errorPercent'
 export type MetricName = RegressionMetricName | ClassificationMetricName | 'none';
 
@@ -28,11 +28,12 @@ export type Metrics =
 // metrics
 
 const metrics: Metrics = {
-  entropy: { type: 'classification', metric: entropy},
-  errorDeviation: { type: 'classification', metric: errorDeviation},
-  errorCount: { type: 'classification', metric: errorCount},
-  errorPercent: { type: 'classification', metric: errorPercent},
-  random: { type: 'regression', metric: random}
+  entropy: { type: 'classification', metric: entropy },
+  errorDeviation: { type: 'classification', metric: errorDeviation },
+  errorCount: { type: 'classification', metric: errorCount },
+  errorPercent: { type: 'classification', metric: errorPercent },
+  mseDeviation: { type: 'regression', metric: mseDeviation },
+  similarity: { type: 'regression', metric: similarity }
 };
 
 // info for feature selector
@@ -68,13 +69,15 @@ const metricsInfo: { 'classification': MetricGroup[], 'regression': MetricGroup[
       title: 'Ground Truth Metrics',
       requiresPredictions: false,
       options: [
-        { value: 'random', display: 'Random', type: 'regression', requiresPredictions: false },
+        { value: 'similarity', display: 'Similarity', type: 'regression', requiresPredictions: false },
       ]
     },
     {
       title: 'Prediction Metrics',
       requiresPredictions: true,
-      options: []
+      options: [
+        { value: 'mseDeviation', display: 'MSE Deviation', type: 'regression', requiresPredictions: true },
+      ]
     },
     {
       title: 'Disable Metrics',
@@ -156,6 +159,15 @@ function getErrorCountForSquare(square: ClassificationNode): number {
 
 // regression
 
-function random(data: RegressionNode[]): number {
-  return Math.random();
+function mseDeviation(data: RegressionNode[]): number {
+  return d3.deviation(data, square => mse(square));
+
+  function mse(square: RegressionNode) {
+    const labels = d3.zip(square.groundTruthLabels, square.predictedLabels);
+    return d3.mean(labels, ([truth, prediction]) => (truth - prediction) ** 2)
+  }
+}
+
+function similarity(data: RegressionNode[]): number {
+  return -d3.mean(data, square => d3.deviation(square.groundTruthLabels));
 }

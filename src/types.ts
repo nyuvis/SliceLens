@@ -49,6 +49,8 @@ export type RegressionNode = {
   splits: Map<string, number>,
   groundTruth: { x0: number, x1: number, offset: number, size: number }[],
   predictions?: { x0: number, x1: number, offset: number, size: number }[],
+  groundTruthLabels: number[],
+  predictedLabels?: number[]
 };
 
 export type Node = ClassificationNode | RegressionNode;

@@ -25,7 +25,8 @@ const metricFakes = {
   errorCount: { type: 'classification' as const, metric: sinon.fake(metrics.errorCount.metric) },
   errorPercent: { type: 'classification' as const, metric: sinon.fake(metrics.errorPercent.metric) },
   errorDeviation: { type: 'classification' as const, metric: sinon.fake(metrics.errorDeviation.metric) },
-  random: { type: 'regression' as const, metric: sinon.fake(metrics.random.metric) },
+  similarity: { type: 'regression' as const, metric: sinon.fake(metrics.similarity.metric) },
+  mseDeviation: { type: 'regression' as const, metric: sinon.fake(metrics.mseDeviation.metric) },
 };
 
 // get feature ratings: test that the correct meric is called
