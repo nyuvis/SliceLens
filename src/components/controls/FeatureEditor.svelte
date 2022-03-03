@@ -3,22 +3,22 @@ References:
 https://www.w3schools.com/howto/howto_css_modals.asp
 -->
 
-<script>
+<script lang="ts">
   import CategoricalFeatureEditor from "./CategoricalFeatureEditor.svelte";
   import QuantitativeFeatureEditor from "./QuantitativeFeatureEditor.svelte";
-  import { metadata, logs } from "../../stores.js";
+  import { features, logs } from "../../stores";
   import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
 
-  export let featureName;
-  $: feature = $metadata.features[featureName];
+  export let featureName: string;
+  $: feature = $features[featureName];
 
-  let valid = true;
+  let valid: boolean = true;
   $: canClose = valid || feature.type === 'C';
 
-  let categoricalComponent;
-  let quantitativeComponent;
+  let categoricalComponent: CategoricalFeatureEditor;
+  let quantitativeComponent: QuantitativeFeatureEditor;
 
   function onWindowClose() {
     if (!canClose) {
@@ -33,11 +33,11 @@ https://www.w3schools.com/howto/howto_css_modals.asp
 
     logs.add({ event: 'feature-edit', phase: 'close', feature });
 
-    $metadata = $metadata;
+    $features = $features;
     dispatch("close");
   }
 
-  function onkeydown(ev) {
+  function onkeydown(ev: KeyboardEvent) {
     if (ev.key === 'Escape') {
       onWindowClose();
     }

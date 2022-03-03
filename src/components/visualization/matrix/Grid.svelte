@@ -1,8 +1,8 @@
-<script>
-  export let xScales;
-  export let yScales;
-  export let matrixWidth;
-  export let matrixHeight;
+<script lang="ts">
+  export let xScales: d3.ScaleBand<number>[];
+  export let yScales: d3.ScaleBand<number>[];
+  export let matrixWidth: number;
+  export let matrixHeight: number;
 </script>
 
 {#if xScales.length > 1}

@@ -1,17 +1,21 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
-  import { getMetadata, getWholeDatasetFeatureExtents } from '../../DataTransformer.js';
-  import { dataset, fullDataset, selectedFeatures, metadata, filters } from '../../stores.js';
+  import { getFeatures, getWholeDatasetFeatureExtents } from '../../lib/Features';
+  import { parseDataset } from '../../lib/Dataset';
+  import { dataset, fullDataset, selectedFeatures, features, filters } from '../../stores';
   import QuestionBox from '../QuestionBox.svelte';
   import * as d3 from "d3";
   import { createEventDispatcher } from 'svelte';
+  import type { Features } from '../../types';
 
   const dispatch = createEventDispatcher();
 
-  let selectedDemoDataset = null;
-  let uploadedDatasetName = null;
-  let useCustomDataset = false;
-  let fileInput;
+  type DatasetInfo = { name: string, path: string};
+
+  let selectedDemoDataset: DatasetInfo = null;
+  let uploadedDatasetName: string = null;
+  let useCustomDataset: boolean = false;
+  let fileInput: HTMLInputElement;
 
   function switchDemoOrCustom() {
     useCustomDataset = !useCustomDataset;
@@ -24,24 +28,26 @@
 
   // demo datasets
 
-  let datasets = [];
+  let datasets: DatasetInfo[] = [];
 
-  function load({path, name}) {
-    d3.csv(path, d3.autoType).then(data => {
-      data.name = name;
+  function load(info: DatasetInfo) {
+    const {path, name} = info;
+
+    d3.csv(path).then(data => {
+      const ds = parseDataset(data, name);
       $filters = [];
-      const md = getMetadata(data);
+      const feat: Features = getFeatures(ds);
 
       // get the extent of quantitatve features
       // and unique values of categorical features
       // on the whole dataset with no filters.
       // this is used to bound the features that can be set
-      dispatch('load', getWholeDatasetFeatureExtents(md));
+      dispatch('load', getWholeDatasetFeatureExtents(feat));
 
-      $selectedFeatures = [];
-      $dataset = data;
-      $fullDataset = data;
-      $metadata = md;
+      selectedFeatures.reset();
+      $dataset = ds;
+      $fullDataset = ds;
+      $features = feat;
     });
   }
 
@@ -50,9 +56,10 @@
   }
 
   onMount(async () => {
+    // @ts-ignore
     // DATASETS_FILE is set in rollup.config.js
     d3.csv(DATASETS_FILE).then(d => {
-      datasets = d;
+      datasets = d as unknown as DatasetInfo[];
       selectedDemoDataset = datasets[0];
       load(selectedDemoDataset);
     });
@@ -60,9 +67,10 @@
 
   // uploaded dataset
 
-  function onUploadChange(event) {
-    const files = event.target.files;
-    if (files.length === 0) {
+  function onUploadChange(event: Event & { currentTarget: EventTarget & HTMLInputElement; }) {
+    const files = event.currentTarget.files;
+
+    if (files === undefined  || files.length === 0) {
       return;
     }
 
@@ -71,21 +79,21 @@
     const reader = new FileReader();
 
     reader.onload = function(event) {
-      const text = event.target.result;
-      const data = d3.csvParse(text, d3.autoType);
-      data.name = file.name;
+      const text = event.target.result as string;
+      const ds = parseDataset(d3.csvParse(text), file.name);
+
       uploadedDatasetName = file.name;
 
       $filters = [];
 
-      const md = getMetadata(data);
+      const feat = getFeatures(ds);
 
-      dispatch('load', getWholeDatasetFeatureExtents(md));
+      dispatch('load', getWholeDatasetFeatureExtents(feat));
 
-      $selectedFeatures = [];
-      $dataset = data;
-      $fullDataset = data;
-      $metadata = md;
+      selectedFeatures.reset();
+      $dataset = ds;
+      $fullDataset = ds;
+      $features = feat;
     }
 
     reader.readAsText(file);

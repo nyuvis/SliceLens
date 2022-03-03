@@ -4,133 +4,116 @@ https://svelte.dev/repl/810b0f1e16ac4bbd8af8ba25d5e0deff?version=3.4.2
 https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 -->
 
-<script>
-  import FeatureSuggesterWorker from 'web-worker:../../FeatureSuggesterWorker';
+<script lang="ts">
+  import FeatureRatingWorker from 'web-worker:../../FeatureRatingWorker';
   import QuestionBox from '../QuestionBox.svelte';
   import FeatureRow from './FeatureRow.svelte';
-  import FeatureEditor from './FeatureEditor.svelte';
-  import { dataset, metadata, selectedFeatures, logs } from '../../stores.js';
+  import SuggestCombos from './SuggestCombos.svelte';
+  import {features, dataset, selectedFeatures, logs, changeSinceGeneratingSuggestion } from '../../stores';
+  import { getValidMetrics } from '../../RatingMetrics';
+  import type { MetricInfo, MetricGroup } from '../../RatingMetrics';
   import * as d3 from 'd3';
   import { flip } from "svelte/animate";
 
-  let features = [];
-  $: if ($metadata !== null) {
+  // @ts-ignore
+  // defined in rollup.config.js
+  const ratingsEnabled: boolean = RATINGS_ENABLED;
+
+  let featuresNames: string[] = [];
+  $: if ($dataset !== null) {
     // sort by alphabetical order
-    features = $metadata.featureNames.slice().sort((a, b) => a.localeCompare(b));
+    featuresNames = $dataset.featureNames.slice().sort((a, b) => a.localeCompare(b));
   }
 
   // suggestion criteria
 
-  const criteria = [
-    {
-      title: 'Ground truth metrics',
-      requiresPredictions: false,
-      options: [
-        { value: 'entropy', display: 'Purity', requiresPredictions: false },
-        { value: 'none', display: 'None', requiresPredictions: false },
-      ],
-    },
-    {
-      title: 'Prediction metrics',
-      requiresPredictions: true,
-      options: [
-        { value: 'errorDeviation', display: 'Error deviation', requiresPredictions: true },
-        { value: 'errorCount', display: 'Error count', requiresPredictions: true },
-        { value: 'errorPercent', display: 'Error percent', requiresPredictions: true },
-      ],
-    },
-  ];
+  let criteria: MetricGroup[];
+  let defaultCriterion: MetricInfo;
+  let criterion: MetricInfo;
 
-  // RATINGS_ENABLED is defined in rollup.config.js
-  const defaultCriterion = RATINGS_ENABLED ? criteria[0].options[0] : criteria[0].options[1];
-  let criterion = defaultCriterion;
+  $: {
+    let disabledSelected = criterion === undefined ? false : criterion.value === 'none';
+    let response = getValidMetrics($dataset.type, $dataset.hasPredictions, !ratingsEnabled || disabledSelected);
+    criteria = response.criteria;
+    defaultCriterion = response.defaultCriterion;
 
-  $: hasPredictions = $metadata !== null && $metadata.hasPredictions;
-  // reset criterion if predictions are not available,
-  // which would happen when changing datasets
-  $: if (!hasPredictions && criterion.requiresPredictions) {
-    criterion = defaultCriterion;
+    // reset criterion if it is undefined (on first load)
+    // or if the new dataset does not work with the current criterion
+    if (
+      (criterion === undefined) ||
+      (criterion.type !== $dataset.type) ||
+      (criterion.requiresPredictions && !$dataset.hasPredictions)
+    ) {
+      criterion = defaultCriterion;
+    }
   }
 
   function criterionChanged() {
+    $changeSinceGeneratingSuggestion = true;
     logs.add({
       event: 'criterion-change',
       criterion: criterion.value,
     });
   }
 
-  const maxFeatures = 4;
+  const maxFeatures: number = 4;
   $: canAddFeatures = $selectedFeatures.length < maxFeatures;
 
   // web worker for feature suggestions
 
-  let workersInProgress = 0;
+  let workersInProgress: number = 0;
 
   const incrementWorkersInProgress = () => workersInProgress++;
 
-  let featureToRelevance = new Map();
+  let featureToRelevance: Map<string, number> = new Map();
 
-  const worker = new FeatureSuggesterWorker();
+  const worker = new FeatureRatingWorker();
 
-  worker.onmessage = e => {
+  worker.onmessage = (e: MessageEvent) => {
     featureToRelevance = e.data;
     workersInProgress--;
     logs.add({event: 'worker-done'});
   }
 
-  $: if ($dataset && $metadata !== null && canAddFeatures) {
+  $: if ($dataset && $features !== null && canAddFeatures) {
     // we don't want to have an explicit dependency on workersInProgress, otherwise
     // this will re-run every time workersInProgress is decremented above
     incrementWorkersInProgress();
     worker.postMessage({
       criterion: criterion.value,
       selected: $selectedFeatures,
-      metadata: $metadata,
+      features: $features,
       dataset: $dataset
     });
     logs.add({event: 'worker-start'});
   }
 
+  // features that were automatically added by the suggestions
+  let featuresToHighlight: Set<string> = new Set();
+
+  function setFeatureToHighlight({ detail }: { detail: Set<string> }) {
+    featuresToHighlight = detail;
+  }
+
   // drag and drop
 
-  let dragInProgress = false;
-  let draggingOverFeature = null;
+  let dragInProgress: boolean = false;
+  let draggingOverFeature: string = null;
 
-  function dropHandler(event, i) {
+  function dropHandler(event: DragEvent, i: number) {
     const item = JSON.parse(event.dataTransfer.getData("text"));
 
     /* make sure that a feature is being dragged in */
-    if (!features.includes(item.id)) {
+    if (!featuresNames.includes(item.id)) {
       return;
     }
 
-    const filtered = $selectedFeatures.filter(d => d !== item.id);
-
-    if (filtered.length === $selectedFeatures.length) {
-      logs.add({
-        event: 'feature-add',
-        feature: item.id,
-        selected: $selectedFeatures,
-        criterion: criterion.value,
-        rank: featuresSortedByRatingDescending.indexOf(item.id) + 1,
-        choices: features.length - $selectedFeatures.length,
-        workersInProgress,
-      });
-    } else {
-      logs.add({
-        event: 'feature-reorder',
-        feature: item.id,
-        selected: $selectedFeatures
-      });
-    }
-
-    filtered.splice(i, 0, item.id);
-    $selectedFeatures = filtered;
+    selectedFeatures.addAtIndex(item.id, i);
   }
 
-  function startHandler(event) {
+  function startHandler(event: DragEvent, feature: string) {
     dragInProgress = true;
-    const item = {id: event.target.id};
+    const item = {id: feature};
     event.dataTransfer.setData("text", JSON.stringify(item));
   }
 
@@ -139,44 +122,18 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     draggingOverFeature = null;
   }
 
-  // adding and removing features
-
-  function plusClickHandler(feature) {
-    if (!$selectedFeatures.includes(feature)) {
-      logs.add({
-        event: 'feature-add',
-        feature,
-        selected: $selectedFeatures,
-        criterion: criterion.value,
-        rank: featuresSortedByRatingDescending.indexOf(feature) + 1,
-        choices: features.length - $selectedFeatures.length,
-        workersInProgress,
-      });
-
-      $selectedFeatures = [...$selectedFeatures, feature];
-    }
-  }
-
-  function trashClickHandler(feature) {
-    logs.add({
-      event: 'feature-remove',
-      feature,
-      selected: $selectedFeatures
-    });
-
-    $selectedFeatures = $selectedFeatures.filter(d => d !== feature);
-  }
-
   // sorting features
 
-  let sortBy = 'alpha';
+  type Order = 'alpha' | 'rating-ascending' | 'rating-descending';
+
+  let sortBy: Order = 'alpha';
 
   $: if (criterion.value === 'none') {
     sortBy = 'alpha';
   }
 
   // should this go in worker.onmessage?
-  $: featuresSortedByRatingDescending = features
+  $: featuresSortedByRatingDescending = featuresNames
       .slice()
       .sort((a, b) =>
         d3.descending(
@@ -186,7 +143,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         )
       );
 
-  $: featuresSortedByRatingAscending = features
+  $: featuresSortedByRatingAscending = featuresNames
       .slice()
       .sort((a, b) =>
         d3.ascending(
@@ -196,44 +153,17 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
         )
       );
 
-  $: sortingOrders = {
-    'alpha': features,
+  let sortingOrders: Record<Order, string[]>;
+  $: sortingOrders  = {
+    'alpha': featuresNames,
     'rating-ascending': featuresSortedByRatingAscending,
     'rating-descending': featuresSortedByRatingDescending,
   };
 
   $: featuresToShow = sortingOrders[sortBy];
-
-  // editing features
-
-  let showFeatureEditor = false;
-  let featureToEdit = null;
-
-  function onFeatureEdit(feature) {
-    featureToEdit = feature;
-    showFeatureEditor = true;
-
-    logs.add({
-      event: 'feature-edit',
-      phase: 'open',
-      feature: $metadata.features[feature]
-    });
-  }
 </script>
 
-{#if showFeatureEditor}
-  <FeatureEditor
-    featureName={featureToEdit}
-    on:close={() => {
-      showFeatureEditor = false;
-      featureToEdit = null;
-    }}
-  />
-{/if}
-
-<!-- defined in rollup.config.js -->
-<!-- svelte-ignore missing-declaration -->
-{#if RATINGS_ENABLED}
+{#if ratingsEnabled}
   <div class="label help-row">
     <p class="bold">Rating Metric</p>
     <QuestionBox>
@@ -262,15 +192,17 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   <div>
     <!-- svelte-ignore a11y-no-onchange -->
     <select bind:value={criterion} on:change={criterionChanged}>
-      {#each criteria.filter(d => (hasPredictions || !d.requiresPredictions)) as group}
+      {#each criteria as group}
         <optgroup label={group.title}>
-          {#each group.options.filter(d => (hasPredictions || !d.requiresPredictions)) as opt}
+          {#each group.options as opt}
             <option value={opt}>{opt.display}</option>
           {/each}
         </optgroup>
       {/each}
     </select>
   </div>
+
+  <SuggestCombos {criterion} {canAddFeatures} on:set={setFeatureToHighlight}/>
 {/if}
 
 <div class="label help-row">
@@ -288,20 +220,19 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     <FeatureRow
       {feature}
       {canAddFeatures}
+      highlight={featuresToHighlight.has(feature)}
       isSelected={true}
       draggingOver={draggingOverFeature === feature}
       on:drop={e => dropHandler(e, i)}
-      on:dragstart={startHandler}
+      on:dragstart={(e) => startHandler(e, feature)}
       on:dragend={endHandler}
       on:dragenter={() => draggingOverFeature = feature}
       on:dragleave={() => draggingOverFeature = null}
-      on:remove={() => trashClickHandler(feature)}
-      on:edit={() => onFeatureEdit(feature)}
     />
   {/each}
   {#if canAddFeatures}
     <div class="place-holder"
-      ondragover="return false"
+      on:dragover|preventDefault={() => false}
       on:drop|preventDefault={e => dropHandler(e, $selectedFeatures.length)}
     >
       <p class="instruction"
@@ -388,17 +319,15 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 </div>
 
 <div class="all-features feature-box">
-  {#each featuresToShow as feature  (feature)}
+  {#each featuresToShow as feature (feature)}
     <div animate:flip={{ duration: 300 }}>
       <FeatureRow
         {feature}
         {canAddFeatures}
         isSelected={false}
-        relevance={featureToRelevance.get(feature) || 0}
-        on:dragstart={startHandler}
+        relevance={featureToRelevance.get(feature) ?? 0}
+        on:dragstart={(e) => startHandler(e, feature)}
         on:dragend={endHandler}
-        on:add={() => plusClickHandler(feature)}
-        on:edit={() => onFeatureEdit(feature)}
       />
     </div>
   {/each}
@@ -438,6 +367,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   .icon-tabler-sort-ascending-numbers:hover,
   .icon-tabler-sort-descending-numbers:hover {
     color: var(--blue);
+    cursor: pointer;
   }
 
   .icon-tabler + .icon-tabler {

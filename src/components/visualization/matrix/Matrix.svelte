@@ -1,43 +1,44 @@
-<script>
-  import Square from "./Square.svelte";
+<script lang="ts">
+  import ClassificationSquare from "./ClassificationSquare.svelte";
+  import RegressionSquare from "./RegressionSquare.svelte";
+  import ClassificationBars from "./ClassificationBars.svelte";
+  import RegressionBars from "./RegressionBars.svelte";
   import Grid from "./Grid.svelte";
   import XAxis from "./XAxis.svelte";
   import YAxis from "./YAxis.svelte";
   import Tooltip from "./Tooltip.svelte";
+  import ClassificationTooltipContent from "./ClassificationTooltipContent.svelte";
   import SizeLegend from "./SizeLegend.svelte";
-  import { data, metadata, selectedFeatures } from "../../../stores.js";
-  import { getScales, getPositionOfSquare } from "../../../DataTransformer.js"
+  import { data, features, selectedFeatures, showPredictions, showSize, visKind } from "../../../stores";
+  import { getScales, getPositionOfSquare } from "../../../lib/Squares"
   import { onMount } from 'svelte';
   import * as d3 from "d3";
+  import type { Node } from "../../../types";
 
-  export let showPredictions;
-  export let showSize;
-  export let color;
-
-  let div;
+  let div: HTMLDivElement;
 
   // size of the div that the matrix is in
-  let width = 600;
-  let height = 600;
+  let width: number = 600;
+  let height: number = 600;
 
   // bounding box of the div
   let divBoundingBox = { left: 0, right: 0, top: 0, bottom: 0 };
 
   // space between rows and columns in the matrix
-  const padding = 5;
+  const padding: number = 6;
 
   // height of one line of axis labels
-  const axisLineHeight = 20;
+  const axisLineHeight: number = 20;
 
   // feature objects that along the x axis
   $: xFeatures = $selectedFeatures
-    .filter((d, i) => i % 2 === 0)
-    .map((feat) => $metadata.features[feat]);
+    .filter((_, i) => i % 2 === 0)
+    .map((feat) => $features[feat]);
 
   // feature objects that are along the y axis
   $: yFeatures = $selectedFeatures
-    .filter((d, i) => i % 2 !== 0)
-    .map((feat) => $metadata.features[feat]);
+    .filter((_, i) => i % 2 !== 0)
+    .map((feat) => $features[feat]);
 
   // extra space needed for labels
   $: axisSpace = {
@@ -88,7 +89,25 @@
   // number of instances in square to side length
   $: sideLength = d3.scaleSqrt()
     .domain([0, d3.max($data, (d) => d.size)])
-    .range([0, maxSideLength]);
+    .range([0, maxSideLength])
+    .unknown(0);
+
+  // maximum count of any slice
+  $: maxBarCount = d3.max(
+    $data,
+    node => {
+      const parts = $showPredictions ? node.predictions : node.groundTruth;
+      type Part =
+        | { x0: number, x1: number, offset: number, size: number }
+        | { label: string, size: number, correct: boolean, offset: number };
+      return d3.max(parts, (d: Part) => d.size)
+    }
+  );
+
+  $: barLength = d3.scaleLinear<number, number, number>()
+      .domain([0, maxBarCount])
+      .range([0, maxSideLength])
+      .unknown(0);
 
   // space between the top (left) of the div and the top (left) of the matrix
   // this centers the matrix in the div
@@ -100,7 +119,7 @@
 
   // tooltip
 
-  let tooltipData = null;
+  let tooltipData: Node = null;
   let mouse = { x: 0, y: 0 };
 
   // the boundaries that we want to keep the tooltip inside of
@@ -112,7 +131,7 @@
     bottom: divBoundingBox.bottom
   };
 
-  function handleMousemove(event, d) {
+  function handleMousemove(event: MouseEvent, d: Node) {
     mouse.x = event.clientX;
     mouse.y = event.clientY;
     tooltipData = d;
@@ -128,8 +147,9 @@
   onMount(() => setTimeout(resize, 200));
 
   function resize() {
-    divBoundingBox = div.getBoundingClientRect();
-    ({ width, height } = divBoundingBox);
+    const rect = div.getBoundingClientRect();
+    divBoundingBox = { top: rect.top, right: rect.right, bottom: rect.bottom, left: rect.left };
+    ({ width, height } = rect);
   }
 </script>
 
@@ -148,9 +168,12 @@
       <line x1="0" y1="0" x2="0" y2="3" style="stroke:white; stroke-width:3" />
     </pattern>
 
-    {#if showSize}
+    {#if $showSize}
       <g class="size-legend" transform="translate({leftSpace + padding},{height - margin.bottom})">
-        <SizeLegend scale={sideLength}/>
+        <SizeLegend
+          scale={$visKind === 'squares' ? sideLength : barLength}
+          title={$visKind === 'squares' ? 'Side length to number of instances' : 'Bar length to number of instances'}
+        />
       </g>
     {/if}
 
@@ -167,31 +190,67 @@
 
       <g class="squares">
         {#each $data as d}
-          <Square
-            x={getPositionOfSquare(d, xFeatures, xScales)}
-            y={getPositionOfSquare(d, yFeatures, yScales)}
-            sideLength={showSize ? sideLength(d.size) : maxSideLength}
-            {color}
-            {showPredictions}
-            {d}
-            padding={showSize
-              ? padding + (maxSideLength - sideLength(d.size)) / 2
-              : padding}
-            on:mousemove={event => handleMousemove(event, d)}
-            on:mouseleave={handleMouseleave}
-          />
+          {#if d.type === 'classification'}
+            {#if $visKind === 'squares'}
+              <ClassificationSquare
+                x={getPositionOfSquare(d.splits, xFeatures, xScales)}
+                y={getPositionOfSquare(d.splits, yFeatures, yScales)}
+                sideLength={$showSize ? sideLength(d.size) : maxSideLength}
+                {d}
+                padding={$showSize
+                  ? padding + (maxSideLength - sideLength(d.size)) / 2
+                  : padding}
+                on:mousemove={event => handleMousemove(event, d)}
+                on:mouseleave={handleMouseleave}
+              />
+            {:else}
+              <ClassificationBars
+                x={getPositionOfSquare(d.splits, xFeatures, xScales)}
+                y={getPositionOfSquare(d.splits, yFeatures, yScales)}
+                sideLength={maxSideLength}
+                length={barLength}
+                {d}
+                padding={padding}
+                on:mousemove={event => handleMousemove(event, d)}
+                on:mouseleave={handleMouseleave}
+              />
+            {/if}
+          {:else if d.type === 'regression'}
+            {#if $visKind === 'squares'}
+              <RegressionSquare
+                x={getPositionOfSquare(d.splits, xFeatures, xScales)}
+                y={getPositionOfSquare(d.splits, yFeatures, yScales)}
+                sideLength={$showSize ? sideLength(d.size) : maxSideLength}
+                {d}
+                padding={$showSize
+                  ? padding + (maxSideLength - sideLength(d.size)) / 2
+                  : padding}
+                on:mousemove={event => handleMousemove(event, d)}
+                on:mouseleave={handleMouseleave}
+              />
+            {:else}
+              <RegressionBars
+                x={getPositionOfSquare(d.splits, xFeatures, xScales)}
+                y={getPositionOfSquare(d.splits, yFeatures, yScales)}
+                sideLength={maxSideLength}
+                length={barLength}
+                {d}
+                padding={padding}
+                on:mousemove={event => handleMousemove(event, d)}
+                on:mouseleave={handleMouseleave}
+              />
+            {/if}
+          {/if}
         {/each}
       </g>
     </g>
   </svg>
   {#if tooltipData}
-    <Tooltip
-      {...mouse}
-      {bounds}
-      {showPredictions}
-      d={tooltipData}
-      {color}
-    />
+    <Tooltip {...mouse} {bounds} d={tooltipData}>
+      {#if tooltipData.type === 'classification'}
+        <ClassificationTooltipContent d={tooltipData}/>
+      {/if}
+    </Tooltip>
   {/if}
 </div>
 

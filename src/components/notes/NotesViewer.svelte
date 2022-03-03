@@ -1,32 +1,34 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { selectedFeatures, metadata, filters, fullDataset, dataset } from '../../stores.js';
-  import { cloneSelectedFeaturesMetadata, addSelectedSetToFilters, cloneFilters, getMetadata, getFilteredDataset } from '../../DataTransformer.js';
-  import marked from 'marked';
-  import DOMPurify from 'dompurify';
+  import { selectedFeatures, features, filters, fullDataset, dataset } from '../../stores';
+  import { cloneSelectedFeatures, getFeatures } from '../../lib/Features';
+  import { addSelectedSetToFilters, cloneFilters, getFilteredDataset } from '../../lib/Filters';
+  import { marked } from 'marked';
+  import { sanitize } from 'dompurify';
+  import type { Dataset, Filter, Features, Note } from '../../types';
 
-  export let note = null;
-  export let edit = false;
+  export let note: Note = null;
+  export let edit: boolean = false;
 
   const dispatch = createEventDispatcher();
 
   function gotoState() {
-    const selected = [...note.state.selectedFeatures];
-    const filts = addSelectedSetToFilters(cloneFilters(note.state.filters));
-    const features = cloneSelectedFeaturesMetadata(note.state.selectedFeaturesMetadata, selected);
+    const selected: string[] = [...note.state.selectedFeatures];
+    const filts: Filter[] = addSelectedSetToFilters(cloneFilters(note.state.filters));
+    const copiedFeatures: Features = cloneSelectedFeatures(note.state.selectedFeaturesInfo, selected);
 
     if(filts.length === 0 && $filters.length === 0) {
-      $metadata.features = Object.assign($metadata.features, features);
-      $metadata = $metadata;
+      // overwrite selected features
+      $features = Object.assign($features, copiedFeatures);
     } else {
-      const data = getFilteredDataset($fullDataset, filts);
-      const md = getMetadata(data);
-      md.features = Object.assign(md.features, features)
+      const data: Dataset = getFilteredDataset($fullDataset, filts);
+      const allFeatures: Features = getFeatures(data);
       $dataset = data;
-      $metadata = md;
+      // overwrite selected features
+      $features = Object.assign(allFeatures, copiedFeatures);
     }
 
-    $selectedFeatures = selected;
+    selectedFeatures.put(selected);
     $filters = filts;
   }
 </script>
@@ -67,7 +69,7 @@
     ></textarea>
   {:else}
     <div class="viewer content small hyphen">
-      {@html DOMPurify.sanitize(marked(note.body))}
+      {@html sanitize(marked(note.body))}
     </div>
   {/if}
 {/if}

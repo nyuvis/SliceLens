@@ -1,0 +1,63 @@
+{
+  "age": {
+    "name": "age",
+    "extent": [20, 80],
+    "splitType": "interval",
+    "numBins": 3,
+    "thresholds": [40, 60],
+    "values": [
+      "[20, 40)",
+      "[40, 60)",
+      "[60, 80]"
+    ],
+    "format": ".2~f",
+    "type": "Q"
+  },
+  "favoriteNumber": {
+    "name": "favoriteNumber",
+    "values": ["1", "3", "5"],
+    "categories": ["1", "3", "5"],
+    "valueToGroup": {
+      "1": "1",
+      "3": "3",
+      "5": "5"
+    },
+    "type": "C"
+  },
+  "job": {
+    "name": "job",
+    "values": [
+      "education",
+      "other"
+    ],
+    "categories": [
+      "accountant",
+      "bartender",
+      "student",
+      "teacher",
+      "zookeeper"
+    ],
+    "valueToGroup": {
+      "accountant": "other",
+      "bartender": "other",
+      "student": "education",
+      "teacher": "education",
+      "zookeeper": "other"
+    },
+    "type": "C"
+  },
+  "height": {
+    "name": "height",
+    "extent": [59, 80],
+    "splitType": "interval",
+    "numBins": 3,
+    "thresholds": [66, 73],
+    "values": [
+      "[59, 66)",
+      "[66, 73)",
+      "[73, 80]"
+    ],
+    "format": ".2~f",
+    "type": "Q"
+  }
+}

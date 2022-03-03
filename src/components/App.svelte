@@ -1,18 +1,21 @@
-<script>
+<script lang="ts">
   import DatasetSelector from './controls/DatasetSelector.svelte';
   import FeatureSelector from './controls/FeatureSelector.svelte';
   import FilteringButton from './controls/filtering/FilteringButton.svelte';
   import VisualizationSettings from './controls/VisualizationSettings.svelte';
   import Chart from './visualization/matrix/Chart.svelte';
   import NotesSidebar from './notes/NotesSidebar.svelte';
-  import { metadata } from '../stores.js';
+  import { dataset, features, data } from '../stores';
+  import type { FeatureExtent } from '../types';
 
-  let showPredictions = false;
-  let showSize = true;
   // feature name to feature values for categorical features
   // feature name to extent for quantitative features
   // on the whole dataset
-  let featureExtents = {};
+  let featureExtents: Record<string, FeatureExtent> = null;
+
+  // @ts-ignore
+  // defined in rollup.config.js
+  const filtersEnabled: boolean = FILTERS_ENABLED;
 </script>
 
 <div id="container">
@@ -35,22 +38,27 @@
     </div>
     <DatasetSelector on:load={({detail}) => featureExtents = detail}/>
 
-    <!-- defined in rollup.config.js -->
-    <!-- svelte-ignore missing-declaration -->
-    {#if FILTERS_ENABLED}
+    {#if filtersEnabled && featureExtents !== null && $dataset !== null && $features !== null}
       <FilteringButton {featureExtents}/>
     {/if}
 
-    <VisualizationSettings bind:showSize bind:showPredictions/>
-    <FeatureSelector/>
+    {#if $dataset !== null}
+      <VisualizationSettings/>
+    {/if}
+
+    {#if $features !== null && $dataset !== null}
+      <FeatureSelector/>
+    {/if}
   </div>
 
-  {#if $metadata !== null}
-    <Chart {showPredictions} {showSize} />
+  {#if $features !== null && $dataset !== null && $data !== null}
+    <Chart/>
   {/if}
 
   <div id="notes" class="sidebar">
-    <NotesSidebar/>
+    {#if $features !== null && $dataset !== null}
+      <NotesSidebar/>
+    {/if}
   </div>
 </div>
 

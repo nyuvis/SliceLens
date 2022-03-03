@@ -1,21 +1,23 @@
-<script>
+<script lang="ts">
   import NotesExporter from './NotesExporter.svelte';
   import NotesImporter from './NotesImporter.svelte';
   import NotesViewer from './NotesViewer.svelte';
   import LogExporter from './LogExporter.svelte';
-  import { selectedFeatures, metadata, dataset, filters } from '../../stores.js';
-  import { cloneSelectedFeaturesMetadata, cloneFilters } from '../../DataTransformer.js';
+  import { selectedFeatures, features, dataset, filters } from '../../stores';
+  import { cloneSelectedFeatures } from '../../lib/Features';
+  import { cloneFilters } from '../../lib/Filters';
+  import type { Note } from '../../types';
 
-  let notes = [];
+  let notes: Note[] = [];
 
   $: notesForDataset = notes.filter(d => d.state === null || d.state.dataset === $dataset.name);
 
-  let selectedIndex = -1;
-  let selectedNote = null;
-  let edit = false;
-  let noteCounter = 0;
+  let selectedIndex: number = -1;
+  let selectedNote: Note = null;
+  let edit: boolean = false;
+  let noteCounter: number = 0;
 
-  function selectNote(note, i) {
+  function selectNote(note: Note, i: number) {
     edit = false;
     selectedIndex = i;
     selectedNote = note;
@@ -59,7 +61,7 @@
   function linkNote() {
     selectedNote.state = {
       selectedFeatures: [...$selectedFeatures],
-      selectedFeaturesMetadata: cloneSelectedFeaturesMetadata($metadata.features, $selectedFeatures),
+      selectedFeaturesInfo: cloneSelectedFeatures($features, $selectedFeatures),
       dataset: $dataset.name,
       filters: cloneFilters($filters),
     };

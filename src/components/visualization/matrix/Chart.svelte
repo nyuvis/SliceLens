@@ -1,20 +1,13 @@
-<script>
-  import { metadata } from '../../../stores.js';
+<script lang="ts">
   import ColorLegend from './ColorLegend.svelte';
   import Matrix from './Matrix.svelte';
-  import * as d3 from 'd3';
-
-  export let showPredictions;
-  export let showSize;
-
-  $: color = d3.scaleOrdinal()
-      .domain($metadata.labelValues)
-      .range(d3.schemeCategory10);
+  import Title from './Title.svelte';
 </script>
 
 <div id="chart-container">
-  <ColorLegend {showPredictions} {color}/>
-  <Matrix {showPredictions} {showSize} {color}/>
+  <ColorLegend/>
+  <Title/>
+  <Matrix/>
 </div>
 
 <style>

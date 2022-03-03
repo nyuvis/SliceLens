@@ -5,17 +5,17 @@
   https://stackoverflow.com/questions/19721439/download-json-object-as-a-file-from-browser
 -->
 
-<script>
-  import { logs } from '../../stores.js';
+<script lang="ts">
+  import { logs } from '../../stores';
 
-  let download;
+  let download: HTMLAnchorElement;
 
   function onclick() {
     if (!download) {
       return;
     }
-    const prefix = 'data:text/plain;charset=utf-8,';
-    const url = prefix + encodeURIComponent(JSON.stringify($logs));
+    const prefix: string = 'data:text/plain;charset=utf-8,';
+    const url: string = prefix + encodeURIComponent(JSON.stringify($logs));
     download.href = url;
     download.click();
   }

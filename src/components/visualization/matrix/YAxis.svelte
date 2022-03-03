@@ -1,10 +1,11 @@
-<script>
+<script lang="ts">
   import Label from './Label.svelte';
+  import type { Feature } from '../../../types';
 
-  export let height;
-  export let yScales;
-  export let yFeatures;
-  export let axisLineHeight;
+  export let height: number;
+  export let yScales: d3.ScaleBand<number>[];
+  export let yFeatures: Feature[];
+  export let axisLineHeight: number;
 </script>
 
 {#if yScales.length > 0}

@@ -1,14 +1,15 @@
-<script>
-  import { filters } from '../../../stores.js';
-  import { isNumeric } from '../../../DataTransformer.js';
+<script lang="ts">
+  import { filters } from '../../../stores';
+  import { isNumeric } from '../../../lib/Utils';
+  import type { QuantitativeFilter } from '../../../types';
 
-  export let filter;
-  export let extent;
+  export let filter: QuantitativeFilter;
+  export let extent: [number, number];
 
   $: [minValue, maxValue] = extent;
 
   // changing filter for numeric feature
-  function onNumberChange(filter) {
+  function onNumberChange() {
     filter.valid =
       isNumeric(filter.min) &&
       isNumeric(filter.max) &&

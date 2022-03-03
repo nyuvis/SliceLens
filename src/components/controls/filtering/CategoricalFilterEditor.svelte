@@ -1,8 +1,9 @@
-<script>
-  import { filters } from '../../../stores.js';
+<script lang="ts">
+  import { filters } from '../../../stores';
+  import type { CategoricalFilter } from '../../../types';
 
-  export let filter;
-  export let categories;
+  export let filter: CategoricalFilter;
+  export let categories: string[];
 
   // changing filter for categorical feature
   function onCheckboxSelectionChange() {

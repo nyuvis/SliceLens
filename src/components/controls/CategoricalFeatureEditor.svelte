@@ -1,20 +1,27 @@
-<script>
+<script lang="ts">
   import { flip } from "svelte/animate";
   import Barchart from '../visualization/barchart/Barchart.svelte';
   import Dropdown from './Dropdown.svelte';
   import MenuItem from './MenuItem.svelte';
   import QuestionBox from "../QuestionBox.svelte";
-  import { dataset, metadata } from "../../stores.js";
-  import { getData } from "../../DataTransformer.js";
-
+  import { changeSinceGeneratingSuggestion, dataset, features } from "../../stores";
+  import { cloneCategoricalFeature, areFeaturesEqual } from "../../lib/Features";
+  import { getClassificationData } from "../../lib/Data";
   import * as d3 from "d3";
+  import type { CategoricalFeature, Node } from "../../types";
 
   // feature transformation
 
-  export let feature;
+  export let feature: CategoricalFeature;
+
+  const original = cloneCategoricalFeature(feature);
 
   export function onWindowClose() {
     updateFeature();
+
+    if (!areFeaturesEqual(original, feature)) {
+      $changeSinceGeneratingSuggestion = true;
+    }
   }
 
   function updateFeature() {
@@ -28,26 +35,28 @@
     feature.values = groups.map(d => d.name);
   }
 
-  let uid = 0;
+  let uid: number = 0;
 
-  let groupToValues = d3.rollup(
+  let groupToValues: Map<string, Set<string>> = d3.rollup(
     Object.entries(feature.valueToGroup)
       .map(([value, group]) => ({value, group})),
     v => new Set(v.map(d => d.value)),
     d => d.group
   );
 
-  let groups = feature.values.map(d => ({
-    name: new String(d),
+  type Group = { name: string, values: Set<string>, id: number };
+
+  let groups: Group[] = feature.values.map(d => ({
+    name: d,
     values: groupToValues.get(d),
     id: uid++
   }));
 
   // feature editing
 
-  let editingGroupName = null;
+  let editingGroupName: number = null;
 
-  function onEditName(i) {
+  function onEditName(i: number) {
     editingGroupName = i;
   }
 
@@ -56,7 +65,7 @@
   }
 
   function onClickNewGroup() {
-    const group = {
+    const group: Group = {
       name: "New",
       id: uid++,
       values: new Set([])
@@ -65,7 +74,7 @@
     editingGroupName = 0;
   }
 
-  function onClickDeleteGroup(i) {
+  function onClickDeleteGroup(i: number) {
     if (i < groups.length) {
       groups.splice(i, 1);
       groups = groups;
@@ -80,22 +89,30 @@
     }];
   }
 
+  function saveOnEnter(e: KeyboardEvent) {
+    if (e.key === 'Enter') {
+      onSaveName();
+    }
+  }
+
   // sorting
 
   function onClickSortCount() {
     updateFeature();
 
-    const data = getData($metadata, [feature.name], $dataset);
+    const data: Node[] = ($dataset.type === 'classification') ?
+        getClassificationData($features, [feature.name], $dataset) :
+        [];
 
-    const valueToCount = new Map(data.map(d => {
+    const valueToCount: Map<string, number> = new Map(data.map(d => {
       const valueIndex = d.splits.get(feature.name);
       const value = feature.values[valueIndex];
       return [value, d.size];
     }));
 
     groups = groups.sort((a, b) => d3.descending(
-      valueToCount.get(a.name) || 0,
-      valueToCount.get(b.name) || 0
+      valueToCount.get(a.name) ?? 0,
+      valueToCount.get(b.name) ?? 0
     ));
   }
 
@@ -105,18 +122,18 @@
 
   // dragging
 
-  let groupBeingDragged = null;
-  let groupBeneath = null;
-  let valueDragInProgress = false;
-  let groupDragInProgress = false;
-  let groupHandleHover = null;
+  let groupBeingDragged: number = null;
+  let groupBeneath: number = null;
+  let valueDragInProgress: boolean = false;
+  let groupDragInProgress: boolean = false;
+  let groupHandleHover: number = null;
 
   $: if (!groupDragInProgress) {
     groupBeingDragged = null;
     groupHandleHover = null;
   }
 
-  function dropHandler(event, endGroupIndex) {
+  function dropHandler(event: DragEvent, endGroupIndex: number) {
     const item = JSON.parse(event.dataTransfer.getData("text"));
 
     valueDragInProgress = false;
@@ -139,7 +156,7 @@
     }
   }
 
-  function onValueDragStart(event, groupIndex, value) {
+  function onValueDragStart(event: DragEvent, groupIndex: number, value: string) {
     valueDragInProgress = true;
 
     const item = {
@@ -155,7 +172,7 @@
     groupBeneath = null;
   }
 
-  function onGroupDragStart(event, groupIndex) {
+  function onGroupDragStart(event: DragEvent, groupIndex: number) {
     groupDragInProgress = true;
     groupBeingDragged = groupIndex;
     const item = {
@@ -170,11 +187,11 @@
     groupBeneath = null;
   }
 
-  function onDragEnter(i) {
+  function onDragEnter(i: number) {
     groupBeneath = i;
   }
 
-  function getBorderClass(currentIndex, overIndex, startIndex, groupDragInProgress) {
+  function getBorderClass(currentIndex: number, overIndex: number, startIndex: number, groupDragInProgress: boolean): string {
     if (
       !groupDragInProgress ||
       startIndex === null ||
@@ -219,7 +236,7 @@
   {#each groups as { name, id, values }, i (id)}
     <div
       class="group-container {getBorderClass(i, groupBeneath, groupBeingDragged, groupDragInProgress)}"
-      ondragover="return false"
+      on:dragover|preventDefault={() => false}
       on:drop|preventDefault={e => dropHandler(e, i)}
       on:dragenter|stopPropagation={() => onDragEnter(i)}
       animate:flip={{ duration: 300 }}>
@@ -276,11 +293,7 @@
                 class="bold group-name-input"
                 bind:value={name}
                 size={Math.max(name.length, 1)}
-                on:keydown={(e) => {
-                  if (e.key === 'Enter') {
-                    onSaveName();
-                  }
-                }}
+                on:keydown={saveOnEnter}
                 autofocus
               />
               <div class="gap"></div>
@@ -298,7 +311,7 @@
             <div
               class="value small"
               draggable="true"
-              on:dragstart|stopPropagation={(event) => onValueDragStart(event, i, value)}
+              on:dragstart|stopPropagation={event => onValueDragStart(event, i, value)}
               on:dragend={onValueDragEnd}>
               {value}
             </div>
