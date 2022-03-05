@@ -172,19 +172,34 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       that feature.
 
       <ul>
-        <li>
-          <b>Purity</b> gives higher rating to features that result in the
-          subsets with lower weighted average entropy.
-        </li>
-        <li>
-          <b>Error deviation</b> gives higher rating to features that lead to subsets
-          with higher standard deviation of percent error.
-        </li>
-        <li>
-          <b>Error count</b> and <b>Error percent</b> give higher
-          ratings to features that lead to subsets with higher
-          max number or percent of errors, respectively.
-        </li>
+        {#if $dataset.type === 'classification'}
+          <li>
+            <b>Purity</b> gives higher rating to feature combinations that result in the
+            subsets with lower weighted average entropy.
+          </li>
+          {#if $dataset.hasPredictions}
+            <li>
+              <b>Error deviation</b> gives higher rating to features combinations that lead to subsets
+              with higher standard deviation of percent error.
+            </li>
+            <li>
+              <b>Error count</b> and <b>Error percent</b> give higher
+              ratings to features that lead to subsets with higher
+              max number or percent of errors, respectively.
+            </li>
+          {/if}
+        {:else}
+          <li>
+            <b>Similarity</b> gives higher rating to features that result in the
+            subsets with lower average standard deviation.
+          </li>
+          {#if $dataset.hasPredictions}
+            <li>
+              <b>MSE deviation</b> gives higher rating to features that lead to subsets
+              with higher standard deviation of mean squared error.
+            </li>
+          {/if}
+        {/if}
       </ul>
     </QuestionBox>
   </div>

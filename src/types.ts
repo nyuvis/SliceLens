@@ -146,3 +146,7 @@ export type Note = {
   body: string,
   state: NoteState
 };
+
+// visualization settings
+
+export const visKinds = ['squares', 'bars vertical', 'bars horizontal'] as const;

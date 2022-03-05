@@ -1,6 +1,6 @@
 import { writable, derived, Writable, Readable } from 'svelte/store';
 import { getClassificationData, getRegressionData } from './lib/Data';
-import type { Dataset, Filter, Features, Node } from './types';
+import type { Dataset, Filter, Features, Node, visKinds } from './types';
 import * as d3 from 'd3';
 
 // un-filtered dataset
@@ -85,10 +85,8 @@ export const showSize: Writable<boolean> = writable(true);
 export const compareToWhole: Writable<boolean> = writable(true);
 
 // visualization type
-export const visKind: Writable<'squares'|'bars'> = writable('squares');
-
-// visualization orientation
-export const visOrientation: Writable<'horizontal'|'vertical'> = writable('vertical');
+// https://stackoverflow.com/questions/36836011/checking-validity-of-string-literal-union-type-at-runtime
+export const visKind: Writable<typeof visKinds[number]> = writable('squares');
 
 // color scale
 export const color: Readable<d3.ScaleOrdinal<string, string, string>|d3.ScaleThreshold<number, string, string>> = derived(

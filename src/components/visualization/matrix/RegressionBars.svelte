@@ -1,8 +1,9 @@
 <script lang="ts">
   import * as d3 from 'd3';
-  import { showPredictions, color, dataset, visOrientation } from "../../../stores";
+  import { showPredictions, color, dataset } from "../../../stores";
   import type { RegressionNode, RegressionDataset } from '../../../types';
 
+  export let vertical: boolean;
   export let length: d3.ScaleLinear<number, number, number>;
   export let sideLength: number;
   export let padding: number;
@@ -23,7 +24,7 @@
   <g transform='translate({x + padding},{y + padding})' on:mousemove on:mouseleave>
     <!-- this background rectangle is so the tooltip shows up when over space between bars-->
     <rect width={sideLength} height={sideLength} fill="white"/>
-    {#if $visOrientation === 'vertical'}
+    {#if vertical}
       {#each bins as {x0, x1, size}}
         <rect
           x={position(x0)}

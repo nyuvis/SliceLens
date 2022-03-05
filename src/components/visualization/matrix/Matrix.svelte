@@ -205,6 +205,7 @@
               />
             {:else}
               <ClassificationBars
+                vertical={$visKind === 'bars vertical'}
                 x={getPositionOfSquare(d.splits, xFeatures, xScales)}
                 y={getPositionOfSquare(d.splits, yFeatures, yScales)}
                 sideLength={maxSideLength}
@@ -230,6 +231,7 @@
               />
             {:else}
               <RegressionBars
+                vertical={$visKind === 'bars vertical'}
                 x={getPositionOfSquare(d.splits, xFeatures, xScales)}
                 y={getPositionOfSquare(d.splits, yFeatures, yScales)}
                 sideLength={maxSideLength}
