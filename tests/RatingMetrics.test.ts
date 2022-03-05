@@ -311,4 +311,252 @@ test('get error count for three classes', () => {
   assert.is(getErrorCountForSquare(square), 26);
 });
 
+test('get valid metrics - classification - predictions', () => {
+  const actual = getValidMetrics('classification', true, false);
+
+  const expectedCriteria = [
+    {
+      title: 'Ground Truth Metrics',
+      requiresPredictions: false,
+      options: [
+        { value: 'entropy', display: 'Purity', type: 'classification', requiresPredictions: false },
+      ]
+    },
+    {
+      title: 'Prediction Metrics',
+      requiresPredictions: true,
+      options: [
+        { value: 'errorDeviation', display: 'Error deviation', type: 'classification', requiresPredictions: true },
+        { value: 'errorCount', display: 'Error count', type: 'classification', requiresPredictions: true },
+        { value: 'errorPercent', display: 'Error percent', type: 'classification', requiresPredictions: true },
+      ]
+    },
+    {
+      title: 'Disable Metrics',
+      requiresPredictions: false,
+      options: [
+        { value: 'none', display: 'Disable', type: 'classification', requiresPredictions: false },
+      ]
+    }
+  ];
+
+  assert.equal(actual.criteria, expectedCriteria);
+  assert.equal(
+    actual.defaultCriterion,
+    { value: 'entropy', display: 'Purity', type: 'classification', requiresPredictions: false }
+  );
+});
+
+test('get valid metrics - classification - no predictions', () => {
+  const actual = getValidMetrics('classification', false, false);
+
+  const expectedCriteria = [
+    {
+      title: 'Ground Truth Metrics',
+      requiresPredictions: false,
+      options: [
+        { value: 'entropy', display: 'Purity', type: 'classification', requiresPredictions: false },
+      ]
+    },
+    {
+      title: 'Disable Metrics',
+      requiresPredictions: false,
+      options: [
+        { value: 'none', display: 'Disable', type: 'classification', requiresPredictions: false },
+      ]
+    }
+  ];
+
+  assert.equal(actual.criteria, expectedCriteria);
+  assert.equal(
+    actual.defaultCriterion,
+    { value: 'entropy', display: 'Purity', type: 'classification', requiresPredictions: false }
+  );
+});
+
+test('get valid metrics - classification - predictions - choose none', () => {
+  const actual = getValidMetrics('classification', true, true);
+
+  const expectedCriteria = [
+    {
+      title: 'Ground Truth Metrics',
+      requiresPredictions: false,
+      options: [
+        { value: 'entropy', display: 'Purity', type: 'classification', requiresPredictions: false },
+      ]
+    },
+    {
+      title: 'Prediction Metrics',
+      requiresPredictions: true,
+      options: [
+        { value: 'errorDeviation', display: 'Error deviation', type: 'classification', requiresPredictions: true },
+        { value: 'errorCount', display: 'Error count', type: 'classification', requiresPredictions: true },
+        { value: 'errorPercent', display: 'Error percent', type: 'classification', requiresPredictions: true },
+      ]
+    },
+    {
+      title: 'Disable Metrics',
+      requiresPredictions: false,
+      options: [
+        { value: 'none', display: 'Disable', type: 'classification', requiresPredictions: false },
+      ]
+    }
+  ];
+
+  assert.equal(actual.criteria, expectedCriteria);
+  assert.equal(
+    actual.defaultCriterion,
+    { value: 'none', display: 'Disable', type: 'classification', requiresPredictions: false }
+  );
+});
+
+test('get valid metrics - classification - no predictions - choose none', () => {
+  const actual = getValidMetrics('classification', false, true);
+
+  const expectedCriteria = [
+    {
+      title: 'Ground Truth Metrics',
+      requiresPredictions: false,
+      options: [
+        { value: 'entropy', display: 'Purity', type: 'classification', requiresPredictions: false },
+      ]
+    },
+    {
+      title: 'Disable Metrics',
+      requiresPredictions: false,
+      options: [
+        { value: 'none', display: 'Disable', type: 'classification', requiresPredictions: false },
+      ]
+    }
+  ];
+
+  assert.equal(actual.criteria, expectedCriteria);
+  assert.equal(
+    actual.defaultCriterion,
+    { value: 'none', display: 'Disable', type: 'classification', requiresPredictions: false }
+  );
+});
+
+test('get valid metrics - regression - predictions', () => {
+  const actual = getValidMetrics('regression', true, false);
+
+  const expectedCriteria = [
+    {
+      title: 'Ground Truth Metrics',
+      requiresPredictions: false,
+      options: [
+        { value: 'similarity', display: 'Similarity', type: 'regression', requiresPredictions: false },
+      ]
+    },
+    {
+      title: 'Prediction Metrics',
+      requiresPredictions: true,
+      options: [
+        { value: 'mseDeviation', display: 'MSE Deviation', type: 'regression', requiresPredictions: true },
+      ]
+    },
+    {
+      title: 'Disable Metrics',
+      requiresPredictions: false,
+      options: [
+        { value: 'none', display: 'Disable', type: 'regression', requiresPredictions: false },
+      ]
+    }
+  ];
+
+  assert.equal(actual.criteria, expectedCriteria);
+  assert.equal(
+    actual.defaultCriterion,
+    { value: 'similarity', display: 'Similarity', type: 'regression', requiresPredictions: false },
+  );
+});
+
+test('get valid metrics - regression - no predictions', () => {
+  const actual = getValidMetrics('regression', false, false);
+
+  const expectedCriteria = [
+    {
+      title: 'Ground Truth Metrics',
+      requiresPredictions: false,
+      options: [
+        { value: 'similarity', display: 'Similarity', type: 'regression', requiresPredictions: false },
+      ]
+    },
+    {
+      title: 'Disable Metrics',
+      requiresPredictions: false,
+      options: [
+        { value: 'none', display: 'Disable', type: 'regression', requiresPredictions: false },
+      ]
+    }
+  ];
+
+  assert.equal(actual.criteria, expectedCriteria);
+  assert.equal(
+    actual.defaultCriterion,
+    { value: 'similarity', display: 'Similarity', type: 'regression', requiresPredictions: false },
+  );
+});
+
+test('get valid metrics - regression - predictions - choose none', () => {
+  const actual = getValidMetrics('regression', true, true);
+
+  const expectedCriteria = [
+    {
+      title: 'Ground Truth Metrics',
+      requiresPredictions: false,
+      options: [
+        { value: 'similarity', display: 'Similarity', type: 'regression', requiresPredictions: false },
+      ]
+    },
+    {
+      title: 'Prediction Metrics',
+      requiresPredictions: true,
+      options: [
+        { value: 'mseDeviation', display: 'MSE Deviation', type: 'regression', requiresPredictions: true },
+      ]
+    },
+    {
+      title: 'Disable Metrics',
+      requiresPredictions: false,
+      options: [
+        { value: 'none', display: 'Disable', type: 'regression', requiresPredictions: false },
+      ]
+    }
+  ];
+
+  assert.equal(actual.criteria, expectedCriteria);
+  assert.equal(
+    actual.defaultCriterion,
+    { value: 'none', display: 'Disable', type: 'regression', requiresPredictions: false }
+  );
+});
+
+test('get valid metrics - regression - no predictions - choose none', () => {
+  const actual = getValidMetrics('regression', false, true);
+
+  const expectedCriteria = [
+    {
+      title: 'Ground Truth Metrics',
+      requiresPredictions: false,
+      options: [
+        { value: 'similarity', display: 'Similarity', type: 'regression', requiresPredictions: false },
+      ]
+    },
+    {
+      title: 'Disable Metrics',
+      requiresPredictions: false,
+      options: [
+        { value: 'none', display: 'Disable', type: 'regression', requiresPredictions: false },
+      ]
+    }
+  ];
+
+  assert.equal(actual.criteria, expectedCriteria);
+  assert.equal(
+    actual.defaultCriterion,
+    { value: 'none', display: 'Disable', type: 'regression', requiresPredictions: false }
+  );
+});
+
 test.run();
