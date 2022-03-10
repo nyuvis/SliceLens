@@ -66,7 +66,7 @@ test('get classification data without predictions, no selected features', () => 
     throw new Error('wrong dataset type');
   }
 
-  const features: Features = readJson('features-2.json');
+  const features: Features = readJson('features-5.json');
 
   assert.equal(
     getClassificationData(features, [], dataset),
@@ -98,7 +98,7 @@ test('get classification data with predictions, no selected features', () => {
     throw new Error('wrong dataset type');
   }
 
-  const features: Features = readJson('features-1.json');
+  const features: Features = readJson('features-5.json');
 
   assert.equal(
     getClassificationData(features, [], dataset),
@@ -221,7 +221,7 @@ test('get classification data without predictions, two selected features', () =>
     throw new Error('wrong dataset type');
   }
 
-  const features: Features = readJson('features-2.json');
+  const features: Features = readJson('features-5.json');
   const data = getClassificationData(features, ['age', 'favoriteNumber'], dataset)
     .sort((a, b) => {
       return d3.ascending(
@@ -387,7 +387,7 @@ test('get classification data with predictions, two selected features', () => {
     throw new Error('wrong dataset type');
   }
 
-  const features: Features = readJson('features-1.json');
+  const features: Features = readJson('features-5.json');
 
   const data = getClassificationData(features, ['age', 'favoriteNumber'], dataset)
     .sort((a, b) => {

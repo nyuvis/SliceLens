@@ -202,16 +202,31 @@ function getFeatures(dataset: Dataset): Features {
       acc[val] = feature;
 
     } else if(isCategoricalFeature(values)){
-      const uniqueValues = Array.from(new Set(values)).sort();
+      // sort the feature values in descending order by their count in the dataset
+      const uniqueValues: string[] = d3.groupSort(values, g => -g.length, d => d);
+
+      // the number of groups to show by default, including other
+      const numDefaultGroups = 5;
+
+      // names that will be shown for the bin labels
+      const groupNames = uniqueValues.length <= numDefaultGroups ?
+        uniqueValues :
+        // slice(0, n) returns first n elements
+        // we want n-1, because adding other gives us n
+        [...uniqueValues.slice(0, numDefaultGroups - 1), 'Other'];
+
+      const valueToGroup = Object.fromEntries(
+        uniqueValues.length <= numDefaultGroups ?
+          d3.zip(uniqueValues, uniqueValues) :
+          uniqueValues.map((d, i) => i < numDefaultGroups - 1 ? [d, d] : [d, 'Other'])
+      );
 
       const feature: CategoricalFeature = {
         type: "C",
         name: val,
-        // values are the names of the groups
-        values: uniqueValues,
-        categories: [...uniqueValues],
-        // by default, each value is in its own group
-        valueToGroup: Object.fromEntries(d3.zip(uniqueValues, uniqueValues))
+        values: groupNames,
+        categories: uniqueValues,
+        valueToGroup: valueToGroup
       };
 
       acc[val] = feature;

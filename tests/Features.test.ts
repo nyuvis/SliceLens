@@ -521,11 +521,27 @@ test('get features with predictions', () => {
 
 test('get features without predictions', () => {
   const dataNoPred = readCsv('dataset-2.csv');
-  const expectedNoPred = readJson('features-2.json');
+  const expectedNoPred = readJson('features-1.json');
   assert.equal(
     getFeatures(dataNoPred),
     expectedNoPred
   );
+});
+
+test('get features with one categorical feature with many values', () => {
+  const data = readCsv('dataset-3.csv');
+  const actual = getFeatures(data);
+  const expected = readJson('features-6.json');
+
+  if (actual.letter.type !== 'C') {
+    throw new Error('wrong feature type');
+  }
+
+  assert.equal(actual.letter.name, expected.letter.name);
+  assert.equal(actual.letter.values, expected.letter.values);
+  assert.equal(actual.letter.categories.slice().sort(), actual.letter.categories.slice().sort());
+  assert.equal(actual.letter.valueToGroup, expected.letter.valueToGroup);
+  assert.equal(actual.letter.type, expected.letter.type);
 });
 
 test.run();

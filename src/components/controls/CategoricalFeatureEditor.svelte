@@ -6,51 +6,24 @@
   import QuestionBox from "../QuestionBox.svelte";
   import { changeSinceGeneratingSuggestion, dataset, features } from "../../stores";
   import { cloneCategoricalFeature, areFeaturesEqual } from "../../lib/Features";
-  import { getClassificationData } from "../../lib/Data";
-  import * as d3 from "d3";
-  import type { CategoricalFeature, Node } from "../../types";
-
-  // feature transformation
+  import type { CategoricalFeature } from "../../types";
+  import { getGroups, updateFeature, addGroup, deleteGroup, mergeGroups, splitGroups, sortGroupsByName, sortGroupsByCount, moveValue, moveGroup } from "../../lib/CategoricalFeatureEditing";
 
   export let feature: CategoricalFeature;
 
+  // save copy of feature before edits are made
   const original = cloneCategoricalFeature(feature);
 
+  let groups = getGroups(feature);
+
+  // this function gets called by FeatureEditor.svelte when the window is closed
   export function onWindowClose() {
-    updateFeature();
+    feature = updateFeature(feature, groups);
 
     if (!areFeaturesEqual(original, feature)) {
       $changeSinceGeneratingSuggestion = true;
     }
   }
-
-  function updateFeature() {
-    feature.valueToGroup = Object.fromEntries(
-      groups.map(({name, values}) =>
-        // values is a set
-        [...values].map(v => [v, name])
-      ).flat()
-    );
-
-    feature.values = groups.map(d => d.name);
-  }
-
-  let uid: number = 0;
-
-  let groupToValues: Map<string, Set<string>> = d3.rollup(
-    Object.entries(feature.valueToGroup)
-      .map(([value, group]) => ({value, group})),
-    v => new Set(v.map(d => d.value)),
-    d => d.group
-  );
-
-  type Group = { name: string, values: Set<string>, id: number };
-
-  let groups: Group[] = feature.values.map(d => ({
-    name: d,
-    values: groupToValues.get(d),
-    id: uid++
-  }));
 
   // feature editing
 
@@ -64,60 +37,39 @@
     editingGroupName = null;
   }
 
-  function onClickNewGroup() {
-    const group: Group = {
-      name: "New",
-      id: uid++,
-      values: new Set([])
-    };
-    groups = [group, ...groups];
-    editingGroupName = 0;
-  }
-
-  function onClickDeleteGroup(i: number) {
-    if (i < groups.length) {
-      groups.splice(i, 1);
-      groups = groups;
-    }
-  }
-
-  function onClickMergeGroups() {
-    groups = [{
-      name: "All values",
-      id: uid++,
-      values: new Set(Object.keys(feature.valueToGroup))
-    }];
-  }
-
   function saveOnEnter(e: KeyboardEvent) {
     if (e.key === 'Enter') {
       onSaveName();
     }
   }
 
+  function onClickNewGroup() {
+    groups = addGroup(groups);
+    editingGroupName = 0;
+  }
+
+  function onClickDeleteGroup(i: number) {
+    groups = deleteGroup(groups, i);
+  }
+
+  function onClickMergeGroups() {
+    // put all of the values into one group
+    groups = mergeGroups(feature);
+  }
+
+  function onClickSplitGroups() {
+    // put each value in its own group
+    groups = splitGroups(feature);
+  }
+
   // sorting
 
   function onClickSortCount() {
-    updateFeature();
-
-    const data: Node[] = ($dataset.type === 'classification') ?
-        getClassificationData($features, [feature.name], $dataset) :
-        [];
-
-    const valueToCount: Map<string, number> = new Map(data.map(d => {
-      const valueIndex = d.splits.get(feature.name);
-      const value = feature.values[valueIndex];
-      return [value, d.size];
-    }));
-
-    groups = groups.sort((a, b) => d3.descending(
-      valueToCount.get(a.name) ?? 0,
-      valueToCount.get(b.name) ?? 0
-    ));
+    groups = sortGroupsByCount(feature, groups, $dataset, $features);
   }
 
   function onClickSortName() {
-    groups = groups.sort((a, b) => d3.ascending(a.name, b.name));
+    groups = sortGroupsByName(groups);
   }
 
   // dragging
@@ -133,8 +85,12 @@
     groupHandleHover = null;
   }
 
+  type DragInfo =
+    | { type: "value", value: string, startGroupIndex: number }
+    | { type: "group", startGroupIndex: number };
+
   function dropHandler(event: DragEvent, endGroupIndex: number) {
-    const item = JSON.parse(event.dataTransfer.getData("text"));
+    const item: DragInfo = JSON.parse(event.dataTransfer.getData("text"));
 
     valueDragInProgress = false;
     groupDragInProgress = false;
@@ -145,21 +101,16 @@
     }
 
     if (item.type === "value") {
-      groups[item.startGroupIndex].values.delete(item.value);
-      groups[endGroupIndex].values.add(item.value);
-      groups = groups.filter(d => d.values.size !== 0);
+      groups = moveValue(item.value, item.startGroupIndex, endGroupIndex, groups);
     } else {
-      const group = groups[item.startGroupIndex];
-      groups.splice(item.startGroupIndex, 1);
-      groups.splice(endGroupIndex, 0, group);
-      groups = groups;
+      groups = moveGroup(item.startGroupIndex, endGroupIndex, groups);
     }
   }
 
   function onValueDragStart(event: DragEvent, groupIndex: number, value: string) {
     valueDragInProgress = true;
 
-    const item = {
+    const item: DragInfo = {
       startGroupIndex: groupIndex,
       value,
       type: "value"
@@ -175,7 +126,7 @@
   function onGroupDragStart(event: DragEvent, groupIndex: number) {
     groupDragInProgress = true;
     groupBeingDragged = groupIndex;
-    const item = {
+    const item: DragInfo = {
       startGroupIndex: groupIndex,
       type: "group"
     };
@@ -229,6 +180,7 @@
 
   <div class="gap"></div>
 
+  <button on:click={onClickSplitGroups}>Split All Groups</button>
   <button on:click={onClickMergeGroups}>Merge All Groups</button>
 </div>
 

@@ -1,0 +1,36 @@
+{
+  "letter": {
+    "name": "letter",
+    "values": ["a", "b", "c", "d", "Other"],
+    "categories": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"],
+    "valueToGroup": {
+      "a": "a",
+      "b": "b",
+      "c": "c",
+      "d": "d",
+      "e": "Other",
+      "f": "Other",
+      "g": "Other",
+      "h": "Other",
+      "i": "Other",
+      "j": "Other",
+      "k": "Other",
+      "l": "Other",
+      "m": "Other",
+      "n": "Other",
+      "o": "Other",
+      "p": "Other",
+      "q": "Other",
+      "r": "Other",
+      "s": "Other",
+      "t": "Other",
+      "u": "Other",
+      "v": "Other",
+      "w": "Other",
+      "x": "Other",
+      "y": "Other",
+      "z": "Other"
+    },
+    "type": "C"
+  }
+}
