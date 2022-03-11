@@ -1,8 +1,21 @@
+import * as d3 from "d3";
 import { test } from 'uvu';
 import * as assert from 'uvu/assert';
+import * as fs from "fs";
 
 import { getGroups, updateFeature, addGroup, deleteGroup, mergeGroups, splitGroups, sortGroupsByName, sortGroupsByCount, moveValue, moveGroup, resetUid } from '../src/lib/CategoricalFeatureEditing';
-import type { CategoricalFeature } from '../src/types';
+import { parseDataset } from '../src/lib/Dataset';
+import type { CategoricalFeature, Dataset } from '../src/types';
+
+function readCsv(filename: string): Dataset {
+  const data = d3.csvParse(
+    fs.readFileSync(`./tests/data/${filename}`).toString(),
+  );
+
+  const ds = parseDataset(data, filename);
+
+  return ds;
+}
 
 test.before.each(() => {
   resetUid();
@@ -272,6 +285,46 @@ test('move value - remove empty', () => {
   ];
 
   const actual = sortGroupsByName(groups);
+
+  assert.equal(actual, expected);
+});
+
+// sort groups by count
+
+test('sort groups by count', () => {
+  const dataset = readCsv('dataset-4.csv');
+
+  const feature: CategoricalFeature = {
+    type: 'C',
+    name: 'grade',
+    values: ['second', 'third', 'fifth', 'first', 'fourth',],
+    categories: ['second', 'third', 'fifth', 'first', 'fourth',],
+    valueToGroup: {
+      'first': 'first',
+      'second': 'second',
+      'third': 'third',
+      'fourth': 'fourth',
+      'fifth': 'fifth',
+    }
+  };
+
+  const groups = [
+    { name: 'second', values: new Set(['second']), id: 0 },
+    { name: 'third', values: new Set(['third']), id: 1 },
+    { name: 'fifth', values: new Set(['fifth']), id: 2 },
+    { name: 'first', values: new Set(['first']), id: 3 },
+    { name: 'fourth', values: new Set(['fourth']), id: 4 },
+  ];
+
+  const expected = [
+    { name: 'first', values: new Set(['first']), id: 3 },
+    { name: 'second', values: new Set(['second']), id: 0 },
+    { name: 'third', values: new Set(['third']), id: 1 },
+    { name: 'fourth', values: new Set(['fourth']), id: 4 },
+    { name: 'fifth', values: new Set(['fifth']), id: 2 },
+  ];
+
+  const actual = sortGroupsByCount(feature, groups, dataset, { grade: feature });
 
   assert.equal(actual, expected);
 });
