@@ -1,10 +1,10 @@
 <script lang="ts">
   import * as d3 from 'd3';
-  import { dataset, showPredictions, color } from "../../../stores";
+  import { dataset, showPredictions, color, showSize } from "../../../stores";
   import type { ClassificationDataset, ClassificationNode } from '../../../types';
 
   export let vertical: boolean;
-  export let length: d3.ScaleLinear<number, number, number>;
+  export let maxBarCountAcrossSubsets: number;
   export let sideLength: number;
   export let padding: number;
   export let x: number;
@@ -29,6 +29,13 @@
   $: parts = $showPredictions ?
       d.predictions :
       d.groundTruth;
+
+  $: maxPartSize = d3.max(parts, d => d.size);
+
+  $: length = d3.scaleLinear<number, number, number>()
+      .domain([0, $showSize ? maxBarCountAcrossSubsets : maxPartSize])
+      .range([0, sideLength])
+      .unknown(0);
 </script>
 
 {#if !("invertExtent" in $color)}

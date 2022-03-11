@@ -1,10 +1,10 @@
 <script lang="ts">
   import * as d3 from 'd3';
-  import { showPredictions, color, dataset } from "../../../stores";
+  import { showPredictions, color, dataset, showSize } from "../../../stores";
   import type { RegressionNode, RegressionDataset } from '../../../types';
 
   export let vertical: boolean;
-  export let length: d3.ScaleLinear<number, number, number>;
+  export let maxBarCountAcrossSubsets: number;
   export let sideLength: number;
   export let padding: number;
   export let x: number;
@@ -18,6 +18,13 @@
   $: bins = $showPredictions ?
       d.predictions :
       d.groundTruth;
+
+  $: maxBinSize = d3.max(bins, d => d.size);
+
+  $: length = d3.scaleLinear<number, number, number>()
+      .domain([0, $showSize ? maxBarCountAcrossSubsets : maxBinSize])
+      .range([0, sideLength])
+      .unknown(0);
 </script>
 
 {#if "invertExtent" in $color}

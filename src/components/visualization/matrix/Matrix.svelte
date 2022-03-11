@@ -104,6 +104,7 @@
     }
   );
 
+  // for the legend when showing a bar chart/histogram
   $: barLength = d3.scaleLinear<number, number, number>()
       .domain([0, maxBarCount])
       .range([0, maxSideLength])
@@ -209,7 +210,7 @@
                 x={getPositionOfSquare(d.splits, xFeatures, xScales)}
                 y={getPositionOfSquare(d.splits, yFeatures, yScales)}
                 sideLength={maxSideLength}
-                length={barLength}
+                maxBarCountAcrossSubsets={maxBarCount}
                 {d}
                 padding={padding}
                 on:mousemove={event => handleMousemove(event, d)}
@@ -235,7 +236,7 @@
                 x={getPositionOfSquare(d.splits, xFeatures, xScales)}
                 y={getPositionOfSquare(d.splits, yFeatures, yScales)}
                 sideLength={maxSideLength}
-                length={barLength}
+                maxBarCountAcrossSubsets={maxBarCount}
                 {d}
                 padding={padding}
                 on:mousemove={event => handleMousemove(event, d)}
