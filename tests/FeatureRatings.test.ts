@@ -520,7 +520,7 @@ test('entropy', () => {
     { feature: 'd', value: -0 }
   ];
 
-  const actual = getFeatureRatingsForMetric(getExampleClassificationDataset(['a', 'b', 'c', 'd']), metrics.entropy.metric, ['a'], {}, fakeGetData)
+  const actual = getFeatureRatingsForMetric(getExampleClassificationDataset(['a', 'b', 'c', 'd']), metrics.entropy.metric, ['a'], {}, fakeGetData, 0)
 
   assert.is(actual[0].value, expected[0].value);
   assert.is(actual[0].feature, expected[0].feature);
@@ -535,7 +535,7 @@ test('entropy', () => {
 test('entropy one bin', () => {
   const expectedValue = -((100 / 400) * Math.log2(100 / 400)) - ((300 / 400) * Math.log2(300 / 400));
 
-  const actual = getFeatureRatingsForMetric(getExampleClassificationDataset(['e']), metrics.entropy.metric, [], {}, fakeGetData);
+  const actual = getFeatureRatingsForMetric(getExampleClassificationDataset(['e']), metrics.entropy.metric, [], {}, fakeGetData, 0);
 
   assert.equal(actual[0].value, -expectedValue);
   assert.equal(actual[0].feature, 'e');
@@ -550,7 +550,7 @@ test('error deviation', () => {
     { feature: 'd', value: 0 }
   ];
 
-  const actual = getFeatureRatingsForMetric(getExampleClassificationDataset(['a', 'b', 'c', 'd']), metrics.errorDeviation.metric, ['a'], {}, fakeGetData);
+  const actual = getFeatureRatingsForMetric(getExampleClassificationDataset(['a', 'b', 'c', 'd']), metrics.errorDeviation.metric, ['a'], {}, fakeGetData, 0);
 
   assert.is(actual[0].value, expected[0].value);
   assert.is(actual[0].feature, expected[0].feature);
@@ -565,7 +565,7 @@ test('error deviation', () => {
 test('error deviation one bin', () => {
   const expected = [ {feature: 'e', value: 0} ];
 
-  const actual = getFeatureRatingsForMetric(getExampleClassificationDataset(['e']), metrics.errorDeviation.metric, [], {}, fakeGetData);
+  const actual = getFeatureRatingsForMetric(getExampleClassificationDataset(['e']), metrics.errorDeviation.metric, [], {}, fakeGetData, 0);
 
   assert.equal(actual, expected);
 });
@@ -579,7 +579,7 @@ test('error count', () => {
     { feature: 'd', value: 0 }
   ];
 
-  const actual = getFeatureRatingsForMetric(getExampleClassificationDataset(['a', 'b', 'c', 'd']), metrics.errorCount.metric, ['a'], {}, fakeGetData);
+  const actual = getFeatureRatingsForMetric(getExampleClassificationDataset(['a', 'b', 'c', 'd']), metrics.errorCount.metric, ['a'], {}, fakeGetData, 0);
 
   assert.equal(actual, expected);
 });
@@ -587,7 +587,7 @@ test('error count', () => {
 test('error count one bin', () => {
   const expected = [ {feature: 'e', value: 100} ];
 
-  const actual = getFeatureRatingsForMetric(getExampleClassificationDataset(['e']), metrics.errorCount.metric, [], {}, fakeGetData);
+  const actual = getFeatureRatingsForMetric(getExampleClassificationDataset(['e']), metrics.errorCount.metric, [], {}, fakeGetData, 0);
 
   assert.equal(actual, expected);
 });
@@ -601,7 +601,7 @@ test('error percent', () => {
     { feature: 'd', value: 0 }
   ];
 
-  const actual = getFeatureRatingsForMetric(getExampleClassificationDataset(['a', 'b', 'c', 'd']), metrics.errorPercent.metric, ['a'], {}, fakeGetData);
+  const actual = getFeatureRatingsForMetric(getExampleClassificationDataset(['a', 'b', 'c', 'd']), metrics.errorPercent.metric, ['a'], {}, fakeGetData, 0);
 
   assert.equal(actual, expected);
 });
@@ -609,7 +609,7 @@ test('error percent', () => {
 test('error percent one bin', () => {
   const expected: Rating[] = [ {feature: 'e', value: 0.25} ];
 
-  const actual = getFeatureRatingsForMetric(getExampleClassificationDataset(['e']), metrics.errorPercent.metric, [], {}, fakeGetData);
+  const actual = getFeatureRatingsForMetric(getExampleClassificationDataset(['e']), metrics.errorPercent.metric, [], {}, fakeGetData, 0);
 
   assert.equal(actual, expected);
 });

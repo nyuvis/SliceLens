@@ -1,5 +1,5 @@
 import { Combination } from 'js-combinatorics';
-import type { MetricName, Metrics, Rating } from './RatingMetrics';
+import { filterSubsets, MetricName, Metrics, Rating } from './RatingMetrics';
 import type {Features, ClassificationDataset, ClassificationNode, RegressionNode, Dataset} from './types';
 import * as d3 from "d3";
 import { getClassificationData, getRegressionData } from './lib/Data';
@@ -31,12 +31,14 @@ function getFeatureCombosForMetric<T extends Dataset>(
   metric: Metric<T>,
   selected: string[],
   features: Features,
-  getData: GetData<T>
+  getData: GetData<T>,
+  threshold: number = 30
 ): string[][] {
   const singles = dataset.featureNames
     .map(feature => {
       const subsets = getData(features, [feature], dataset);
-      const score = metric(subsets);
+      const filteredSubsets = filterSubsets(subsets, threshold);
+      const score = metric(filteredSubsets);
       return { combo: [feature], score: score };
     })
     .sort((a, b) => d3.descending(a.score, b.score))
@@ -49,7 +51,8 @@ function getFeatureCombosForMetric<T extends Dataset>(
   const pairs = [...new Combination(topFeaturesNames, 2)]
     .map(combo => {
       const subsets = getData(features, combo, dataset);
-      const score = metric(subsets);
+      const filteredSubsets = filterSubsets(subsets, threshold);
+      const score = metric(filteredSubsets);
       return { combo, score};
     })
     .filter(({ score }) => score > minScore1Feature );
@@ -59,7 +62,8 @@ function getFeatureCombosForMetric<T extends Dataset>(
   const trios = [...new Combination(topFeaturesNames, 3)]
     .map(combo => {
       const subsets = getData(features, combo, dataset);
-      const score = metric(subsets);
+      const filteredSubsets = filterSubsets(subsets, threshold);
+      const score = metric(filteredSubsets);
       return { combo, score};
     })
     .filter(({ score }) => score > minScore2Features );

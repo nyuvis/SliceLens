@@ -1,4 +1,4 @@
-import type { MetricName, Metrics, Rating } from './RatingMetrics';
+import { filterSubsets, MetricName, Metrics, Rating } from './RatingMetrics';
 import type {Features, ClassificationDataset, ClassificationNode, RegressionNode, Dataset} from './types';
 import * as d3 from "d3";
 import { getClassificationData, getRegressionData } from './lib/Data';
@@ -30,14 +30,16 @@ function getFeatureRatingsForMetric<T extends Dataset>(
   metric: Metric<T>,
   selected: string[],
   features: Features,
-  getData: GetData<T>
+  getData: GetData<T>,
+  threshold: number = 30
 ): {feature: string, value: number}[] {
   const available: string[] = dataset.featureNames.filter(d => !selected.includes(d));
 
   return available.map(feature => {
     const sel = [...selected, feature];
     const data = getData(features, sel, dataset);
-    const value = metric(data);
+    const filteredSubsets = filterSubsets(data, threshold)
+    const value = metric(filteredSubsets);
     return {feature, value};
   });
 }

@@ -1,4 +1,4 @@
-import type { ClassificationNode, RegressionNode } from './types';
+import type { ClassificationNode, RegressionNode, Node } from './types';
 
 import * as d3 from "d3";
 
@@ -6,6 +6,7 @@ export {
   metrics,
   getErrorCountForSquare,
   getValidMetrics,
+  filterSubsets
 };
 
 // types
@@ -170,4 +171,10 @@ function mseDeviation(data: RegressionNode[]): number {
 
 function similarity(data: RegressionNode[]): number {
   return -d3.mean(data, square => d3.deviation(square.groundTruthLabels));
+}
+
+// filter subsets
+
+function filterSubsets<T extends Node>(subsets: T[], threshold: number): T[] {
+  return subsets.filter(subset => subset.size >= threshold);
 }
