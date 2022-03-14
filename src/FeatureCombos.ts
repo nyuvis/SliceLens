@@ -46,7 +46,7 @@ function getFeatureCombosForMetric<T extends Dataset>(
 
   const topFeaturesNames = singles.map(d => d.combo[0]);
 
-  const minScore1Feature = d3.min(singles, d => d.score);
+  const minScore1Feature = d3.mean(singles, d => d.score);
 
   const pairs = [...new Combination(topFeaturesNames, 2)]
     .map(combo => {
@@ -57,7 +57,7 @@ function getFeatureCombosForMetric<T extends Dataset>(
     })
     .filter(({ score }) => score > minScore1Feature );
 
-  const minScore2Features = d3.min(pairs, d => d.score);
+  const minScore2Features = d3.mean(pairs, d => d.score);
 
   const trios = [...new Combination(topFeaturesNames, 3)]
     .map(combo => {
