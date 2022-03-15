@@ -217,7 +217,9 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     </select>
   </div>
 
-  <SuggestCombos {criterion} {canAddFeatures} on:set={setFeatureToHighlight}/>
+  {#if criterion.value !== 'none' && ratingsEnabled}
+    <SuggestCombos {criterion} {canAddFeatures} on:set={setFeatureToHighlight}/>
+  {/if}
 {/if}
 
 <div class="label help-row">
