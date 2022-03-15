@@ -7,8 +7,9 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 <script lang="ts">
   import FeatureEditor from './FeatureEditor.svelte';
   import { selectedFeatures } from '../../stores';
+  import type { Feature } from '../../types';
 
-  export let feature: string;
+  export let feature: Feature;
   export let canAddFeatures: boolean;
   export let isSelected: boolean;
   export let relevance: number = 0;
@@ -18,17 +19,17 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   let showFeatureEditor: boolean = false;
 
   function add() {
-    selectedFeatures.add(feature)
+    selectedFeatures.add(feature.name)
   }
 
   function remove() {
-    selectedFeatures.remove(feature);
+    selectedFeatures.remove(feature.name);
   }
 </script>
 
 {#if showFeatureEditor}
   <FeatureEditor
-    featureName={feature}
+    featureName={feature.name}
     on:close={() => showFeatureEditor = false}
   />
 {/if}
@@ -38,7 +39,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   class:selected={isSelected}
   class:all={!isSelected}
   class:no-pointer-event="{!canAddFeatures && !isSelected}"
-  id={feature}
+  id={feature.name}
   draggable=true
   on:dragover|preventDefault={() => false}
   on:drop|preventDefault
@@ -82,7 +83,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     {#if relevance >= 0 && canAddFeatures}
       <div class="bar" style="width: {relevance * 100}%;"></div>
     {/if}
-    <p class="cutoff feature-name">{feature}</p>
+    <p class="cutoff feature-name">{feature.name}</p>
     {#if highlight}
       <!-- lightbulb icon indicates that this feature was added by the tool -->
       <svg xmlns="http://www.w3.org/2000/svg"
@@ -100,7 +101,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     {/if}
   </div>
 
-  {#if isSelected}
+  {#if isSelected && feature.type === 'Q' && feature.splitType !== 'custom'}
     <svg xmlns="http://www.w3.org/2000/svg"
       class="icon icon-tabler icon-tabler-circle-minus"
       width="24" height="24" viewBox="0 0 24 24"

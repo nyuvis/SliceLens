@@ -235,7 +235,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 <div id="selected-features" class="feature-box" class:dragInProgress>
   {#each $selectedFeatures as feature, i (feature)}
     <FeatureRow
-      {feature}
+      feature={$features[feature]}
       {canAddFeatures}
       highlight={featuresToHighlight.has(feature)}
       isSelected={true}
@@ -339,7 +339,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   {#each featuresToShow as feature (feature)}
     <div animate:flip={{ duration: 300 }}>
       <FeatureRow
-        {feature}
+        feature={$features[feature]}
         {canAddFeatures}
         isSelected={false}
         relevance={featureToRelevance.get(feature) ?? 0}
