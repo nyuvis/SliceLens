@@ -8,11 +8,14 @@ https://www.w3schools.com/howto/howto_css_modals.asp
   import QuantitativeFeatureEditor from "./QuantitativeFeatureEditor.svelte";
   import { features, logs } from "../../stores";
   import { createEventDispatcher } from "svelte";
+  import type { Feature } from "../../types";
 
   const dispatch = createEventDispatcher();
 
-  export let featureName: string;
-  $: feature = $features[featureName];
+  export let feature: Feature;
+  export let featureValues: (string|number)[];
+
+  $: quantitativeFeatureValues = featureValues as number[];
 
   let valid: boolean = true;
   $: canClose = valid || feature.type === 'C';
@@ -50,7 +53,7 @@ https://www.w3schools.com/howto/howto_css_modals.asp
 <div class="modal-background">
   <div class="modal-content">
     <div class="header">
-      <div class="feature-name large bold">{featureName}</div>
+      <div class="feature-name large bold">{feature.name}</div>
 
       <div class="gap" />
 
@@ -82,6 +85,7 @@ https://www.w3schools.com/howto/howto_css_modals.asp
     {:else}
       <QuantitativeFeatureEditor
         {feature}
+        featureValues={quantitativeFeatureValues}
         on:validate={ev => valid = ev.detail}
         bind:this={quantitativeComponent} />
     {/if}

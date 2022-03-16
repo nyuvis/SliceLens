@@ -1,19 +1,22 @@
 <script lang="ts">
   import { onMount, createEventDispatcher } from "svelte";
-  import { dataset, changeSinceGeneratingSuggestion } from "../../stores";
-  import { equalIntervalThresholds, quantileThresholds, getBinLabels, cloneQuantitativeFeature, areFeaturesEqual } from "../../lib/Features";
-  import Histogram from '../visualization/histogram/Histogram.svelte';
+  import { changeSinceGeneratingSuggestion } from "../../stores";
+  import { cloneQuantitativeFeature, areFeaturesEqual } from "../../lib/Features";
   import * as d3 from "d3";
-  import type { QuantitativeFeature, Row } from "../../types";
+  import type { QuantitativeFeature } from "../../types";
+  import { setBins, setBinLabels, areThresholdsValid, allowedBinNumbers } from "../../lib/QuantitativeFeatureEditing";
+  import Histogram from '../visualization/histogram/Histogram.svelte';
 
   export let feature: QuantitativeFeature;
+  export let featureValues: number[];
 
   const original = cloneQuantitativeFeature(feature);
 
   export function onWindowClose() {
+    // handle if the user presses escape while
     if (feature.splitType === 'custom' ||
       originalFormatSpecifier !== feature.format) {
-      setAxisValues();
+      setBinLabels(feature, featureValues);
     }
 
     if (!areFeaturesEqual(original, feature)) {
@@ -26,16 +29,12 @@
 
   const dispatch = createEventDispatcher();
 
-  const datasetValues: number[] = $dataset.rows.map((d: Row) => d[feature.name]) as number[];
-  const extent: [number, number] = d3.extent(datasetValues);
 
   const splits = [
     { value: 'interval', display: 'Equal Width' },
     { value: 'quantile', display: 'Quantiles' },
     { value: 'custom', display: 'Custom' },
   ];
-
-  const bins = [2, 3, 4, 5];
 
   let validThresholds: boolean = true;
   let validFormat: boolean = true;
@@ -44,6 +43,7 @@
 
   onMount(() => dispatch('validate', true));
 
+  // on any change, check if the format is valid
   function onFormatInput() {
     try {
       format = d3.format(feature.format);
@@ -53,51 +53,23 @@
     }
   }
 
+  // on enter/blur, update the axis values if the format is valid
+  function onFormatChange() {
+    if (validFormat) {
+      setBinLabels(feature, featureValues);
+      feature = feature;
+    }
+  }
+
+  // on any change of custom threshold
+  function onCustomThresholdInput() {
+    validThresholds = areThresholdsValid(feature.extent, feature.thresholds)
+  }
+
+  // changing number of features or type of splits
   function onSelectChange() {
-    if (feature.splitType === 'interval') {
-      validThresholds = true;
-      feature.thresholds = equalIntervalThresholds(extent, feature.numBins);
-      setAxisValues();
-    } else if (feature.splitType === 'quantile') {
-      validThresholds = true;
-      feature.thresholds = quantileThresholds(datasetValues, feature.numBins);
-      setAxisValues();
-    } else if (feature.splitType === 'custom') {
-      const targetNumThresholds: number = feature.numBins - 1;
-      const numThreshold: number = feature.thresholds.length;
-      const diff: number = Math.abs(targetNumThresholds - numThreshold);
-
-      if (targetNumThresholds < numThreshold) {
-        feature.thresholds = feature.thresholds.slice(0, -diff);
-      } else if (targetNumThresholds > numThreshold) {
-        feature.thresholds = feature.thresholds.concat(Array(diff).fill(0));
-      }
-
-      validThresholds = areThresholdsValid();
-    }
-  }
-
-  function areThresholdsValid(): boolean {
-    // thresholds must be strictly increasing
-    const arr: number[] = [extent[0], ...feature.thresholds, extent[1]];
-
-    for (let i = 1, n = arr.length; i < n; i++) {
-      if (arr[i - 1] >= arr[i]) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  function setAxisValues() {
-    const bin = d3.bin()
-      .domain(extent)
-      .thresholds(feature.thresholds);
-    const bins = bin(datasetValues);
-    feature.values = getBinLabels(bins, format);
-    const thresholdFunc: any = bin.thresholds();
-    feature.thresholds = thresholdFunc() as number[];
+    validThresholds = setBins(feature, featureValues);
+    feature = feature;
   }
 </script>
 
@@ -118,11 +90,7 @@
     placeholder="Ex: .2~f"
     size=8
     on:input={onFormatInput}
-    on:change={() => {
-      if (validFormat) {
-        setAxisValues();
-      }
-    }}
+    on:change={onFormatChange}
   >
   {#if !validFormat}
     <span class="invalid small">Invalid format.</span>
@@ -133,7 +101,7 @@
   <p class="sub-label">Number of bins</p>
   <!-- svelte-ignore a11y-no-onchange -->
   <select bind:value={feature.numBins} on:change={onSelectChange}>
-    {#each bins as bin}
+    {#each allowedBinNumbers as bin}
       <option>{bin}</option>
     {/each}
   </select>
@@ -160,7 +128,7 @@
       <tbody>
         <tr>
           <td>Min value</td>
-          <td class="align-right">{format(extent[0])}</td>
+          <td class="align-right">{format(feature.extent[0])}</td>
         </tr>
         {#each feature.thresholds as threshold, i}
           <tr>
@@ -171,13 +139,13 @@
                 type="number"
                 step="any"
                 bind:value={threshold}
-                on:change={() => validThresholds = areThresholdsValid()}>
+                on:input={onCustomThresholdInput}>
             </td>
           </tr>
         {/each}
         <tr>
           <td>Max value</td>
-          <td class="align-right">{format(extent[1])}</td>
+          <td class="align-right">{format(feature.extent[1])}</td>
         </tr>
       </tbody>
     </table>
