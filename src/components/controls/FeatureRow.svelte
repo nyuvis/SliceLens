@@ -91,6 +91,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       stroke-width="2" stroke="currentColor" fill="none"
       stroke-linecap="round" stroke-linejoin="round"
       on:click={add}
+      class:disabled={$selectedFeatures.includes(feature.name)}
     >
       <path stroke="none" d="M0 0h24v24H0z"/>
       <line x1="12" y1="5" x2="12" y2="19" />
@@ -240,8 +241,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   .selected:hover .icon-tabler-edit:hover,
   .selected:hover .icon-tabler-circle-plus:not(.disabled):hover,
   .selected:hover .icon-tabler-circle-minus:not(.disabled):hover,
-  .all:hover .icon-tabler-edit:hover
-  .all:hover .icon-tabler-plus:hover {
+  .all:hover .icon-tabler-edit:not(.disabled):hover,
+  .all:hover .icon-tabler-plus:not(.disabled):hover {
     color: var(--blue);
   }
 
