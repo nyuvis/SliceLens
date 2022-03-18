@@ -84,21 +84,29 @@ export const showSize: Writable<boolean> = writable(true);
 // show bars to compare to root node
 export const compareToWhole: Writable<boolean> = writable(true);
 
+// use quantile color scale for regression datasets
+export const quantileColor: Writable<boolean> = writable(false);
+
 // visualization type
 // https://stackoverflow.com/questions/36836011/checking-validity-of-string-literal-union-type-at-runtime
 export const visKind: Writable<typeof visKinds[number]> = writable('squares');
 
 // color scale
 export const color: Readable<d3.ScaleOrdinal<string, string, string>|d3.ScaleThreshold<number, string, string>> = derived(
-  [dataset, showPredictions],
-  ([$dataset, $showPredictions]) => {
+  [dataset, showPredictions, quantileColor],
+  ([$dataset, $showPredictions, $quantileColor]) => {
     if ($dataset.type === 'classification') {
       return d3.scaleOrdinal<string, string, string>()
           .domain($dataset.labelValues)
           .range(d3.schemeCategory10)
           .unknown('black');
     } else {
-      const thresholds = $showPredictions ? $dataset.deltaThresholds : $dataset.groundTruthThresholds;
+      const thresholds = $showPredictions ?
+        // predictions
+        $quantileColor ? $dataset.deltaQuantileThresholds : $dataset.deltaThresholds :
+        // ground truth
+        $quantileColor ? $dataset.groundTruthQuantileThresholds : $dataset.groundTruthThresholds;
+
       const interpolator = $showPredictions ? d3.interpolatePuOr : d3.interpolateBlues;
 
       return d3.scaleThreshold<number, string, string>()

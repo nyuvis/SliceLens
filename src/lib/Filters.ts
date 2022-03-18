@@ -136,6 +136,7 @@ function getFilteredDataset(dataset: Dataset, filters: Filter[]): Dataset {
       approxNumBins: dataset.approxNumBins,
       groundTruthExtent: dataset.groundTruthExtent,
       groundTruthThresholds: dataset.groundTruthThresholds,
+      groundTruthQuantileThresholds: dataset.groundTruthQuantileThresholds,
       hasPredictions: dataset.hasPredictions,
       size: rows.length
     };
@@ -143,6 +144,7 @@ function getFilteredDataset(dataset: Dataset, filters: Filter[]): Dataset {
     if (ds.hasPredictions) {
       ds.deltaExtent = dataset.deltaExtent;
       ds.deltaThresholds = dataset.deltaThresholds;
+      ds.deltaQuantileThresholds = ds.deltaQuantileThresholds;
     }
 
     return ds;

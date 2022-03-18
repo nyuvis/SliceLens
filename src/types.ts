@@ -24,8 +24,10 @@ export type RegressionDataset = {
   approxNumBins: number,
   groundTruthExtent: [number, number],
   groundTruthThresholds: number[],
+  groundTruthQuantileThresholds: number[],
   deltaExtent?: [number, number],
   deltaThresholds?: number[],
+  deltaQuantileThresholds?: number[],
   hasPredictions: boolean,
   size: number
 };
@@ -47,7 +49,9 @@ export type RegressionNode = {
   type: 'regression',
   size: number,
   splits: Map<string, number>,
+  groundTruthQuantiles: { x0: number, x1: number, offset: number, size: number }[],
   groundTruth: { x0: number, x1: number, offset: number, size: number }[],
+  predictionsQuantiles?: { x0: number, x1: number, offset: number, size: number }[],
   predictions?: { x0: number, x1: number, offset: number, size: number }[],
   groundTruthLabels: number[],
   predictedLabels?: number[]

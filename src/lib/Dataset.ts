@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { isNumericFeature } from "./Features";
+import { isNumericFeature, quantileThresholds } from "./Features";
 import type {
   Dataset,
   RegressionRow,
@@ -66,11 +66,14 @@ function parseDataset(data: d3.DSVRowArray<string>, name: string): Dataset {
     const approxNumBins = 20;
 
     const groundTruth: number[] = rows.map((d: RegressionRow) => d.label);
-    const extactGTExtent = d3.extent(groundTruth);
-    const groundTruthExtent = d3.nice(extactGTExtent[0], extactGTExtent[1], approxNumBins);
+    const exactGTExtent = d3.extent(groundTruth);
+    const groundTruthExtent = d3.nice(exactGTExtent[0], exactGTExtent[1], approxNumBins);
     // remove thresholds outside of the domain, as done when bin() is called:
     // https://github.com/d3/d3-array/blob/2f28f41005de2fbb69e99439fabec5eb8bce26f0/src/bin.js#L62-L65
     const groundTruthThresholds = d3.ticks(groundTruthExtent[0], groundTruthExtent[1], approxNumBins)
+      .filter(t => t > groundTruthExtent[0] && t < groundTruthExtent[1]);
+
+    const groundTruthQuantileThresholds = quantileThresholds(groundTruth, approxNumBins)
       .filter(t => t > groundTruthExtent[0] && t < groundTruthExtent[1]);
 
     const dataset: RegressionDataset = {
@@ -81,6 +84,7 @@ function parseDataset(data: d3.DSVRowArray<string>, name: string): Dataset {
       approxNumBins,
       groundTruthExtent,
       groundTruthThresholds,
+      groundTruthQuantileThresholds,
       hasPredictions,
       size
     };
@@ -97,6 +101,11 @@ function parseDataset(data: d3.DSVRowArray<string>, name: string): Dataset {
       // https://github.com/d3/d3-array/blob/2f28f41005de2fbb69e99439fabec5eb8bce26f0/src/bin.js#L62-L65
       dataset.deltaThresholds = d3.ticks(deltaExtent[0], deltaExtent[1], approxNumBins)
         .filter(t => t > deltaExtent[0] && t < deltaExtent[1]);
+
+      const absDeltas = deltas.map(d => Math.abs(d));
+      const positiveQuantiles = quantileThresholds(absDeltas, approxNumBins / 2);
+      const negativeQuantiles = positiveQuantiles.map(d => -d).reverse();
+      dataset.deltaQuantileThresholds = negativeQuantiles.concat(positiveQuantiles);
     }
     return dataset;
   } else {

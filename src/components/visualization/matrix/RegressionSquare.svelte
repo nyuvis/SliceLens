@@ -1,6 +1,6 @@
 <script lang="ts">
   import * as d3 from 'd3';
-  import { showPredictions, color } from "../../../stores";
+  import { showPredictions, quantileColor, color } from "../../../stores";
   import type { RegressionNode } from '../../../types';
 
   export let sideLength: number;
@@ -14,8 +14,8 @@
       .range([0, sideLength]);
 
   $: bins = $showPredictions ?
-      d.predictions :
-      d.groundTruth;
+      $quantileColor ? d.predictionsQuantiles : d.predictions :
+      $quantileColor ? d.groundTruthQuantiles : d.groundTruth;
 </script>
 
 {#if "invertExtent" in $color}

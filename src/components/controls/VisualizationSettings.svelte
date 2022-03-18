@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { dataset, showPredictions, compareToWhole, showSize, visKind } from '../../stores';
+  import { dataset, showPredictions, compareToWhole, showSize, visKind, quantileColor } from '../../stores';
   import { visKinds } from '../../types';
-import QuestionBox from '../QuestionBox.svelte';
+  import QuestionBox from '../QuestionBox.svelte';
 
   let showPredictionsCheckBox: boolean = false;
 
@@ -55,6 +55,12 @@ import QuestionBox from '../QuestionBox.svelte';
   {#if showPredictionsCheckBox}
     <label class="sub-label small">
       <input type="checkbox" bind:checked={$showPredictions}>Show predictions
+    </label>
+  {/if}
+
+  {#if $dataset.type === 'regression' && $visKind === 'squares'}
+    <label class="sub-label small">
+      <input type="checkbox" bind:checked={$quantileColor}>Quantile color scale
     </label>
   {/if}
 

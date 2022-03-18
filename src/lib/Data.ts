@@ -136,10 +136,18 @@ function getRegressionData(features: Features, selectedFeatures: string[], datas
       .domain(dataset.groundTruthExtent)
       .thresholds(dataset.groundTruthThresholds);
 
+  const groundTruthQuantileBinner = d3.bin()
+      .thresholds(dataset.groundTruthQuantileThresholds);
+
   const predictionBinner = dataset.hasPredictions ?
     d3.bin()
       .domain(dataset.deltaExtent)
       .thresholds(dataset.deltaThresholds) :
+    null;
+
+  const predictionQuantileBinner = dataset.hasPredictions ?
+    d3.bin()
+      .thresholds(dataset.deltaQuantileThresholds) :
     null;
 
   // g is an array of all of the instances belonging to the same subset
@@ -156,15 +164,25 @@ function getRegressionData(features: Features, selectedFeatures: string[], datas
       sum += bin.size;
     }
 
+    const groundTruthQuantiles = groundTruthQuantileBinner(labels)
+      .map(bin => ({ x0: bin.x0, x1: bin.x1, offset: 0, size: bin.length }));
+
+    sum = 0;
+    for (let bin of groundTruthQuantiles) {
+      bin.offset = sum;
+      sum += bin.size;
+    }
+
     const node: RegressionNode = {
       type: 'regression',
       size: g.length,
       splits: new Map(),
       groundTruth,
+      groundTruthQuantiles,
       groundTruthLabels: labels
     };
 
-    if (predictionBinner !== null) {
+    if (predictionBinner !== null && predictionQuantileBinner !== null) {
       const deltas = g.map(d => d.prediction - d.label);
 
       const predictions = predictionBinner(deltas)
@@ -176,8 +194,18 @@ function getRegressionData(features: Features, selectedFeatures: string[], datas
         sum += bin.size;
       }
 
+      const predictionsQuantiles = predictionQuantileBinner(deltas)
+        .map(bin => ({ x0: bin.x0, x1: bin.x1, offset: 0, size: bin.length }));
+
+      sum = 0;
+      for (let bin of predictionsQuantiles) {
+        bin.offset = sum;
+        sum += bin.size;
+      }
+
       node.predictions = predictions;
       node.predictedLabels = g.map(d => d.prediction);
+      node.predictionsQuantiles = predictionsQuantiles;
     }
 
     return node;

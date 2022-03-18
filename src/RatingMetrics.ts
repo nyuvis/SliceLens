@@ -161,7 +161,7 @@ function getErrorCountForSquare(square: ClassificationNode): number {
 // regression
 
 function mseDeviation(data: RegressionNode[]): number {
-  return d3.deviation(data, square => mse(square));
+  return data.length < 2 ? 0 : d3.deviation(data, square => mse(square));
 
   function mse(square: RegressionNode) {
     const labels = d3.zip(square.groundTruthLabels, square.predictedLabels);

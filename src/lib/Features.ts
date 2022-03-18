@@ -131,7 +131,7 @@ function getBinLabels(bins: (number[] & { x0: number, x1: number })[], format: (
 }
 
 /*
-  Following the convetion used by d3.bin https://github.com/d3/d3-array#bin,
+  Following the convention used by d3.bin https://github.com/d3/d3-array#bin,
   the lower bounds of all bins are inclusive and the upper bound of all bins
   except the last one are exclusive. The lower bound of the first bin is always
   the min value and the upper bound of the last bin is always the max value.
