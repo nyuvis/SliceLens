@@ -2,7 +2,6 @@
   import NotesExporter from './NotesExporter.svelte';
   import NotesImporter from './NotesImporter.svelte';
   import NotesViewer from './NotesViewer.svelte';
-  import LogExporter from './LogExporter.svelte';
   import { selectedFeatures, features, dataset, filters } from '../../stores';
   import { cloneSelectedFeatures } from '../../lib/Features';
   import { cloneFilters } from '../../lib/Filters';
@@ -99,11 +98,6 @@
   on:link={linkNote}
 />
 
-<div class="header logs">
-  <div class="gap"></div>
-  <LogExporter/>
-</div>
-
 <style>
   .header {
     display: flex;
@@ -127,10 +121,5 @@
 
   .list div:hover {
     font-weight: 500;
-  }
-
-  .logs {
-    margin-top: auto;
-    padding-top: 0.25em;
   }
 </style>

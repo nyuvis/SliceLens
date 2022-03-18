@@ -119,22 +119,3 @@ export const color: Readable<d3.ScaleOrdinal<string, string, string>|d3.ScaleThr
 
 // has there been a change to the filters or features or metric since generating the suggestions
 export const changeSinceGeneratingSuggestion: Writable<boolean> = writable(false);
-
-// logging user interactions
-function createLog() {
-  const { subscribe, update } = writable([]);
-
-  return {
-    subscribe,
-    add: (message: Record<string,unknown>) => {
-      message.time = Date.now();
-      return update(logs => {
-        // use JSON.stringify so that the logged value can't be mutated
-        logs.push(JSON.stringify(message));
-        return logs;
-      });
-    }
-  }
-}
-
-export const logs = createLog();

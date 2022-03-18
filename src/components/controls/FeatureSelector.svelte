@@ -9,7 +9,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   import QuestionBox from '../QuestionBox.svelte';
   import FeatureRow from './FeatureRow.svelte';
   import SuggestCombos from './SuggestCombos.svelte';
-  import {features, dataset, selectedFeatures, logs, changeSinceGeneratingSuggestion } from '../../stores';
+  import {features, dataset, selectedFeatures, changeSinceGeneratingSuggestion } from '../../stores';
   import { getValidMetrics } from '../../RatingMetrics';
   import type { MetricInfo, MetricGroup } from '../../RatingMetrics';
   import * as d3 from 'd3';
@@ -50,10 +50,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   function criterionChanged() {
     $changeSinceGeneratingSuggestion = true;
-    logs.add({
-      event: 'criterion-change',
-      criterion: criterion.value,
-    });
   }
 
   const maxFeatures: number = 4;
@@ -61,31 +57,21 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
   // web worker for feature suggestions
 
-  let workersInProgress: number = 0;
-
-  const incrementWorkersInProgress = () => workersInProgress++;
-
   let featureToRelevance: Map<string, number> = new Map();
 
   const worker = new FeatureRatingWorker();
 
   worker.onmessage = (e: MessageEvent) => {
     featureToRelevance = e.data;
-    workersInProgress--;
-    logs.add({event: 'worker-done'});
   }
 
   $: if ($dataset && $features !== null && canAddFeatures) {
-    // we don't want to have an explicit dependency on workersInProgress, otherwise
-    // this will re-run every time workersInProgress is decremented above
-    incrementWorkersInProgress();
     worker.postMessage({
       criterion: criterion.value,
       selected: $selectedFeatures,
       features: $features,
       dataset: $dataset
     });
-    logs.add({event: 'worker-start'});
   }
 
   // features that were automatically added by the suggestions
