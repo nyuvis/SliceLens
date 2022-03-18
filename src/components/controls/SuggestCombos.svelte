@@ -17,6 +17,9 @@
   let combos: string[][] = [];
   let index: number = 0;
 
+  // track if the feature suggestion algorithm is running
+  let waitingForResults = false;
+
   let currentDataset = $dataset.name;
 
   function setFeaturesToHighlight(): void {
@@ -35,6 +38,8 @@
   }
 
   worker.onmessage = (e: MessageEvent) => {
+    waitingForResults = false;
+
     combos = Array.isArray(e.data) ? e.data : [];
     index = 0;
 
@@ -50,6 +55,8 @@
   }
 
   function getSuggestedCombos() {
+    waitingForResults = true;
+
     worker.postMessage({
       criterion: criterion.value,
       selected: $selectedFeatures,
@@ -90,14 +97,16 @@
 <div class='small'>
   <div id='button-row' class='sub-label'>
     <button on:click={getSuggestedCombos} disabled={!canAddFeatures}>Suggest Combos</button>
-    {#if $changeSinceGeneratingSuggestion}
+    {#if $changeSinceGeneratingSuggestion && combos.length !== 0}
       <QuestionBox kind="alert">
         You may have modified the filters, features, or rating metric since generating these suggestions.
       </QuestionBox>
     {/if}
   </div>
 
-  {#if combos.length !== 0}
+  {#if waitingForResults}
+    <div>Calculating</div>
+  {:else if combos.length !== 0}
     <div id='arrows-row' on:keydown={onkeydown} tabindex="0">
       <!-- left arrow -->
       <svg xmlns="http://www.w3.org/2000/svg"
