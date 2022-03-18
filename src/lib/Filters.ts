@@ -144,7 +144,7 @@ function getFilteredDataset(dataset: Dataset, filters: Filter[]): Dataset {
     if (ds.hasPredictions) {
       ds.deltaExtent = dataset.deltaExtent;
       ds.deltaThresholds = dataset.deltaThresholds;
-      ds.deltaQuantileThresholds = ds.deltaQuantileThresholds;
+      ds.deltaQuantileThresholds = dataset.deltaQuantileThresholds;
     }
 
     return ds;

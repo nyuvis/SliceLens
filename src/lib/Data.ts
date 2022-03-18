@@ -137,6 +137,7 @@ function getRegressionData(features: Features, selectedFeatures: string[], datas
       .thresholds(dataset.groundTruthThresholds);
 
   const groundTruthQuantileBinner = d3.bin()
+      .domain(dataset.groundTruthExtent)
       .thresholds(dataset.groundTruthQuantileThresholds);
 
   const predictionBinner = dataset.hasPredictions ?
@@ -147,6 +148,7 @@ function getRegressionData(features: Features, selectedFeatures: string[], datas
 
   const predictionQuantileBinner = dataset.hasPredictions ?
     d3.bin()
+      .domain(dataset.deltaExtent)
       .thresholds(dataset.deltaQuantileThresholds) :
     null;
 

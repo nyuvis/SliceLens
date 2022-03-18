@@ -3,15 +3,6 @@
   import { visKinds } from '../../types';
   import QuestionBox from '../QuestionBox.svelte';
 
-  let showPredictionsCheckBox: boolean = false;
-
-  $: if ($dataset.hasPredictions) {
-    showPredictionsCheckBox = true;
-  } else {
-    showPredictionsCheckBox = false;
-    $showPredictions = false;
-  }
-
   // @ts-ignore
   // defined in rollup.config.js
   const alternativeVis: boolean = ALTERNATIVE_VIS;
@@ -52,7 +43,7 @@
       <input type="checkbox" bind:checked={$showSize}>Scale by num. instances
   </label>
 
-  {#if showPredictionsCheckBox}
+  {#if $dataset.hasPredictions}
     <label class="sub-label small">
       <input type="checkbox" bind:checked={$showPredictions}>Show predictions
     </label>

@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { getFeatures, getWholeDatasetFeatureExtents } from '../../lib/Features';
   import { parseDataset } from '../../lib/Dataset';
-  import { dataset, fullDataset, selectedFeatures, features, filters } from '../../stores';
+  import { dataset, fullDataset, selectedFeatures, features, filters, showPredictions } from '../../stores';
   import QuestionBox from '../QuestionBox.svelte';
   import * as d3 from "d3";
   import { createEventDispatcher } from 'svelte';
@@ -45,6 +45,9 @@
       dispatch('load', getWholeDatasetFeatureExtents(feat));
 
       selectedFeatures.reset();
+      if (!ds.hasPredictions) {
+        $showPredictions = false;
+      }
       $dataset = ds;
       $fullDataset = ds;
       $features = feat;
@@ -91,6 +94,9 @@
       dispatch('load', getWholeDatasetFeatureExtents(feat));
 
       selectedFeatures.reset();
+      if (!ds.hasPredictions) {
+        $showPredictions = false;
+      }
       $dataset = ds;
       $fullDataset = ds;
       $features = feat;

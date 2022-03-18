@@ -97,6 +97,8 @@
     $data,
     node => {
       const parts = $showPredictions ? node.predictions : node.groundTruth;
+      console.log('showPredictions', $showPredictions);
+      console.log('node.predictions', node.predictions);
       type Part =
         | { x0: number, x1: number, offset: number, size: number }
         | { label: string, size: number, correct: boolean, offset: number };

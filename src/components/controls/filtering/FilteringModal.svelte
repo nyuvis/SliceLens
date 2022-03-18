@@ -23,8 +23,6 @@ refactored into a Modal.svelte.
 
   const original = cloneFilters($filters);
 
-  console.log("creating FilteringModal");
-
   let emptyDataset: boolean = false;
 
   $: filteredFeatureNames = new Set($filters.map(f => f.feature));
