@@ -17,6 +17,8 @@
   let combos: string[][] = [];
   let index: number = 0;
 
+  let numFeaturesToConsider = 10;
+
   // track if the feature suggestion algorithm is running
   let waitingForResults = false;
 
@@ -33,6 +35,7 @@
     combos = [];
     index = 0;
     currentDataset = $dataset.name;
+    numFeaturesToConsider = Math.min(10, $dataset.featureNames.length);
     // reset the features to highlight
     dispatch('set', new Set());
   }
@@ -61,7 +64,8 @@
       criterion: criterion.value,
       selected: $selectedFeatures,
       features: $features,
-      dataset: $dataset
+      dataset: $dataset,
+      numFeaturesToConsider: numFeaturesToConsider,
     });
   }
 
@@ -95,6 +99,12 @@
 </script>
 
 <div class='small'>
+  <div>
+    <label>
+      Num feats.
+      <input type=number bind:value={numFeaturesToConsider} min={1} max={$dataset.featureNames.length}/>
+    </label>
+  </div>
   <div id='button-row' class='sub-label'>
     <button on:click={getSuggestedCombos} disabled={!canAddFeatures}>Suggest Combos</button>
     {#if $changeSinceGeneratingSuggestion && combos.length !== 0}

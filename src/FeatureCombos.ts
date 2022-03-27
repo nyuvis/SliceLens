@@ -1,5 +1,5 @@
 import { Combination } from 'js-combinatorics';
-import { filterSubsets, MetricName, Metrics, Rating } from './RatingMetrics';
+import { filterSubsets, MetricName, Metrics } from './RatingMetrics';
 import type {Features, ClassificationDataset, ClassificationNode, RegressionNode, Dataset} from './types';
 import * as d3 from "d3";
 import { getClassificationData, getRegressionData } from './lib/Data';
@@ -10,7 +10,7 @@ type Metric<T extends Dataset> = (data: Subset<T>[]) => number;
 type Subset<T extends Dataset> = T extends ClassificationDataset ? ClassificationNode : RegressionNode;
 type GetData<T extends Dataset> = (features: Features, selectedFeatures: string[], dataset: T) => Subset<T>[];
 
-function getFeatureCombinations(criterion: MetricName, metrics: Metrics, selected: string[], features: Features, dataset: Dataset): string[][] {
+function getFeatureCombinations(criterion: MetricName, metrics: Metrics, selected: string[], features: Features, dataset: Dataset, numFeaturesToConsider: number): string[][] {
   if (criterion === 'none') {
     return [];
   }
@@ -18,9 +18,9 @@ function getFeatureCombinations(criterion: MetricName, metrics: Metrics, selecte
   const metric = metrics[criterion];
 
   if (dataset.type === 'classification' && metric.type === 'classification') {
-    return getFeatureCombosForMetric(dataset, metric.metric, selected, features, getClassificationData);
+    return getFeatureCombosForMetric(dataset, metric.metric, selected, features, getClassificationData, numFeaturesToConsider, criterion);
   } else if (dataset.type === 'regression' && metric.type === 'regression') {
-    return getFeatureCombosForMetric(dataset, metric.metric, selected, features, getRegressionData);
+    return getFeatureCombosForMetric(dataset, metric.metric, selected, features, getRegressionData, numFeaturesToConsider, criterion);
   } else {
     return [];
   }
@@ -32,44 +32,73 @@ function getFeatureCombosForMetric<T extends Dataset>(
   selected: string[],
   features: Features,
   getData: GetData<T>,
-  threshold: number = 30
+  numFeaturesToConsider: number,
+  metricName: MetricName = 'none',
+  threshold: number = 32
 ): string[][] {
-  const singles = dataset.featureNames
+  const startTime = performance.now();
+
+  // get the top N individual features
+  const allSingles = dataset.featureNames
     .map(feature => {
       const subsets = getData(features, [feature], dataset);
       const filteredSubsets = filterSubsets(subsets, threshold);
       const score = metric(filteredSubsets);
       return { combo: [feature], score: score };
     })
-    .sort((a, b) => d3.descending(a.score, b.score))
-    .slice(0, 10);
+    .sort((a, b) => d3.descending(a.score, b.score));
+  const singles = allSingles.slice(0, numFeaturesToConsider);
 
   const topFeaturesNames = singles.map(d => d.combo[0]);
 
-  const minScore1Feature = d3.mean(singles, d => d.score);
+  // median score for single features is threshold for pairs
+  const pairsThreshold = d3.median(singles, d => d.score);
 
-  const pairs = [...new Combination(topFeaturesNames, 2)]
+  // get all pairs of top N features that are above the threshold
+  const allPairs = [...new Combination(topFeaturesNames, 2)]
     .map(combo => {
       const subsets = getData(features, combo, dataset);
       const filteredSubsets = filterSubsets(subsets, threshold);
       const score = metric(filteredSubsets);
-      return { combo, score};
+      return { combo, score };
     })
-    .filter(({ score }) => score > minScore1Feature );
+  const pairs = allPairs.filter(({ score }) => score > pairsThreshold);
 
-  const minScore2Features = d3.mean(pairs, d => d.score);
+  // median score for pairs is threshold for trios
+  const triosThreshold = d3.median(pairs, d => d.score);
 
-  const trios = [...new Combination(topFeaturesNames, 3)]
+  // get all trios of top N features that are above the threshold
+  const allTrios = [...new Combination(topFeaturesNames, 3)]
     .map(combo => {
       const subsets = getData(features, combo, dataset);
       const filteredSubsets = filterSubsets(subsets, threshold);
       const score = metric(filteredSubsets);
-      return { combo, score};
+      return { combo, score };
     })
-    .filter(({ score }) => score > minScore2Features );
+  const trios = allTrios.filter(({ score }) => score > triosThreshold);
 
   const combos = [...singles, ...pairs, ...trios];
   combos.sort((a, b) => d3.descending(a.score, b.score));
+  const combosNoScores = combos.map(d => d.combo);
 
-  return combos.map(d => d.combo);
+  const endTime = performance.now();
+  const ms = endTime - startTime;
+
+  const totalCombosConsidered = allSingles.length + allPairs.length + allTrios.length;
+
+  const info = {
+    algorithm: 'top N feat, max 3',
+    dataset: dataset.name,
+    instances: dataset.size,
+    metric: metricName,
+    time: ms,
+    numFeaturesToConsider: numFeaturesToConsider,
+    combosReturned: combos.length,
+    combosConsidered: totalCombosConsidered,
+    combos: combos
+  };
+
+  console.log(JSON.stringify(info));
+
+  return combosNoScores;
 }

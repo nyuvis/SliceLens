@@ -161,8 +161,10 @@ function getErrorCountForSquare(square: ClassificationNode): number {
 // regression
 
 function mseDeviation(data: RegressionNode[]): number {
+  // d3.deviation must be passed an array with at least 2 values
   return data.length < 2 ? 0 : d3.deviation(data, square => mse(square));
 
+  // mean squared error
   function mse(square: RegressionNode) {
     const labels = d3.zip(square.groundTruthLabels, square.predictedLabels);
     return d3.mean(labels, ([truth, prediction]) => (truth - prediction) ** 2)
@@ -170,7 +172,19 @@ function mseDeviation(data: RegressionNode[]): number {
 }
 
 function similarity(data: RegressionNode[]): number {
-  return -d3.mean(data, square => d3.deviation(square.groundTruthLabels));
+  // number of instances in these subsets
+  const datasetSize = d3.sum(data, square => square.size);
+
+  // weighted average
+  // negate because lower avg deviation = more similar subsets = better
+  return -d3.sum(data, square => {
+    // get the deviation of the ground truth labels in each subset
+    const dev = d3.deviation(square.groundTruthLabels);
+    // weight is percent of instances in this subset
+    // weights sum to 1
+    const weight = square.size / datasetSize;
+    return dev * weight;
+  });
 }
 
 // filter subsets

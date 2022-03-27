@@ -8,8 +8,9 @@ self.onmessage = (e: MessageEvent) => {
   const selected: string[] = e.data.selected;
   const features: Features = e.data.features;
   const dataset: Dataset = e.data.dataset;
+  const numFeaturesToConsider: number = e.data.numFeaturesToConsider;
 
-  const suggestions: string[][] = getFeatureCombinations(criterion, metrics, selected, features, dataset);
+  const suggestions: string[][] = getFeatureCombinations(criterion, metrics, selected, features, dataset, numFeaturesToConsider);
 
   postMessage(suggestions);
 }
