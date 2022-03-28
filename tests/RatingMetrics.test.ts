@@ -2,7 +2,7 @@ import { test } from 'uvu';
 import * as assert from 'uvu/assert';
 import * as d3 from "d3";
 import { metrics, getErrorCountForSquare, getValidMetrics } from '../src/RatingMetrics';
-import type { ClassificationNode } from '../src/types'
+import type { ClassificationNode, RegressionNode } from '../src/types'
 
 // data
 
@@ -175,6 +175,44 @@ const dataE: ClassificationNode[] = [
 
 // tests
 
+// classification
+
+const regressionData: RegressionNode[] = [
+  {
+    type: 'regression',
+    size: 5,
+    splits: new Map(),
+    groundTruthQuantiles: [],
+    groundTruth: [],
+    predictionsQuantiles: [],
+    predictions: [],
+    groundTruthLabels: [5, 6, 5, 6, 5],
+    predictedLabels: [7, 4, 3, 8, 7],
+  },
+  {
+    type: 'regression',
+    size: 7,
+    splits: new Map(),
+    groundTruthQuantiles: [],
+    groundTruth: [],
+    predictionsQuantiles: [],
+    predictions: [],
+    groundTruthLabels: [1, 2, 3, 4, 5, 6, 7],
+    predictedLabels: [1, 2, 3, 4, 5, 6, 7],
+  },
+  {
+    type: 'regression',
+    size: 9,
+    splits: new Map(),
+    groundTruthQuantiles: [],
+    groundTruth: [],
+    predictionsQuantiles: [],
+    predictions: [],
+    groundTruthLabels: [2, 4, 8, 16, 32, 64, 128, 256, 512],
+    predictedLabels: [1, 2, 4, 8, 16, 32, 64, 128, 256],
+  }
+];
+
 // entropy
 
 test('entropy', () => {
@@ -236,6 +274,32 @@ test('error percent one bin', () => {
   const expected =  0.25;
   const actual = metrics.errorPercent.metric(dataE);
   assert.equal(actual, expected);
+});
+
+// regression
+
+// similarity
+
+test('similarity', () => {
+  const expected = ((5/21) * d3.deviation([5, 6, 5, 6, 5])) +
+                   ((7/21) * d3.deviation([1, 2, 3, 4, 5, 6, 7])) +
+                   ((9/21) * d3.deviation([2, 4, 8, 16, 32, 64, 128, 256, 512]));
+  assert.ok(metrics.similarity.metric(regressionData) - expected < 0.00001);
+});
+
+// MSE deviation
+
+test('MSE deviation', () => {
+  const expected = d3.deviation([
+    4,
+    0,
+    d3.mean([1**2, 2**2, 4**2, 8**2, 16**2, 32**2, 64**2, 128**2, 256**2])
+  ]);
+  assert.ok(metrics.mseDeviation.metric(regressionData) - expected < 0.00001);
+});
+
+test('MSE deviation - one subset', () => {
+  assert.equal(metrics.mseDeviation.metric(regressionData.slice(0, 1)), 0);
 });
 
 // get error count for square
@@ -310,6 +374,8 @@ test('get error count for three classes', () => {
 
   assert.is(getErrorCountForSquare(square), 26);
 });
+
+// get valid metrics
 
 test('get valid metrics - classification - predictions', () => {
   const actual = getValidMetrics('classification', true, false);

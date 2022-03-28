@@ -31,7 +31,7 @@ function getFeatureRatingsForMetric<T extends Dataset>(
   selected: string[],
   features: Features,
   getData: GetData<T>,
-  threshold: number = 30
+  threshold: number = 32
 ): {feature: string, value: number}[] {
   const available: string[] = dataset.featureNames.filter(d => !selected.includes(d));
 

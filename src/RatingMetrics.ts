@@ -102,8 +102,8 @@ function getValidMetrics(type: 'classification' | 'regression', hasPredictions: 
 // classification
 
 /*
-  Return the feature that results in the nodes with the
-  lowest average entropy.
+  Give a higher rating to features that result in the
+  subsets with lower weighted average entropy.
 */
 function entropy(data: ClassificationNode[]): number {
   function H(square: ClassificationNode): number {
@@ -171,6 +171,10 @@ function mseDeviation(data: RegressionNode[]): number {
   }
 }
 
+/*
+  Give a higher rating to features that result in the
+  subsets with a lower weighted-average deviation.
+*/
 function similarity(data: RegressionNode[]): number {
   // number of instances in these subsets
   const datasetSize = d3.sum(data, square => square.size);
@@ -183,7 +187,7 @@ function similarity(data: RegressionNode[]): number {
     // weight is percent of instances in this subset
     // weights sum to 1
     const weight = square.size / datasetSize;
-    return dev * weight;
+    return weight * dev;
   });
 }
 
