@@ -8,7 +8,7 @@ SliceLens is a tool for exploring labeled, tabular, machine learning datasets. T
 
 Try out the [online demo](https://slicelens.vercel.app/).
 
-Watch the [demo video](https://vimeo.com/440767670).
+Watch the [demo video](https://vimeo.com/694639883).
 
 ## How to run
 
