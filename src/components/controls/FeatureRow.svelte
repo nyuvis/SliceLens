@@ -5,11 +5,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 -->
 
 <script lang="ts">
-  import FeatureEditor from './FeatureEditor.svelte';
-  import { dataset, features, selectedFeatures } from '../../stores';
-  import type { Feature, Row } from '../../types';
-  import { decreaseNumberOfBins, increaseNumberOfBins, allowedBinNumbers } from '../../lib/QuantitativeFeatureEditing';
-  import { isQuantitativeFeature } from '../../lib/Features';
+  import { selectedFeatures } from '../../stores';
+  import type { Feature } from '../../types';
 
   export let feature: Feature;
   export let canAddFeatures: boolean;
@@ -18,10 +15,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   export let draggingOver: boolean = false;
   export let highlight: boolean = false;
 
-  $: featureValues = $dataset.rows.map((d: Row) => d[feature.name]);
-
-  let showFeatureEditor: boolean = false;
-
   function add() {
     selectedFeatures.add(feature.name);
   }
@@ -29,29 +22,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   function remove() {
     selectedFeatures.remove(feature.name);
   }
-
-  function moreBins() {
-    if (feature.type === 'Q' && isQuantitativeFeature(featureValues)) {
-      increaseNumberOfBins(feature, featureValues);
-      $features = $features;
-    }
-  }
-
-  function fewerBins() {
-    if (feature.type === 'Q' && isQuantitativeFeature(featureValues)) {
-      decreaseNumberOfBins(feature, featureValues);
-      $features = $features;
-    }
-  }
 </script>
-
-{#if showFeatureEditor}
-  <FeatureEditor
-    feature={feature}
-    featureValues={featureValues}
-    on:close={() => showFeatureEditor = false}
-  />
-{/if}
 
 <div class="feature small"
   class:draggingOver
@@ -120,49 +91,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
     {/if}
   </div>
-
-  {#if isSelected && feature.type === 'Q' && feature.splitType !== 'custom'}
-    <!-- decrease and increase number of bins in the feature -->
-    <svg xmlns="http://www.w3.org/2000/svg"
-      class="icon icon-tabler icon-tabler-circle-minus"
-      width="24" height="24" viewBox="0 0 24 24"
-      stroke-width="2" stroke="currentColor" fill="none"
-      stroke-linecap="round" stroke-linejoin="round"
-      on:click={fewerBins}
-      class:disabled="{feature.numBins <= allowedBinNumbers[0]}"
-    >
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <line x1="9" y1="12" x2="15" y2="12" />
-    </svg>
-
-    <svg xmlns="http://www.w3.org/2000/svg"
-      class="icon icon-tabler icon-tabler-circle-plus"
-      width="24" height="24" viewBox="0 0 24 24"
-      stroke-width="2" stroke="currentColor" fill="none"
-      stroke-linecap="round" stroke-linejoin="round"
-      on:click={moreBins}
-      class:disabled="{feature.numBins >= allowedBinNumbers[allowedBinNumbers.length - 1]}"
-    >
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <line x1="9" y1="12" x2="15" y2="12" />
-      <line x1="12" y1="9" x2="12" y2="15" />
-    </svg>
-  {/if}
-
-  <!-- edit icon -->
-  <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-edit"
-    width="24" height="24" viewBox="0 0 24 24"
-    stroke-width="2" stroke="currentColor" fill="none"
-    stroke-linecap="round" stroke-linejoin="round"
-    on:click={() => showFeatureEditor = true}
-  >
-    <path stroke="none" d="M0 0h24v24H0z"/>
-    <path d="M9 7 h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-3" />
-    <path d="M9 15h3l8.5 -8.5a1.5 1.5 0 0 0 -3 -3l-8.5 8.5v3" />
-    <line x1="16" y1="5" x2="19" y2="8" />
-  </svg>
 </div>
 
 
@@ -216,20 +144,13 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   /* icons */
 
   .icon-tabler-trash,
-  .icon-tabler-plus,
-  .icon-tabler-edit,
-  .icon-tabler-circle-minus,
-  .icon-tabler-circle-plus {
+  .icon-tabler-plus {
     visibility: hidden;
     cursor: pointer;
   }
 
-  .selected:hover .icon-tabler-circle-plus,
-  .selected:hover .icon-tabler-circle-minus,
-  .selected:hover .icon-tabler-edit,
   .selected:hover .icon-tabler-trash,
-  .all:hover .icon-tabler-plus,
-  .all:hover .icon-tabler-edit {
+  .all:hover .icon-tabler-plus {
     visibility: visible;
     color: black;
   }
@@ -238,10 +159,6 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     color: var(--red);
   }
 
-  .selected:hover .icon-tabler-edit:hover,
-  .selected:hover .icon-tabler-circle-plus:not(.disabled):hover,
-  .selected:hover .icon-tabler-circle-minus:not(.disabled):hover,
-  .all:hover .icon-tabler-edit:not(.disabled):hover,
   .all:hover .icon-tabler-plus:not(.disabled):hover {
     color: var(--blue);
   }

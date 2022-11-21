@@ -5,14 +5,9 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 -->
 
 <script lang="ts">
-  import FeatureRatingWorker from 'web-worker:../../FeatureRatingWorker';
   import QuestionBox from '../QuestionBox.svelte';
   import FeatureRow from './FeatureRow.svelte';
-  import SuggestCombos from './SuggestCombos.svelte';
-  import {features, dataset, selectedFeatures, changeSinceGeneratingSuggestion } from '../../stores';
-  import { getValidMetrics } from '../../RatingMetrics';
-  import type { MetricInfo, MetricGroup } from '../../RatingMetrics';
-  import * as d3 from 'd3';
+  import {dataset, selectedFeatures } from '../../stores';
   import { flip } from "svelte/animate";
 
   // @ts-ignore
@@ -25,54 +20,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     featuresNames = $dataset.featureNames.slice().sort((a, b) => a.localeCompare(b));
   }
 
-  // suggestion criteria
-
-  let criteria: MetricGroup[];
-  let defaultCriterion: MetricInfo;
-  let criterion: MetricInfo;
-
-  $: {
-    let disabledSelected = criterion === undefined ? false : criterion.value === 'none';
-    let response = getValidMetrics($dataset.type, $dataset.hasPredictions, !ratingsEnabled || disabledSelected);
-    criteria = response.criteria;
-    defaultCriterion = response.defaultCriterion;
-
-    // reset criterion if it is undefined (on first load)
-    // or if the new dataset does not work with the current criterion
-    if (
-      (criterion === undefined) ||
-      (criterion.type !== $dataset.type) ||
-      (criterion.requiresPredictions && !$dataset.hasPredictions)
-    ) {
-      criterion = defaultCriterion;
-    }
-  }
-
-  function criterionChanged() {
-    $changeSinceGeneratingSuggestion = true;
-  }
-
   const maxFeatures: number = 4;
   $: canAddFeatures = $selectedFeatures.length < maxFeatures;
-
-  // web worker for feature suggestions
-
-  let featureToRelevance: Map<string, number> = new Map();
-
-  const worker = new FeatureRatingWorker();
-
-  worker.onmessage = (e: MessageEvent) => {
-    featureToRelevance = e.data;
-  }
-
-  $: if ($dataset && $features !== null && canAddFeatures) {
-    worker.postMessage({
-      criterion: criterion.value,
-      selected: $selectedFeatures,
-      features: $features,
-      dataset: $dataset
-    });
-  }
 
   // features that were automatically added by the suggestions
   let featuresToHighlight: Set<string> = new Set();
@@ -108,105 +57,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     draggingOverFeature = null;
   }
 
-  // sorting features
-
-  type Order = 'alpha' | 'rating-ascending' | 'rating-descending';
-
-  let sortBy: Order = 'alpha';
-
-  $: if (criterion.value === 'none') {
-    sortBy = 'alpha';
-  }
-
-  // should this go in worker.onmessage?
-  $: featuresSortedByRatingDescending = featuresNames
-      .slice()
-      .sort((a, b) =>
-        d3.descending(
-          // features already added should appear last
-          featureToRelevance.has(a) ? featureToRelevance.get(a) : -1,
-          featureToRelevance.has(b) ? featureToRelevance.get(b) : -1
-        )
-      );
-
-  $: featuresSortedByRatingAscending = featuresNames
-      .slice()
-      .sort((a, b) =>
-        d3.ascending(
-          // features already added should appear last
-          featureToRelevance.has(a) ? featureToRelevance.get(a) : 2,
-          featureToRelevance.has(b) ? featureToRelevance.get(b) : 2
-        )
-      );
-
-  let sortingOrders: Record<Order, string[]>;
-  $: sortingOrders  = {
-    'alpha': featuresNames,
-    'rating-ascending': featuresSortedByRatingAscending,
-    'rating-descending': featuresSortedByRatingDescending,
-  };
-
-  $: featuresToShow = sortingOrders[sortBy];
+  $: featuresToShow = featuresNames;
 </script>
-
-{#if ratingsEnabled}
-  <div class="label help-row">
-    <p class="bold">Rating Metric</p>
-    <QuestionBox>
-      Choose the metric that is used to guide which features to explore.
-      The length of the bar behind a feature encodes the metric's rating for
-      that feature.
-
-      <ul>
-        {#if $dataset.type === 'classification'}
-          <li>
-            <b>Purity</b> gives higher rating to feature combinations that result in the
-            subsets with lower weighted average entropy.
-          </li>
-          {#if $dataset.hasPredictions}
-            <li>
-              <b>Error deviation</b> gives higher rating to features combinations that lead to subsets
-              with higher standard deviation of percent error.
-            </li>
-            <li>
-              <b>Error count</b> and <b>Error percent</b> give higher
-              ratings to features that lead to subsets with higher
-              max number or percent of errors, respectively.
-            </li>
-          {/if}
-        {:else}
-          <li>
-            <b>Similarity</b> gives higher rating to features that result in the
-            subsets with lower average standard deviation.
-          </li>
-          {#if $dataset.hasPredictions}
-            <li>
-              <b>MSE deviation</b> gives higher rating to features that lead to subsets
-              with higher standard deviation of mean squared error.
-            </li>
-          {/if}
-        {/if}
-      </ul>
-    </QuestionBox>
-  </div>
-
-  <div>
-    <!-- svelte-ignore a11y-no-onchange -->
-    <select bind:value={criterion} on:change={criterionChanged}>
-      {#each criteria as group}
-        <optgroup label={group.title}>
-          {#each group.options as opt}
-            <option value={opt}>{opt.display}</option>
-          {/each}
-        </optgroup>
-      {/each}
-    </select>
-  </div>
-
-  {#if criterion.value !== 'none' && ratingsEnabled}
-    <SuggestCombos {criterion} {canAddFeatures} on:set={setFeatureToHighlight}/>
-  {/if}
-{/if}
 
 <div class="label help-row">
   <p class="bold">Selected</p>
@@ -221,7 +73,7 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 <div id="selected-features" class="feature-box" class:dragInProgress>
   {#each $selectedFeatures as feature, i (feature)}
     <FeatureRow
-      feature={$features[feature]}
+      feature={$dataset.features[feature]}
       {canAddFeatures}
       highlight={featuresToHighlight.has(feature)}
       isSelected={true}
@@ -249,86 +101,16 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
 
 <div class="label help-row">
   <p class="bold">Features</p>
-  <QuestionBox>
-    Click the edit icon that appears when you hover
-    over a feature to change how that feature is split.
-  </QuestionBox>
-  <div class="gap"></div>
-  {#if featureToRelevance.size}
-    <!-- sort icons -->
-
-    <!-- alphabetical -->
-    <svg xmlns="http://www.w3.org/2000/svg"
-      class="icon icon-tabler icon-tabler-sort-ascending-letters"
-      width="44"
-      height="44"
-      viewBox="0 0 24 24"
-      stroke-width="1.5"
-      stroke="currentColor"
-      fill="none"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      on:click={() => sortBy = 'alpha'}
-    >
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <path d="M15 10v-5c0 -1.38 .62 -2 2 -2s2 .62 2 2v5m0 -3h-4" />
-      <path d="M19 21h-4l4 -7h-4" />
-      <path d="M4 15l3 3l3 -3" />
-      <path d="M7 6v12" />
-    </svg>
-
-    <!-- rating-ascending -->
-    <svg xmlns="http://www.w3.org/2000/svg"
-      class="icon icon-tabler icon-tabler-sort-ascending-numbers"
-      width="44"
-      height="44"
-      viewBox="0 0 24 24"
-      stroke-width="1.5"
-      stroke="currentColor"
-      fill="none"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      on:click={() => sortBy = 'rating-ascending'}
-    >
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <path d="M4 15l3 3l3 -3" />
-      <path d="M7 6v12" />
-      <path d="M17 3a2 2 0 0 1 2 2v3a2 2 0 1 1 -4 0v-3a2 2 0 0 1 2 -2z" />
-      <circle cx="17" cy="16" r="2" />
-      <path d="M19 16v3a2 2 0 0 1 -2 2h-1.5" />
-    </svg>
-
-    <!-- rating-descending -->
-    <svg xmlns="http://www.w3.org/2000/svg"
-      class="icon icon-tabler icon-tabler-sort-descending-numbers"
-      width="44"
-      height="44"
-      viewBox="0 0 24 24"
-      stroke-width="1.5"
-      stroke="currentColor"
-      fill="none"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      on:click={() => sortBy = 'rating-descending'}
-    >
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <path d="M4 15l3 3l3 -3" />
-      <path d="M7 6v12" />
-      <path d="M17 14a2 2 0 0 1 2 2v3a2 2 0 1 1 -4 0v-3a2 2 0 0 1 2 -2z" />
-      <circle cx="17" cy="5" r="2" />
-      <path d="M19 5v3a2 2 0 0 1 -2 2h-1.5" />
-    </svg>
-  {/if}
 </div>
 
 <div class="all-features feature-box">
   {#each featuresToShow as feature (feature)}
     <div animate:flip={{ duration: 300 }}>
       <FeatureRow
-        feature={$features[feature]}
+        feature={$dataset.features[feature]}
         {canAddFeatures}
         isSelected={false}
-        relevance={featureToRelevance.get(feature) ?? 0}
+        relevance={0}
         on:dragstart={(e) => startHandler(e, feature)}
         on:dragend={endHandler}
       />

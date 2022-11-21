@@ -1,21 +1,10 @@
 <script lang="ts">
   import DatasetSelector from './controls/DatasetSelector.svelte';
   import FeatureSelector from './controls/FeatureSelector.svelte';
-  import FilteringButton from './controls/filtering/FilteringButton.svelte';
   import VisualizationSettings from './controls/VisualizationSettings.svelte';
   import Chart from './visualization/matrix/Chart.svelte';
-  import NotesSidebar from './notes/NotesSidebar.svelte';
-  import { dataset, features, data } from '../stores';
-  import type { FeatureExtent } from '../types';
+  import { dataset } from '../stores';
 
-  // feature name to feature values for categorical features
-  // feature name to extent for quantitative features
-  // on the whole dataset
-  let featureExtents: Record<string, FeatureExtent> = null;
-
-  // @ts-ignore
-  // defined in rollup.config.js
-  const filtersEnabled: boolean = FILTERS_ENABLED;
 </script>
 
 <div id="container">
@@ -36,30 +25,17 @@
         </svg>
       </a>
     </div>
-    <DatasetSelector on:load={({detail}) => featureExtents = detail}/>
-
-    {#if filtersEnabled && featureExtents !== null && $dataset !== null && $features !== null}
-      <FilteringButton {featureExtents}/>
-    {/if}
+    <DatasetSelector/>
 
     {#if $dataset !== null}
       <VisualizationSettings/>
-    {/if}
-
-    {#if $features !== null && $dataset !== null}
       <FeatureSelector/>
     {/if}
   </div>
 
-  {#if $features !== null && $dataset !== null && $data !== null}
+  {#if $dataset !== null}
     <Chart/>
   {/if}
-
-  <div id="notes" class="sidebar">
-    {#if $features !== null && $dataset !== null}
-      <NotesSidebar/>
-    {/if}
-  </div>
 </div>
 
 <style>
@@ -92,10 +68,5 @@
   #controls {
     flex: 0 0 200px;
     max-width: 200px;
-  }
-
-  #notes {
-    flex: 0 0 300px;
-    max-width: 300px;
   }
 </style>

@@ -20,6 +20,7 @@
     "@rollup/plugin-node-resolve": "^11.0.0",
     "@rollup/plugin-replace": "^2.4.2",
     "@rollup/plugin-typescript": "^8.0.0",
+    "@rollup/plugin-url": "^7.0.0",
     "@tsconfig/svelte": "^2.0.0",
     "@types/d3": "^7.1.0",
     "@types/dompurify": "^2.3.2",
@@ -41,11 +42,13 @@
     "uvu": "^0.5.1"
   },
   "dependencies": {
+    "@duckdb/duckdb-wasm": "^1.14.1",
     "d3": "^7.3.0",
     "dompurify": "^2.0.17",
     "js-combinatorics": "^1.5.6",
     "marked": "^4.0.10",
     "rollup-plugin-web-worker-loader": "^1.6.0",
+    "simple-statistics": "^7.7.5",
     "sirv-cli": "^1.0.0"
   }
 }

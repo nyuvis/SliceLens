@@ -1,8 +1,7 @@
-import type { CategoricalFeature, Dataset, Features, Node } from "../types";
-import { rollup, ascending, descending } from 'd3-array';
-import { getClassificationData, getRegressionData } from "./Data";
+import type { CategoricalFeature } from "../types";
+import { rollup, ascending } from 'd3-array';
 
-export { getGroups, updateFeature, addGroup, deleteGroup, mergeGroups, splitGroups, sortGroupsByName, sortGroupsByCount, moveValue, moveGroup, resetUid };
+export { getGroups, updateFeature, addGroup, deleteGroup, mergeGroups, splitGroups, sortGroupsByName, moveValue, moveGroup, resetUid };
 
 type Group = { name: string, values: Set<string>, id: number };
 
@@ -76,27 +75,6 @@ function mergeGroups(feature: CategoricalFeature): Group[] {
 function splitGroups(feature: CategoricalFeature): Group[] {
   return Object.keys(feature.valueToGroup)
     .map(d => ({ name: d, id: uid++, values: new Set([d])}));
-}
-
-function sortGroupsByCount(feature: CategoricalFeature, groups: Group[], dataset: Dataset, features: Features) {
-  feature = updateFeature(feature, groups);
-
-  // get the subsets according to the feature's bins
-  const data: Node[] = (dataset.type === 'classification') ?
-      getClassificationData(features, [feature.name], dataset) :
-      getRegressionData(features, [feature.name], dataset);
-
-  // map from the group name to the number of instances in that group
-  const valueToCount: Map<string, number> = new Map(data.map(d => {
-    const valueIndex = d.splits.get(feature.name);
-    const value = feature.values[valueIndex];
-    return [value, d.size];
-  }));
-
-  return groups.sort((a, b) => descending(
-    valueToCount.get(a.name) ?? 0,
-    valueToCount.get(b.name) ?? 0
-  ));
 }
 
 function sortGroupsByName(groups: Group[]): Group[] {

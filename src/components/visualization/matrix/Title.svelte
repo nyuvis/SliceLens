@@ -17,5 +17,7 @@
       align-items: center;
       justify-content: center;
       width: 100%;
+      margin-top: 0.25em;
+      margin-bottom: 0.25em;
     }
 </style>

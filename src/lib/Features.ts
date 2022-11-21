@@ -5,9 +5,6 @@ import type {
   CategoricalFeature,
   Feature,
   Features,
-  Dataset,
-  FeatureExtent,
-  Row,
 } from "../types";
 
 export {
@@ -15,14 +12,12 @@ export {
   cloneQuantitativeFeature,
   cloneSelectedFeatures,
   areFeaturesEqual,
-  getWholeDatasetFeatureExtents,
   isNumericFeature,
   isQuantitativeFeature,
   isCategoricalFeature,
   getBinLabels,
   equalIntervalThresholds,
   quantileThresholds,
-  getFeatures
 };
 
 function cloneCategoricalFeature(feature: CategoricalFeature) : CategoricalFeature {
@@ -39,12 +34,7 @@ function cloneQuantitativeFeature(feature: QuantitativeFeature) : QuantitativeFe
   return {
     name: feature.name,
     type: feature.type,
-    values: [...feature.values],
     extent: [...feature.extent],
-    splitType: feature.splitType,
-    numBins: feature.numBins,
-    thresholds: [...feature.thresholds],
-    format: feature.format
   };
 }
 
@@ -79,30 +69,11 @@ function areFeaturesEqual(a: Feature, b: Feature): boolean {
     return (
       a.type === b.type &&
       a.name === b.name &&
-      areArraysEqual(a.extent, b.extent) &&
-      a.splitType === b.splitType &&
-      a.numBins === b.numBins &&
-      areArraysEqual(a.thresholds, b.thresholds) &&
-      areArraysEqual(a.values, b.values) &&
-      a.format === b.format
+      areArraysEqual(a.extent, b.extent)
     );
   } else {
     return false;
   }
-}
-
-/* for categorical features, get the unique feature values
-   for quantiative features, get the min and max values */
-function getWholeDatasetFeatureExtents(features: Features): Record<string, FeatureExtent> {
-  return Object.fromEntries(
-    Object.entries(features).map(([name, feature]) => {
-      if (feature.type === "Q") {
-        return [name, { type: "Q", extent: [...feature.extent]}];
-      } else {
-        return [name, { type: "C", categories: [...feature.categories]}];
-      }
-    })
-  );
 }
 
 function isNumericFeature(values: unknown[]): boolean {
@@ -164,76 +135,4 @@ function quantileThresholds(values: number[], numBins: number): number[] {
     .domain(values)
     .range(d3.range(numBins))
     .quantiles();
-}
-
-function getFeatures(dataset: Dataset): Features {
-  if (!dataset) {
-    return null;
-  }
-
-  const features = dataset.featureNames.reduce((acc, val) => {
-    const values: (string | number)[] = dataset.rows.map((d: Row) => d[val]);
-
-    if (isQuantitativeFeature(values)) {
-      const numBins = 3;
-      const splitType = 'interval';
-      const extent = d3.extent(values);
-      const thresholds = equalIntervalThresholds(extent, numBins);
-
-      const bin = d3.bin()
-        .domain(extent)
-        .thresholds(thresholds);
-      const bins = bin(values);
-      const formatSpecifier = '.2~f';
-      const featureValueLabels = getBinLabels(bins, d3.format(formatSpecifier));
-
-      const feature: QuantitativeFeature = {
-        type: "Q",
-        name: val,
-        extent: extent,
-        splitType: splitType,
-        numBins: numBins,
-        thresholds: thresholds,
-        // values contains the labels for the bins
-        values: featureValueLabels,
-        format: formatSpecifier,
-      };
-
-      acc[val] = feature;
-
-    } else if(isCategoricalFeature(values)){
-      // sort the feature values in descending order by their count in the dataset
-      const uniqueValues: string[] = d3.groupSort(values, g => -g.length, d => d);
-
-      // the number of groups to show by default, including other
-      const numDefaultGroups = 5;
-
-      // names that will be shown for the bin labels
-      const groupNames = uniqueValues.length <= numDefaultGroups ?
-        uniqueValues :
-        // slice(0, n) returns first n elements
-        // we want n-1, because adding other gives us n
-        [...uniqueValues.slice(0, numDefaultGroups - 1), 'Other'];
-
-      const valueToGroup = Object.fromEntries(
-        uniqueValues.length <= numDefaultGroups ?
-          d3.zip(uniqueValues, uniqueValues) :
-          uniqueValues.map((d, i) => i < numDefaultGroups - 1 ? [d, d] : [d, 'Other'])
-      );
-
-      const feature: CategoricalFeature = {
-        type: "C",
-        name: val,
-        values: groupNames,
-        categories: uniqueValues,
-        valueToGroup: valueToGroup
-      };
-
-      acc[val] = feature;
-    }
-
-    return acc;
-  }, {});
-
-  return features;
 }

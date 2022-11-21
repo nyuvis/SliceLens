@@ -1,41 +1,64 @@
 <script lang="ts">
+  import * as d3 from 'd3';
   import Label from './Label.svelte';
-  import type { Feature } from '../../../types';
 
+  export let scale: d3.ScaleContinuousNumeric<number,number> | d3.ScaleBand<string>;
   export let width: number;
-  export let xScales: d3.ScaleBand<number>[];
-  export let xFeatures: Feature[];
-  export let axisLineHeight: number;
+  export let height: number;
+  export let margin: { top: number, right: number, bottom: number, left: number };
+  export let label: string;
+  export let x: number = 0;
+  export let y: number = 0;
+  export let format = d3.format('~s');
+  export let showGrid: boolean = false;
+  export let showTickLabels: boolean = true;
+
+  $: y1 = showGrid ? -(height - margin.top - margin.bottom) : 0;
 </script>
 
-{#if xScales.length > 0}
-  <g class="x-axis">
-    <Label
-      x={0}
-      y={0}
-      {width}
-      height={axisLineHeight}
-      label={xFeatures[0].name}
-      bold={true}
-    />
-
-    {#each xScales[0].domain() as d}
-      <Label
-        x={xScales[0](d)}
-        y={axisLineHeight}
-        width={xScales[0].bandwidth()}
-        height={axisLineHeight}
-        label={xFeatures[0].values[+d]}
-      />
-
-      <g transform="translate({xScales[0](d)},{axisLineHeight * 2})">
-        <svelte:self
-          width={xScales[0].bandwidth()}
-          xScales={xScales.slice(1)}
-          xFeatures={xFeatures.slice(1)}
-          {axisLineHeight}
-        />
-      </g>
-    {/each}
+<g transform="translate({x},{y})">
+  <g>
+    {#if 'bandwidth' in scale}
+      {#each scale.domain() as tick}
+        <g transform="translate({scale(tick)})">
+          <line y1={y1} y2={5} x1={scale.bandwidth() / 2} x2={scale.bandwidth() / 2} stroke="#d3d3d3"/>
+          {#if showTickLabels}
+            <Label
+              width={scale.bandwidth()}
+              height={10}
+              x={0}
+              y={10}
+              bold={false}
+              label={tick}
+              fontSize={10}
+            />
+          {/if}
+        </g>
+      {/each}
+    {:else}
+      {#each scale.ticks() as tick}
+        <g transform="translate({scale(tick)})">
+          <line y1={y1} y2={5} stroke="#d3d3d3"/>
+          {#if showTickLabels}
+            <text y={6} text-anchor="middle" dominant-baseline="hanging">{format(tick)}</text>
+          {/if}
+        </g>
+      {/each}
+    {/if}
   </g>
-{/if}
+
+  <Label
+    width={width}
+    height={20}
+    x={0}
+    y={margin.bottom - 20}
+    bold={true}
+    label={label}
+  />
+</g>
+
+<style>
+  text {
+    font-size: 10px;
+  }
+</style>

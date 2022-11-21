@@ -1,144 +1,137 @@
 import * as d3 from "d3";
-import { isNumericFeature, quantileThresholds } from "./Features";
+import { init, query } from '../lib/Database';
 import type {
   Dataset,
-  RegressionRow,
-  ClassificationRow,
   ClassificationDataset,
   RegressionDataset,
+  Features,
 } from "../types";
 
 export {
   parseDataset,
-  getGroundTruthDistribution,
-  getPredictionDistribution
 };
 
-/**
- *
- * @param rows rows in the dataset
- * @returns map from ground truth class label to the percentage of rows with that label
- */
-function getGroundTruthDistribution(rows: ClassificationRow[]): d3.InternMap<string,number> {
-  return d3.rollup(
-    rows,
-    v => v.length / rows.length,
-    d => d.label
-  );
-}
 
-/**
- *
- * @param rows rows in the dataset
- * @returns map from predicted class label to whether or not the prediction is correct to the percentage of rows with that label and correctness
- */
-function getPredictionDistribution(rows: ClassificationRow[]): d3.InternMap<string,d3.InternMap<boolean,number>> {
-  return d3.rollup(
-    rows,
-    v => v.length / rows.length,
-    d => d.prediction,
-    d => d.prediction === d.label
-  );
-}
+function parseDataset(content: string, name: string): Promise<Dataset> {
+  return init('ds', content).then(db => {
+    const countQ: Promise<number> = query(`SELECT count()::INT as cnt FROM ds`).then(result => result.get(0).cnt);
 
-function parseDataset(data: d3.DSVRowArray<string>, name: string): Dataset {
-  const size = data.length;
-  const featureNames: string[] = data.columns.filter(d => d !== 'label' && d !== 'prediction');
-  const hasPredictions: boolean = data.columns.includes('prediction');
+    const distinctQ = query(`DESCRIBE ds`).then((describeResult) => {
+      const columnNames: string[] = describeResult.getChild('column_name').toArray();
+      const columnTypes: string[] = describeResult.getChild('column_type').toArray();
 
-  const quantitatveColumns = new Set(data.columns.filter(col => isNumericFeature(data.map(d => d[col]))));
+      const numericTypes = new Set([
+        'TINYINT', 'SMALLINT', 'INTEGER', 'BIGINT', 'HUGEINT',
+        'UTINYINT', 'USMALLINT', 'UINTEGER', 'UBIGINT',
+        'REAL', 'DOUBLE',
+      ]);
 
-  const isRegression = quantitatveColumns.has("label") || quantitatveColumns.has("prediction");
+      let originalNumericCols: string[] = columnNames.filter((_: string, i: number) => numericTypes.has(columnTypes[i]));
 
-  if (isRegression) {
-    quantitatveColumns.add("label");
-    if (hasPredictions) {
-      quantitatveColumns.add("prediction");
-    }
-
-    // convert strings to numbers for quantitative columns
-    const rows = data.map(d => {
-      const row = {...d} as RegressionRow;
-      quantitatveColumns.forEach(col => row[col] = +row[col]);
-      return row;
+      const selectPart = originalNumericCols.map(col => `approx_count_distinct("${col}") as "${col}"`).join(',');
+      return Promise.all([
+        Promise.resolve(columnNames),
+        Promise.resolve(originalNumericCols),
+        query(`SELECT ${selectPart} from ds`)
+      ]);
     });
 
-    const approxNumBins = 20;
+    const alterQ = distinctQ.then(([columnNames, originalNumericCols, distinctResult]) => {
+      const counts = distinctResult.get(0);
+      const threshold = 12;
 
-    const groundTruth: number[] = rows.map((d: RegressionRow) => d.label);
-    const exactGTExtent = d3.extent(groundTruth);
-    const groundTruthExtent = d3.nice(exactGTExtent[0], exactGTExtent[1], approxNumBins);
-    // remove thresholds outside of the domain, as done when bin() is called:
-    // https://github.com/d3/d3-array/blob/2f28f41005de2fbb69e99439fabec5eb8bce26f0/src/bin.js#L62-L65
-    const groundTruthThresholds = d3.ticks(groundTruthExtent[0], groundTruthExtent[1], approxNumBins)
-      .filter(t => t > groundTruthExtent[0] && t < groundTruthExtent[1]);
+      const numericColumns = [];
+      const columnsToConvert = [];
 
-    const groundTruthQuantileThresholds = quantileThresholds(groundTruth, approxNumBins)
-      .filter(t => t > groundTruthExtent[0] && t < groundTruthExtent[1]);
+      originalNumericCols.forEach((col, i) => {
+        if (counts[col] > threshold) {
+          numericColumns.push(col);
+        } else {
+          columnsToConvert.push(col);
+        }
+      });
 
-    const dataset: RegressionDataset = {
-      type: "regression" as const,
-      rows,
-      name,
-      featureNames,
-      approxNumBins,
-      groundTruthExtent,
-      groundTruthThresholds,
-      groundTruthQuantileThresholds,
-      hasPredictions,
-      size
-    };
-
-    if (hasPredictions) {
-      const predictions: number[] = rows.map((d: RegressionRow) => d.prediction);
-      const deltas: number[] = d3.zip<number>(groundTruth, predictions)
-        .map(([truth, pred]) => pred - truth);
-
-      const maxAbsDelta = d3.max(deltas, d => Math.abs(d));
-      const deltaExtent = d3.nice(-maxAbsDelta, maxAbsDelta, approxNumBins);;
-      dataset.deltaExtent = deltaExtent;
-      // remove thresholds outside of the domain, as done when bin() is called:
-      // https://github.com/d3/d3-array/blob/2f28f41005de2fbb69e99439fabec5eb8bce26f0/src/bin.js#L62-L65
-      dataset.deltaThresholds = d3.ticks(deltaExtent[0], deltaExtent[1], approxNumBins)
-        .filter(t => t > deltaExtent[0] && t < deltaExtent[1]);
-
-      const absDeltas = deltas.map(d => Math.abs(d));
-      const positiveQuantiles = quantileThresholds(absDeltas, approxNumBins / 2);
-      const negativeQuantiles = positiveQuantiles.map(d => -d).reverse();
-      dataset.deltaQuantileThresholds = negativeQuantiles.concat(positiveQuantiles);
-    }
-    return dataset;
-  } else {
-    quantitatveColumns.delete("label");
-    quantitatveColumns.delete("prediction");
-
-    // convert strings to numbers for quantitative columns
-    const rows = data.map(d => {
-      const row = {...d} as ClassificationRow;
-      quantitatveColumns.forEach(col => row[col] = +row[col]);
-      return row;
+      const alterQuery = columnsToConvert.map(col => `ALTER TABLE ds ALTER COLUMN "${col}" TYPE VARCHAR;`).join('\n');
+      return Promise.all([Promise.resolve(columnNames), Promise.resolve(numericColumns), query(alterQuery)]);
     });
 
-    const groundTruthDistribution = getGroundTruthDistribution(rows);
+    const featuresPromise: Promise<Features> = alterQ.then(([columnNames, numericColumns]) => {
+      const selectPart = numericColumns.map(feat => `MIN("${feat}") as "min${feat}", MAX("${feat}") as "max${feat}"`).join(', ');
+      const extentQuery = query(`SELECT ${selectPart} from ds`).then(res => {
+        return Object.fromEntries(numericColumns.map(feat => {
+          const extent: [number, number] = [res.getChild(`min${feat}`).get(0), res.getChild(`max${feat}`).get(0)];
+          return [feat, { type: 'Q', name: feat, extent }];
+        }));
+      });
 
-    const labelValues: string[] = Array.from(groundTruthDistribution.keys()).sort();
+      const categoricalColumns = columnNames.filter(d => !numericColumns.includes(d));
+      const distinctQuery = Promise.all(categoricalColumns.map(feat => {
+        return query(`SELECT DISTINCT("${feat}") from ds ORDER BY "${feat}"`).then(res => {
+          const values: string[] = res.getChild(`${feat}`).toArray();
+          return [
+            feat,
+            {
+              type: 'C',
+              name: feat,
+              values: values,
+              categories: values,
+              valueToGroup: Object.fromEntries(d3.zip(values, values))
+            }
+          ];
+        });
+      })).then(d => Object.fromEntries(d));
 
-    const dataset: ClassificationDataset = {
-      type: "classification" as const,
-      rows,
-      name,
-      featureNames,
-      labelValues,
-      hasPredictions,
-      size,
-      groundTruthDistribution
-    };
+      return Promise.all([extentQuery, distinctQuery]).then(([quant, cat]) => Object.assign(quant, cat));
+    });
 
-    if (hasPredictions) {
-      const predictionDistribution = getPredictionDistribution(rows);
-      dataset.predictionDistribution = predictionDistribution;
-    }
+    const datasetPromise: Promise<Dataset> = Promise.all([countQ, featuresPromise]).then(([size, features]) => {
+      const hasPredictions = features.hasOwnProperty('prediction');
+      const featureNames = Object.keys(features).filter(d => d !== 'label' && d !== 'prediction');
 
-    return dataset;
-  }
+      const label = features.label;
+
+      delete features.label;
+      delete features.prediction;
+
+      if (label.type === 'C') {
+        const color = d3.scaleOrdinal<string, string, string>()
+            .domain(label.values)
+            .range(d3.schemeCategory10);
+
+        const ds: ClassificationDataset = {
+          type: 'classification',
+          name,
+          featureNames,
+          features,
+          size,
+          hasPredictions,
+          labelValues: label.values,
+          color
+        };
+
+        return ds;
+      } else {
+        const color = d3.scaleSequential<string, string>()
+            .domain(label.extent)
+            // .interpolator((t) => d3.interpolateCividis(1 - t))
+            .interpolator(d3.interpolateBlues)
+            .unknown("black");
+
+        const ds: RegressionDataset = {
+          type: 'regression',
+          name,
+          featureNames,
+          features,
+          size,
+          hasPredictions,
+          labelExtent: label.extent,
+          color
+        };
+
+        return ds;
+      }
+    });
+
+    return datasetPromise;
+  });
 }

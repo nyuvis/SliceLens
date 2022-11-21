@@ -5,6 +5,7 @@ import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
 import sveltePreprocess from 'svelte-preprocess';
 import typescript from '@rollup/plugin-typescript';
+import url from '@rollup/plugin-url';
 import css from 'rollup-plugin-css-only';
 import webWorkerLoader from 'rollup-plugin-web-worker-loader';
 import replace from "@rollup/plugin-replace";
@@ -48,8 +49,8 @@ export default {
           JSON.stringify('../datasets/datasets.csv') :
           JSON.stringify('../datasets/datasets-test.csv'),
         ALTERNATIVE_VIS: false,
-        FILTERS_ENABLED: true,
-        RATINGS_ENABLED: true,
+        FILTERS_ENABLED: false,
+        RATINGS_ENABLED: false,
       }
     }),
 
@@ -62,9 +63,15 @@ export default {
 		}),
 
     webWorkerLoader({
-      skipPlugins: [ 'liveServer', 'serve', 'livereload', 'css' ],
+      skipPlugins: [ 'liveServer', 'serve', 'livereload', 'css', 'url'],
       extensions: ['.ts']
     }),
+
+    url({
+			fileName: '[dirname][hash][extname]',
+			include: ['**/*.worker.js' ,'**/*.wasm', '**/*.svg', '**/*.png', '**/*.jp(e)?g', '**/*.gif', '**/*.webp'],
+			publicPath: '/build/',
+		}),
 
 		// we'll extract any component CSS out into
 		// a separate file - better for performance

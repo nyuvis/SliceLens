@@ -1,14 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { getFeatures, getWholeDatasetFeatureExtents } from '../../lib/Features';
   import { parseDataset } from '../../lib/Dataset';
-  import { dataset, fullDataset, selectedFeatures, features, filters, showPredictions } from '../../stores';
+  import { dataset, selectedFeatures, showPredictions, visKind } from '../../stores';
   import QuestionBox from '../QuestionBox.svelte';
   import * as d3 from "d3";
-  import { createEventDispatcher } from 'svelte';
-  import type { Features } from '../../types';
-
-  const dispatch = createEventDispatcher();
 
   type DatasetInfo = { name: string, path: string};
 
@@ -33,24 +28,17 @@
   function load(info: DatasetInfo) {
     const {path, name} = info;
 
-    d3.csv(path).then(data => {
-      const ds = parseDataset(data, name);
-      $filters = [];
-      const feat: Features = getFeatures(ds);
+    d3.text(path).then(content => {
+      parseDataset(content, name).then(ds => {
+        selectedFeatures.reset();
 
-      // get the extent of quantitatve features
-      // and unique values of categorical features
-      // on the whole dataset with no filters.
-      // this is used to bound the features that can be set
-      dispatch('load', getWholeDatasetFeatureExtents(feat));
+        if (!ds.hasPredictions) {
+          $showPredictions = false;
+        }
 
-      selectedFeatures.reset();
-      if (!ds.hasPredictions) {
-        $showPredictions = false;
-      }
-      $dataset = ds;
-      $fullDataset = ds;
-      $features = feat;
+        $visKind = '';
+        $dataset = ds;
+      });
     });
   }
 
@@ -82,24 +70,19 @@
     const reader = new FileReader();
 
     reader.onload = function(event) {
-      const text = event.target.result as string;
-      const ds = parseDataset(d3.csvParse(text), file.name);
+      const content = event.target.result as string;
+      const name = file.name;
 
-      uploadedDatasetName = file.name;
+      parseDataset(content, name).then(ds => {
+        selectedFeatures.reset();
 
-      $filters = [];
+        if (!ds.hasPredictions) {
+          $showPredictions = false;
+        }
 
-      const feat = getFeatures(ds);
-
-      dispatch('load', getWholeDatasetFeatureExtents(feat));
-
-      selectedFeatures.reset();
-      if (!ds.hasPredictions) {
-        $showPredictions = false;
-      }
-      $dataset = ds;
-      $fullDataset = ds;
-      $features = feat;
+        $visKind = '';
+        $dataset = ds;
+      });
     }
 
     reader.readAsText(file);

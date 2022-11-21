@@ -15,6 +15,7 @@ Wind,https://gist.githubusercontent.com/DanielKerrigan/9910b17903a1caafff653f938
 CPU,https://gist.githubusercontent.com/DanielKerrigan/b768aaf98280d7529e747310e14e21e1/raw/c75687cec389e6ecd00e3460f0d93a62b936c594/cpu-act.csv
 BNG pbc,https://gist.githubusercontent.com/DanielKerrigan/43a574c3e312627782ec991d86765bce/raw/4ed83bd32271a5886bbdbeecadc0c0a29e64341b/bng-pbc.csv
 House,https://gist.githubusercontent.com/DanielKerrigan/102eed14351c0ec71f760c6edd71242d/raw/ec630840e97e17e7e0dc3c48693c5a283100953a/house.csv
+BNG pbc all,/datasets/test/bng-pbc-all.csv
 UI Test,/datasets/test/ui-test.csv
 data-10-10000.csv,/datasets/test/data-10-10000.csv
 data-100-10000.csv,/datasets/test/data-100-10000.csv
