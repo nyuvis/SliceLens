@@ -262,7 +262,7 @@ vega-datasets==0.8.0
 watchdog @ file:///opt/concourse/worker/volumes/live/fe5d349c-1d61-4feb-6b8a-cbc5288b20a8/volume/watchdog_1593447347275/work
 wcwidth @ file:///tmp/build/80754af9/wcwidth_1593447189090/work
 webencodings==0.5.1
-Werkzeug==1.0.1
+Werkzeug==2.2.3
 widgetsnbextension==3.5.1
 wrapt==1.12.1
 wurlitzer @ file:///opt/concourse/worker/volumes/live/59acb45c-07e7-4304-57af-e84f3889d3ef/volume/wurlitzer_1594753863419/work
