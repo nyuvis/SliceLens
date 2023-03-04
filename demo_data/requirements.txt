@@ -69,7 +69,7 @@ future==0.18.2
 gast==0.3.3
 gevent @ file:///opt/concourse/worker/volumes/live/272caec7-c260-4aae-6e70-894795c188a9/volume/gevent_1593009579780/work
 gitdb2==2.0.6
-GitPython==3.0.4
+GitPython==3.1.30
 glob2==0.7
 gmpy2==2.0.8
 google-auth==1.19.0
