@@ -255,7 +255,7 @@ tornado==6.1
 tqdm @ file:///tmp/build/80754af9/tqdm_1593446365756/work
 traitlets==5.0.5
 typing-extensions==3.7.4.3
-ujson==1.35
+ujson==5.4.0
 unicodecsv==0.14.1
 urllib3==1.26.5
 vega-datasets==0.8.0
