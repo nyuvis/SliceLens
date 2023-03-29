@@ -29,6 +29,25 @@ To use the tool with your own dataset, in the top-left corner of the UI, you can
 
 Your dataset must be a CSV file that has a "label" column, representing the ground truth class label for each row. Optionally, the dataset can also contain a "prediction" column, representing a predicted value for each row.
 
+## Rating Metrics
+
+SliceLens can use several metrics to assign a rating to each feature or to generate suggested feature combinations.
+
+### Classification
+
+* **Purity**: The purity metric is useful for guiding users to features that do better jobs at separating the instances into subsets by their ground truth label. The metric gives higher ratings to subsets that have a lower weighted average entropy, based only on the ground truth labels.
+* **Error deviation**: The error deviation metric seeks to identify sets of subsets that have uneven distribution of errors, meaning that some subsets have a disproportionately high or low amount of errors. The metric gives higher ratings to sets of subsets with higher standard deviation of percent error. For a given set of subsets, the error deviation metric calculates the error rate for each subset and then takes their standard deviation.
+* **Error count** and **Error percent** give higher ratings to features that lead to subsets with higher max number or percent of errors, respectively.
+
+### Regression
+
+* **Similarity**: The similarity metric guides users in finding subsets that group instances with similar labels, similar to the purity metric for classification datasets. The similarity metric calculates the standard deviation of the ground truth labels in each subset and takes their weighted average.
+* **MSE Deviation**: Similar to the error deviation metric for classification datasets, the MSE deviation metric guides users towards sets of subsets that have uneven error distributions. That is, it can help the user find feature combinations that result in subsets where some subsets have worse errors than others. To calculate the MSE deviation metric for a given set of subsets, SliceLens computes the mean-squared error for each subset and takes their standard deviation.
+
+## Feature Combination Suggestion Algorithm Evaluation
+
+[Observable notebook](https://observablehq.com/d/81aa53d223663a72).
+
 ## Demo Datasets
 
 ### UCI Machine Learning Repository
@@ -62,22 +81,3 @@ Le, Trang T., William La Cava, Joseph D. Romano, John T. Gregg, Daniel J. Goldbe
   * Dressel, Julia, and Hany Farid. “The Accuracy, Fairness, and Limits of Predicting Recidivism.” Science Advances, vol. 4, no. 1, 17 Jan. 2018, doi:10.1126/sciadv.aao5580.
   * Based on `BROWARD_CLEAN.csv` from the above article's [data and material](https://farid.berkeley.edu/downloads/publications/scienceadvances17/).
 * [Rain in Australia](https://www.kaggle.com/jsphyg/weather-dataset-rattle-package)
-
-## Rating Metrics
-
-SliceLens can use several metrics to assign a rating to each feature or to generate suggested feature combinations.
-
-### Classification
-
-* **Purity**: The purity metric is useful for guiding users to features that do better jobs at separating the instances into subsets by their ground truth label. The metric gives higher ratings to subsets that have a lower weighted average entropy, based only on the ground truth labels.
-* **Error deviation**: The error deviation metric seeks to identify sets of subsets that have uneven distribution of errors, meaning that some subsets have a disproportionately high or low amount of errors. The metric gives higher ratings to sets of subsets with higher standard deviation of percent error. For a given set of subsets, the error deviation metric calculates the error rate for each subset and then takes their standard deviation.
-* **Error count** and **Error percent** give higher ratings to features that lead to subsets with higher max number or percent of errors, respectively.
-
-### Regression
-
-* **Similarity**: The similarity metric guides users in finding subsets that group instances with similar labels, similar to the purity metric for classification datasets. The similarity metric calculates the standard deviation of the ground truth labels in each subset and takes their weighted average.
-* **MSE Deviation**: Similar to the error deviation metric for classification datasets, the MSE deviation metric guides users towards sets of subsets that have uneven error distributions. That is, it can help the user find feature combinations that result in subsets where some subsets have worse errors than others. To calculate the MSE deviation metric for a given set of subsets, SliceLens computes the mean-squared error for each subset and takes their standard deviation.
-
-## Feature Combination Suggestion Algorithm Evaluation
-
-[Observable notebook](https://observablehq.com/d/81aa53d223663a72).
