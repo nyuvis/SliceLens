@@ -193,6 +193,6 @@ function similarity(data: RegressionNode[]): number {
 
 // filter subsets
 
-function filterSubsets<T extends Node>(subsets: T[], threshold: number): T[] {
-  return subsets.filter(subset => subset.size >= threshold);
+function filterSubsets<T extends Node>(subsets: T[], minSubsetSize: number): T[] {
+  return subsets.filter(subset => subset.size >= minSubsetSize);
 }

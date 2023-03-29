@@ -52,8 +52,24 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     $changeSinceGeneratingSuggestion = true;
   }
 
+  function minSubsetSizeChanged() {
+    $changeSinceGeneratingSuggestion = true;
+  }
+
   const maxFeatures: number = 4;
   $: canAddFeatures = $selectedFeatures.length < maxFeatures;
+
+  // min subset size
+
+  let minSubsetSize = 32;
+
+  let currentDataset = $dataset.name;
+
+  // when switching to a new dataset, reset the min subset size
+  $: if(currentDataset !== $dataset.name) {
+    currentDataset = $dataset.name;
+    minSubsetSize = 32
+  }
 
   // web worker for feature suggestions
 
@@ -70,7 +86,8 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
       criterion: criterion.value,
       selected: $selectedFeatures,
       features: $features,
-      dataset: $dataset
+      dataset: $dataset,
+      minSubsetSize: minSubsetSize
     });
   }
 
@@ -153,46 +170,54 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   <div class="label help-row">
     <p class="bold">Rating Metric</p>
     <QuestionBox>
-      Choose the metric that is used to guide which features to explore.
-      The length of the bar behind a feature encodes the metric's rating for
-      that feature.
-
-      <ul>
-        {#if $dataset.type === 'classification'}
-          <li>
-            <b>Purity</b> gives higher rating to feature combinations that result in the
-            subsets with lower weighted average entropy.
-          </li>
-          {#if $dataset.hasPredictions}
+      <div class="ratings-help">
+        <div>
+          Choose the metric that is used to guide which features to explore.
+          The length of the bar behind a feature encodes the metric's rating for
+          that feature.
+        </div>
+  
+        <ul>
+          {#if $dataset.type === 'classification'}
             <li>
-              <b>Error deviation</b> gives higher rating to features combinations that lead to subsets
-              with higher standard deviation of percent error.
+              <b>Purity</b> gives higher rating to feature combinations that result in the
+              subsets with lower weighted average entropy.
             </li>
+            {#if $dataset.hasPredictions}
+              <li>
+                <b>Error deviation</b> gives higher rating to features combinations that lead to subsets
+                with higher standard deviation of percent error.
+              </li>
+              <li>
+                <b>Error count</b> and <b>Error percent</b> give higher
+                ratings to features that lead to subsets with higher
+                max number or percent of errors, respectively.
+              </li>
+            {/if}
+          {:else}
             <li>
-              <b>Error count</b> and <b>Error percent</b> give higher
-              ratings to features that lead to subsets with higher
-              max number or percent of errors, respectively.
+              <b>Similarity</b> gives higher rating to features that result in the
+              subsets with lower average standard deviation.
             </li>
+            {#if $dataset.hasPredictions}
+              <li>
+                <b>MSE deviation</b> gives higher rating to features that lead to subsets
+                with higher standard deviation of mean squared error.
+              </li>
+            {/if}
           {/if}
-        {:else}
-          <li>
-            <b>Similarity</b> gives higher rating to features that result in the
-            subsets with lower average standard deviation.
-          </li>
-          {#if $dataset.hasPredictions}
-            <li>
-              <b>MSE deviation</b> gives higher rating to features that lead to subsets
-              with higher standard deviation of mean squared error.
-            </li>
-          {/if}
-        {/if}
-      </ul>
+        </ul>
+  
+        <div>Subsets smaller than the specified minimum subset size will be ignored by the metric.</div>
+  
+        <div>"Num. features used" specifies the number of features considered when suggesting feature combinations.</div>
+      </div>
     </QuestionBox>
   </div>
 
   <div>
     <!-- svelte-ignore a11y-no-onchange -->
-    <select bind:value={criterion} on:change={criterionChanged}>
+    <select bind:value={criterion} on:change={criterionChanged} style:margin-bottom="0.25em">
       {#each criteria as group}
         <optgroup label={group.title}>
           {#each group.options as opt}
@@ -203,8 +228,23 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
     </select>
   </div>
 
-  {#if criterion.value !== 'none' && ratingsEnabled}
-    <SuggestCombos {criterion} {canAddFeatures} on:set={setFeatureToHighlight}/>
+  <div>
+    <label class="small" style:display="flex" style:margin-bottom="0.25em">
+      <span>Minimum subset size</span>
+      <input
+        type=number
+        bind:value={minSubsetSize}
+        on:change={minSubsetSizeChanged}
+        min={1}
+        max={$dataset.size}
+        style:width="4em"
+        style:margin-left="auto"
+      />
+    </label>
+  </div>
+
+  {#if criterion.value !== 'none'}
+    <SuggestCombos {criterion} {canAddFeatures} on:set={setFeatureToHighlight} {minSubsetSize}/>
   {/if}
 {/if}
 
@@ -360,6 +400,14 @@ https://svelte.dev/repl/adf5a97b91164c239cc1e6d0c76c2abe?version=3.14.1
   .help-row {
     display: flex;
     align-items: center;
+  }
+
+  .ratings-help > ul {
+    margin-bottom: 0;
+  }
+
+  .ratings-help > * + * {
+    margin-top: 0.5em;
   }
 
   .hidden {

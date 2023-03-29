@@ -9,8 +9,9 @@ self.onmessage = (e: MessageEvent) => {
   const features: Features = e.data.features;
   const dataset: Dataset = e.data.dataset;
   const numFeaturesToConsider: number = e.data.numFeaturesToConsider;
+  const minSubsetSize: number = e.data.minSubsetSize;
 
-  const suggestions: string[][] = getFeatureCombinations(criterion, metrics, selected, features, dataset, numFeaturesToConsider);
+  const suggestions: string[][] = getFeatureCombinations(criterion, metrics, selected, features, dataset, numFeaturesToConsider, minSubsetSize);
 
   postMessage(suggestions);
 }

@@ -33,7 +33,7 @@ const metricFakes = {
 
 test('get feature ratings - none', () => {
   assert.equal(
-    getFeatureRatings('none', metricFakes, [], {}, getExampleClassificationDataset()),
+    getFeatureRatings('none', metricFakes, [], {}, getExampleClassificationDataset(), 32),
     new Map()
   );
 });
@@ -45,6 +45,7 @@ test('get feature ratings - entropy', () => {
     ['height'],
     {},
     getExampleClassificationDataset(['age', 'height', 'weight']),
+    32
   );
 
   assert.is(metricFakes.entropy.metric.callCount, 2);
@@ -57,6 +58,7 @@ test('get feature ratings - errorCount', () => {
     [],
     {},
     getExampleClassificationDataset(['age', 'height', 'weight']),
+    32
   );
 
   assert.is(metricFakes.errorCount.metric.callCount, 3);
@@ -69,6 +71,7 @@ test('get feature ratings - errorPercent', () => {
     ['age', 'weight'],
     {},
     getExampleClassificationDataset(['age', 'height', 'weight']),
+    32
   );
 
   assert.is(metricFakes.errorPercent.metric.callCount, 1);
@@ -81,6 +84,7 @@ test('get feature ratings - errorDeviation', () => {
     [],
     {},
     getExampleClassificationDataset(['age', 'height', 'weight']),
+    32
   );
 
   assert.is(metricFakes.errorDeviation.metric.callCount, 3);

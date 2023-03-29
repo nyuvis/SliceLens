@@ -9,7 +9,14 @@ type Metric<T extends Dataset> = (data: Subset<T>[]) => number;
 type Subset<T extends Dataset> = T extends ClassificationDataset ? ClassificationNode : RegressionNode;
 type GetData<T extends Dataset> = (features: Features, selectedFeatures: string[], dataset: T) => Subset<T>[];
 
-function getFeatureRatings(criterion: MetricName, metrics: Metrics, selected: string[], features: Features, dataset: Dataset): Map<string, number> {
+function getFeatureRatings(
+  criterion: MetricName,
+  metrics: Metrics,
+  selected: string[],
+  features: Features,
+  dataset: Dataset,
+  minSubsetSize: number
+): Map<string, number> {
   if (criterion === 'none') {
     return new Map();
   }
@@ -17,9 +24,9 @@ function getFeatureRatings(criterion: MetricName, metrics: Metrics, selected: st
   const metric = metrics[criterion];
 
   if (dataset.type === 'classification' && metric.type === 'classification') {
-    return normalize(getFeatureRatingsForMetric(dataset, metric.metric, selected, features, getClassificationData));
+    return normalize(getFeatureRatingsForMetric(dataset, metric.metric, selected, features, getClassificationData, minSubsetSize));
   } else if (dataset.type === 'regression' && metric.type === 'regression') {
-    return normalize(getFeatureRatingsForMetric(dataset, metric.metric, selected, features, getRegressionData));
+    return normalize(getFeatureRatingsForMetric(dataset, metric.metric, selected, features, getRegressionData, minSubsetSize));
   } else {
     return new Map();
   }
@@ -31,14 +38,14 @@ function getFeatureRatingsForMetric<T extends Dataset>(
   selected: string[],
   features: Features,
   getData: GetData<T>,
-  threshold: number = 32
+  minSubsetSize: number
 ): {feature: string, value: number}[] {
   const available: string[] = dataset.featureNames.filter(d => !selected.includes(d));
 
   return available.map(feature => {
     const sel = [...selected, feature];
     const data = getData(features, sel, dataset);
-    const filteredSubsets = filterSubsets(data, threshold)
+    const filteredSubsets = filterSubsets(data, minSubsetSize)
     const value = metric(filteredSubsets);
     return {feature, value};
   });

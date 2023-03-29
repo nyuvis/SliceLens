@@ -9,6 +9,7 @@
 
   export let criterion: MetricInfo;
   export let canAddFeatures: boolean;
+  export let minSubsetSize: number;
 
   const dispatch = createEventDispatcher();
 
@@ -28,6 +29,10 @@
     const features = new Set($selectedFeatures.filter(d => !previouslySelected.includes(d)));
 
     dispatch('set', features);
+  }
+
+  function numFeaturesToConsiderChanged() {
+    $changeSinceGeneratingSuggestion = true;
   }
 
   // when switching to a new dataset, reset the suggestions
@@ -66,6 +71,7 @@
       features: $features,
       dataset: $dataset,
       numFeaturesToConsider: numFeaturesToConsider,
+      minSubsetSize: minSubsetSize
     });
   }
 
@@ -100,16 +106,24 @@
 
 <div class='small'>
   <div>
-    <label>
-      Num feats.
-      <input type=number bind:value={numFeaturesToConsider} min={1} max={$dataset.featureNames.length}/>
+    <label style:display="flex">
+      <span>Num. features used</span>
+      <input
+        type=number
+        bind:value={numFeaturesToConsider}
+        on:change={numFeaturesToConsiderChanged}
+        min={1}
+        max={$dataset.featureNames.length}
+        style:width="4em"
+        style:margin-left="auto"
+      />
     </label>
   </div>
   <div id='button-row' class='sub-label'>
     <button on:click={getSuggestedCombos} disabled={!canAddFeatures}>Suggest Combos</button>
     {#if $changeSinceGeneratingSuggestion && combos.length !== 0}
       <QuestionBox kind="alert">
-        You may have modified the filters, features, or rating metric since generating these suggestions.
+        You may have modified the filters, features, or the rating metric or its settings since generating these suggestions.
       </QuestionBox>
     {/if}
   </div>

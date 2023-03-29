@@ -10,7 +10,15 @@ type Metric<T extends Dataset> = (data: Subset<T>[]) => number;
 type Subset<T extends Dataset> = T extends ClassificationDataset ? ClassificationNode : RegressionNode;
 type GetData<T extends Dataset> = (features: Features, selectedFeatures: string[], dataset: T) => Subset<T>[];
 
-function getFeatureCombinations(criterion: MetricName, metrics: Metrics, selected: string[], features: Features, dataset: Dataset, numFeaturesToConsider: number): string[][] {
+function getFeatureCombinations(
+  criterion: MetricName,
+  metrics: Metrics,
+  selected: string[],
+  features: Features,
+  dataset: Dataset,
+  numFeaturesToConsider: number,
+  minSubsetSize: number
+): string[][] {
   if (criterion === 'none') {
     return [];
   }
@@ -18,9 +26,9 @@ function getFeatureCombinations(criterion: MetricName, metrics: Metrics, selecte
   const metric = metrics[criterion];
 
   if (dataset.type === 'classification' && metric.type === 'classification') {
-    return getFeatureCombosForMetric(dataset, metric.metric, selected, features, getClassificationData, numFeaturesToConsider, criterion);
+    return getFeatureCombosForMetric(dataset, metric.metric, selected, features, getClassificationData, numFeaturesToConsider, criterion, minSubsetSize);
   } else if (dataset.type === 'regression' && metric.type === 'regression') {
-    return getFeatureCombosForMetric(dataset, metric.metric, selected, features, getRegressionData, numFeaturesToConsider, criterion);
+    return getFeatureCombosForMetric(dataset, metric.metric, selected, features, getRegressionData, numFeaturesToConsider, criterion, minSubsetSize);
   } else {
     return [];
   }
@@ -33,8 +41,8 @@ function getFeatureCombosForMetric<T extends Dataset>(
   features: Features,
   getData: GetData<T>,
   numFeaturesToConsider: number,
-  metricName: MetricName = 'none',
-  threshold: number = 32
+  metricName: MetricName,
+  minSubsetSize: number,
 ): string[][] {
   const startTime = performance.now();
 
@@ -42,7 +50,7 @@ function getFeatureCombosForMetric<T extends Dataset>(
   const allSingles = dataset.featureNames
     .map(feature => {
       const subsets = getData(features, [feature], dataset);
-      const filteredSubsets = filterSubsets(subsets, threshold);
+      const filteredSubsets = filterSubsets(subsets, minSubsetSize);
       const score = metric(filteredSubsets);
       return { combo: [feature], score: score };
     })
@@ -58,7 +66,7 @@ function getFeatureCombosForMetric<T extends Dataset>(
   const allPairs = [...new Combination(topFeaturesNames, 2)]
     .map(combo => {
       const subsets = getData(features, combo, dataset);
-      const filteredSubsets = filterSubsets(subsets, threshold);
+      const filteredSubsets = filterSubsets(subsets, minSubsetSize);
       const score = metric(filteredSubsets);
       return { combo, score };
     })
@@ -71,7 +79,7 @@ function getFeatureCombosForMetric<T extends Dataset>(
   const allTrios = [...new Combination(topFeaturesNames, 3)]
     .map(combo => {
       const subsets = getData(features, combo, dataset);
-      const filteredSubsets = filterSubsets(subsets, threshold);
+      const filteredSubsets = filterSubsets(subsets, minSubsetSize);
       const score = metric(filteredSubsets);
       return { combo, score };
     })
@@ -97,8 +105,6 @@ function getFeatureCombosForMetric<T extends Dataset>(
     combosConsidered: totalCombosConsidered,
     combos: combos
   };
-
-  console.log(JSON.stringify(info));
 
   return combosNoScores;
 }
