@@ -76,7 +76,7 @@ google-auth==1.19.0
 google-auth-oauthlib==0.4.1
 google-pasta==0.2.0
 greenlet==0.4.16
-grpcio==1.30.0
+grpcio==1.53.0
 h5py==2.10.0
 HeapDict==1.0.1
 html5lib @ file:///tmp/build/80754af9/html5lib_1593446221756/work
